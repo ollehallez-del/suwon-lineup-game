@@ -197,7 +197,7 @@ export default function App() {
 
   // 선수단 추출용 (최근 경기 선발 → squad 구성)
   const fetchLineupForSquad = (eventId) => {
-    fetch(`https://tropical-unthread-skilled.ngrok-free.dev/api/lineup?eventId=${eventId}`)
+    fetch(`https://tropical-unthread-skilled.ngrok-free.dev/api/lineup?eventId=${eventId}`, { headers: { 'ngrok-skip-browser-warnin
       .then(r => r.json())
       .then(d => {
         if (d.lineup?.players?.length > 0) {
