@@ -179,7 +179,7 @@ export default function App() {
     if (p) setAllPreds(p);
 
     // Sofascore에서 일정 가져오기
-    fetch('/api/sofascore?type=schedule')
+    fetch('https://tropical-unthread-skilled.ngrok-free.dev/api/schedule')
       .then(r => r.json())
       .then(d => {
         setPastMatches(d.past || []);
@@ -197,7 +197,7 @@ export default function App() {
 
   // 선수단 추출용 (최근 경기 선발 → squad 구성)
   const fetchLineupForSquad = (eventId) => {
-    fetch(`/api/sofascore?type=lineup&eventId=${eventId}`)
+    fetch(`https://tropical-unthread-skilled.ngrok-free.dev/api/lineup?eventId=${eventId}`)
       .then(r => r.json())
       .then(d => {
         if (d.lineup?.players?.length > 0) {
@@ -224,7 +224,7 @@ export default function App() {
       setView('lineup');
       // 선발 라인업 자동 로드
       setLineupLoading(true);
-      fetch(`/api/sofascore?type=lineup&eventId=${m.id}`)
+      fetch(`https://tropical-unthread-skilled.ngrok-free.dev/api/lineup?eventId=${m.id}`)
         .then(r => r.json())
         .then(d => { if (d.lineup) setOfficialLineup(d.lineup); })
         .catch(() => {})
