@@ -1,145 +1,100 @@
 'use client';
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect } from "react";
 
-// ── 상수 ──────────────────────────────────────────────────────────────────────
-const BLUE = '#004B9A';
-const BLUE_L = '#1565C0';
-
-const FORMATIONS = {
-  '4-3-3': {
-    positions: [
-      { id: 'gk',  label: 'GK',  x: 50, y: 88 },
-      { id: 'lb',  label: 'LB',  x: 15, y: 70 },
-      { id: 'cb1', label: 'CB',  x: 35, y: 72 },
-      { id: 'cb2', label: 'CB',  x: 65, y: 72 },
-      { id: 'rb',  label: 'RB',  x: 85, y: 70 },
-      { id: 'lcm', label: 'CM',  x: 25, y: 52 },
-      { id: 'cm',  label: 'CM',  x: 50, y: 50 },
-      { id: 'rcm', label: 'CM',  x: 75, y: 52 },
-      { id: 'lw',  label: 'LW',  x: 18, y: 28 },
-      { id: 'st',  label: 'ST',  x: 50, y: 22 },
-      { id: 'rw',  label: 'RW',  x: 82, y: 28 },
-    ],
-  },
-  '4-4-2': {
-    positions: [
-      { id: 'gk',  label: 'GK', x: 50, y: 88 },
-      { id: 'lb',  label: 'LB', x: 15, y: 70 },
-      { id: 'cb1', label: 'CB', x: 33, y: 72 },
-      { id: 'cb2', label: 'CB', x: 67, y: 72 },
-      { id: 'rb',  label: 'RB', x: 85, y: 70 },
-      { id: 'lm',  label: 'LM', x: 15, y: 50 },
-      { id: 'cm1', label: 'CM', x: 37, y: 50 },
-      { id: 'cm2', label: 'CM', x: 63, y: 50 },
-      { id: 'rm',  label: 'RM', x: 85, y: 50 },
-      { id: 'st1', label: 'ST', x: 35, y: 25 },
-      { id: 'st2', label: 'ST', x: 65, y: 25 },
-    ],
-  },
-  '4-2-3-1': {
-    positions: [
-      { id: 'gk',  label: 'GK',  x: 50, y: 88 },
-      { id: 'lb',  label: 'LB',  x: 15, y: 72 },
-      { id: 'cb1', label: 'CB',  x: 35, y: 72 },
-      { id: 'cb2', label: 'CB',  x: 65, y: 72 },
-      { id: 'rb',  label: 'RB',  x: 85, y: 72 },
-      { id: 'dm1', label: 'DM',  x: 35, y: 58 },
-      { id: 'dm2', label: 'DM',  x: 65, y: 58 },
-      { id: 'lam', label: 'LAM', x: 18, y: 38 },
-      { id: 'cam', label: 'CAM', x: 50, y: 38 },
-      { id: 'ram', label: 'RAM', x: 82, y: 38 },
-      { id: 'st',  label: 'ST',  x: 50, y: 20 },
-    ],
-  },
-  '3-5-2': {
-    positions: [
-      { id: 'gk',  label: 'GK',  x: 50, y: 88 },
-      { id: 'cb1', label: 'CB',  x: 25, y: 72 },
-      { id: 'cb2', label: 'CB',  x: 50, y: 72 },
-      { id: 'cb3', label: 'CB',  x: 75, y: 72 },
-      { id: 'lwb', label: 'LWB', x: 10, y: 52 },
-      { id: 'cm1', label: 'CM',  x: 30, y: 52 },
-      { id: 'cm2', label: 'CM',  x: 50, y: 52 },
-      { id: 'cm3', label: 'CM',  x: 70, y: 52 },
-      { id: 'rwb', label: 'RWB', x: 90, y: 52 },
-      { id: 'st1', label: 'ST',  x: 35, y: 25 },
-      { id: 'st2', label: 'ST',  x: 65, y: 25 },
-    ],
-  },
+const FORMATION_LAYOUTS = {
+  "4-3-3": [
+    { pos: "GK", top: 87, left: 50 },
+    { pos: "RB", top: 68, left: 80 },
+    { pos: "CB", top: 68, left: 60 },
+    { pos: "CB", top: 68, left: 40 },
+    { pos: "LB", top: 68, left: 20 },
+    { pos: "CM", top: 48, left: 70 },
+    { pos: "CM", top: 48, left: 50 },
+    { pos: "CM", top: 48, left: 30 },
+    { pos: "RW", top: 25, left: 78 },
+    { pos: "ST", top: 18, left: 50 },
+    { pos: "LW", top: 25, left: 22 },
+  ],
+  "4-4-2": [
+    { pos: "GK", top: 87, left: 50 },
+    { pos: "RB", top: 68, left: 80 },
+    { pos: "CB", top: 68, left: 60 },
+    { pos: "CB", top: 68, left: 40 },
+    { pos: "LB", top: 68, left: 20 },
+    { pos: "RM", top: 48, left: 80 },
+    { pos: "CM", top: 48, left: 60 },
+    { pos: "CM", top: 48, left: 40 },
+    { pos: "LM", top: 48, left: 20 },
+    { pos: "ST", top: 20, left: 62 },
+    { pos: "ST", top: 20, left: 38 },
+  ],
+  "4-2-3-1": [
+    { pos: "GK",  top: 87, left: 50 },
+    { pos: "RB",  top: 70, left: 82 },
+    { pos: "CB",  top: 70, left: 62 },
+    { pos: "CB",  top: 70, left: 38 },
+    { pos: "LB",  top: 70, left: 18 },
+    { pos: "DM",  top: 55, left: 62 },
+    { pos: "DM",  top: 55, left: 38 },
+    { pos: "RAM", top: 35, left: 78 },
+    { pos: "CAM", top: 35, left: 50 },
+    { pos: "LAM", top: 35, left: 22 },
+    { pos: "ST",  top: 16, left: 50 },
+  ],
+  "3-4-3": [
+    { pos: "GK", top: 87, left: 50 },
+    { pos: "CB", top: 68, left: 67 },
+    { pos: "CB", top: 68, left: 50 },
+    { pos: "CB", top: 68, left: 33 },
+    { pos: "RM", top: 50, left: 82 },
+    { pos: "CM", top: 50, left: 62 },
+    { pos: "CM", top: 50, left: 38 },
+    { pos: "LM", top: 50, left: 18 },
+    { pos: "RW", top: 22, left: 75 },
+    { pos: "ST", top: 16, left: 50 },
+    { pos: "LW", top: 22, left: 25 },
+  ],
 };
 
-const POS_COLORS = { G: '#f6ad55', D: '#68d391', M: '#63b3ed', F: '#fc8181' };
+const posGroupLabel = { G: "골키퍼", D: "수비수", M: "미드필더", F: "공격수" };
+const posOrder = ["G", "D", "M", "F"];
+const PROXY = '/.netlify/functions/proxy';
 
-// ── localStorage 헬퍼 ─────────────────────────────────────────────────────────
 const store = {
   get: (k) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : null; } catch { return null; } },
   set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
 };
 
-// ── 피치 컴포넌트 ─────────────────────────────────────────────────────────────
-function Pitch({ formation, slots, onSlotClick, onSlotMove, selectedPlayer, onRemove, readOnly = false }) {
-  const ref = useRef(null);
-  const drag = useRef(null);
-  const fmData = FORMATIONS[formation] || FORMATIONS['4-3-3'];
-
-  const getXY = (cx, cy) => {
-    const r = ref.current.getBoundingClientRect();
-    return { x: Math.max(5, Math.min(95, ((cx - r.left) / r.width) * 100)), y: Math.max(5, Math.min(95, ((cy - r.top) / r.height) * 100)) };
-  };
-  const onMove = useCallback((e) => {
-    if (!drag.current || readOnly) return;
-    const { x, y } = getXY(e.touches ? e.touches[0].clientX : e.clientX, e.touches ? e.touches[0].clientY : e.clientY);
-    onSlotMove?.(drag.current, x, y);
-  }, [readOnly]);
-  const onUp = useCallback(() => { drag.current = null; }, []);
-
-  useEffect(() => {
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('mouseup', onUp);
-    window.addEventListener('touchmove', onMove, { passive: false });
-    window.addEventListener('touchend', onUp);
-    return () => {
-      window.removeEventListener('mousemove', onMove);
-      window.removeEventListener('mouseup', onUp);
-      window.removeEventListener('touchmove', onMove);
-      window.removeEventListener('touchend', onUp);
-    };
-  }, [onMove, onUp]);
-
+function PitchView({ slots, formation, onSlotClick, selectedSlot, interactive }) {
+  const layout = FORMATION_LAYOUTS[formation] || FORMATION_LAYOUTS["4-3-3"];
   return (
-    <div ref={ref} style={{ position: 'relative', width: '100%', paddingBottom: '145%', background: 'linear-gradient(180deg,#1a4d0a 0%,#2d5a1b 25%,#1e4a10 50%,#2d5a1b 75%,#1a4d0a 100%)', borderRadius: 12, overflow: 'hidden', border: '2px solid rgba(255,255,255,0.15)', userSelect: 'none', touchAction: 'none' }}>
-      <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.35 }} viewBox="0 0 100 145" preserveAspectRatio="none">
-        <rect x="3" y="3" width="94" height="139" fill="none" stroke="white" strokeWidth="0.8" />
-        <line x1="3" y1="72.5" x2="97" y2="72.5" stroke="white" strokeWidth="0.8" />
-        <circle cx="50" cy="72.5" r="12" fill="none" stroke="white" strokeWidth="0.8" />
-        <rect x="21" y="3" width="58" height="22" fill="none" stroke="white" strokeWidth="0.8" />
-        <rect x="31" y="3" width="38" height="11" fill="none" stroke="white" strokeWidth="0.8" />
-        <rect x="21" y="120" width="58" height="22" fill="none" stroke="white" strokeWidth="0.8" />
-        <rect x="31" y="131" width="38" height="11" fill="none" stroke="white" strokeWidth="0.8" />
-        <rect x="40" y="1" width="20" height="3" fill="none" stroke="white" strokeWidth="0.8" />
-        <rect x="40" y="141" width="20" height="3" fill="none" stroke="white" strokeWidth="0.8" />
+    <div style={{ position:"relative", width:"100%", paddingBottom:"140%", background:"linear-gradient(180deg,#1a4d2e 0%,#1e5c35 20%,#16a34a 40%,#1e5c35 60%,#1a4d2e 100%)", borderRadius:12, overflow:"hidden", border:"2px solid #22c55e", boxShadow:"0 0 40px rgba(34,197,94,0.15)" }}>
+      <svg style={{ position:"absolute", inset:0, width:"100%", height:"100%" }} viewBox="0 0 100 140">
+        <rect x="5" y="5" width="90" height="130" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="0.5" />
+        <line x1="5" y1="70" x2="95" y2="70" stroke="rgba(255,255,255,0.15)" strokeWidth="0.5" />
+        <circle cx="50" cy="70" r="10" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="0.5" />
+        <rect x="20" y="5" width="60" height="20" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="0.5" />
+        <rect x="32" y="5" width="36" height="8" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="0.5" />
+        <rect x="20" y="115" width="60" height="20" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="0.5" />
+        <rect x="32" y="127" width="36" height="8" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="0.5" />
       </svg>
-      {fmData.positions.map((fp) => {
-        const slot = slots[fp.id];
-        const px = slot?.customPos?.x ?? fp.x;
-        const py = slot?.customPos?.y ?? fp.y;
-        const player = slot?.player;
-        const isHl = selectedPlayer && !player;
-        const col = player ? (POS_COLORS[player.position?.[0]] || '#90cdf4') : isHl ? 'rgba(255,220,0,0.8)' : 'rgba(255,255,255,0.4)';
+      {layout.map((slot, i) => {
+        const slotData = slots[i] || {};
+        const player = slotData.player || null;
+        const isSelected = selectedSlot === i;
         return (
-          <div key={fp.id}
-            onMouseDown={(e) => { if (readOnly) return; e.preventDefault(); drag.current = fp.id; }}
-            onTouchStart={() => { if (readOnly) return; drag.current = fp.id; }}
-            onClick={() => { if (!drag.current) onSlotClick?.(fp.id); }}
-            style={{ position: 'absolute', left: `${px}%`, top: `${py}%`, transform: 'translate(-50%,-50%)', cursor: readOnly ? 'default' : player ? 'grab' : 'pointer', zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-            <div style={{ width: 42, height: 42, borderRadius: '50%', background: player ? `radial-gradient(circle at 35% 35%,${BLUE_L},${BLUE})` : isHl ? 'rgba(255,220,0,0.3)' : 'rgba(255,255,255,0.12)', border: `2.5px solid ${col}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', boxShadow: player ? `0 4px 12px rgba(0,0,0,0.5),0 0 8px ${col}40` : 'none', fontSize: 9, color: 'white', fontWeight: 700, position: 'relative' }}>
-              {player ? (<>
-                <span style={{ fontSize: 13, lineHeight: 1 }}>{player.number}</span>
-                <span style={{ fontSize: 7, opacity: 0.8 }}>{fp.label}</span>
-                {!readOnly && <div onClick={(e) => { e.stopPropagation(); onRemove?.(fp.id); }} style={{ position: 'absolute', top: -4, right: -4, width: 14, height: 14, borderRadius: '50%', background: '#e53e3e', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, zIndex: 20 }}>×</div>}
-              </>) : (<span style={{ opacity: 0.5, fontSize: 9 }}>{fp.label}</span>)}
+          <div key={i} onClick={() => interactive && onSlotClick && onSlotClick(i)}
+            style={{ position:"absolute", left:`${slot.left}%`, top:`${slot.top}%`, transform:"translate(-50%,-50%)", display:"flex", flexDirection:"column", alignItems:"center", cursor:interactive?"pointer":"default", zIndex:10 }}>
+            <div style={{ width:44, height:44, borderRadius:"50%", background:player?(isSelected?"linear-gradient(135deg,#fbbf24,#f59e0b)":"linear-gradient(135deg,#1d4ed8,#2563eb)"):(isSelected?"rgba(251,191,36,0.4)":"rgba(255,255,255,0.08)"), border:isSelected?"2.5px solid #fbbf24":(player?"2px solid rgba(255,255,255,0.6)":"2px dashed rgba(255,255,255,0.25)"), display:"flex", alignItems:"center", justifyContent:"center", boxShadow:player?"0 2px 12px rgba(0,0,0,0.4)":"none", flexShrink:0 }}>
+              {player ? (
+                <span style={{ fontSize:8, textAlign:"center", lineHeight:1.1, padding:"0 2px", color:"white", fontWeight:700 }}>
+                  {player.number}<br/>{(player.nameKo||player.name).slice(0,3)}
+                </span>
+              ) : (
+                <span style={{ opacity:0.4, fontSize:14, color:"white" }}>+</span>
+              )}
             </div>
-            {player && <div style={{ background: 'rgba(0,0,0,0.8)', color: 'white', fontSize: 9, fontWeight: 600, padding: '1px 5px', borderRadius: 4, whiteSpace: 'nowrap', maxWidth: 72, overflow: 'hidden', textOverflow: 'ellipsis' }}>{player.nameKo || player.name}</div>}
+            <div style={{ marginTop:2, fontSize:7, color:"rgba(255,255,255,0.55)", background:"rgba(0,0,0,0.35)", padding:"1px 3px", borderRadius:3 }}>{slot.pos}</div>
           </div>
         );
       })}
@@ -147,359 +102,339 @@ function Pitch({ formation, slots, onSlotClick, onSlotMove, selectedPlayer, onRe
   );
 }
 
-// ── 메인 앱 ───────────────────────────────────────────────────────────────────
-export default function App() {
-  const [username, setUsername] = useState('');
-  const [usernameSet, setUsernameSet] = useState(false);
-  const [view, setView] = useState('home'); // home | predict | lineup | leaderboard | predDetail
-  const [selectedMatch, setSelectedMatch] = useState(null);
-  const [viewingPred, setViewingPred] = useState(null);
+function MatchCard({ match, active, onClick }) {
+  const isPast = match.status === 'finished';
+  const resultLabel = match.result === 'W' ? '승' : match.result === 'D' ? '무' : match.result === 'L' ? '패' : null;
+  const resultColor = match.result === 'W' ? '#22c55e' : match.result === 'D' ? '#eab308' : '#ef4444';
+  const d = new Date(match.date);
+  const dateStr = `${d.getMonth()+1}/${d.getDate()}`;
+  const timeStr = d.toLocaleTimeString('ko-KR', { hour:'2-digit', minute:'2-digit' });
+  return (
+    <div onClick={onClick} style={{ padding:"10px 14px", borderRadius:10, border:active?"2px solid #3b82f6":"1.5px solid rgba(255,255,255,0.08)", background:active?"rgba(59,130,246,0.1)":"rgba(255,255,255,0.03)", cursor:"pointer" }}>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+        <div>
+          <div style={{ fontSize:10, color:"rgba(255,255,255,0.4)", marginBottom:2 }}>{match.round ? `${match.round}R` : ''} · {dateStr} {!isPast&&timeStr} · {match.home?"홈":"원정"}</div>
+          <div style={{ fontSize:13, fontWeight:700, color:"white" }}>vs {match.opponent}</div>
+        </div>
+        <div style={{ textAlign:"right" }}>
+          {isPast && match.score && <>
+            <div style={{ fontSize:16, fontWeight:900, color:resultColor, fontFamily:"monospace" }}>{match.score}</div>
+            <div style={{ fontSize:10, color:resultColor, fontWeight:700 }}>{resultLabel}</div>
+          </>}
+          {!isPast && <div style={{ fontSize:10, color:"#60a5fa", fontWeight:700 }}>예측 가능</div>}
+        </div>
+      </div>
+    </div>
+  );
+}
 
+export default function App() {
+  const [tab, setTab] = useState("predict");
+  const [nickname, setNickname] = useState("");
+  const [nicknameInput, setNicknameInput] = useState("");
   const [pastMatches, setPastMatches] = useState([]);
   const [upcomingMatches, setUpcomingMatches] = useState([]);
   const [scheduleLoading, setScheduleLoading] = useState(true);
-
-  const [officialLineup, setOfficialLineup] = useState(null); // { formation, players }
-  const [lineupLoading, setLineupLoading] = useState(false);
-
-  const [formation, setFormation] = useState('4-3-3');
-  const [slots, setSlots] = useState({});
-  const [selectedPlayer, setSelectedPlayer] = useState(null);
-  const [savedPred, setSavedPred] = useState(false);
-
-  const [allPreds, setAllPreds] = useState({});
   const [squad, setSquad] = useState([]);
-  const [posFilter, setPosFilter] = useState('ALL');
+  const [selectedMatch, setSelectedMatch] = useState(null);
+  const [formation, setFormation] = useState("4-3-3");
+  const [slots, setSlots] = useState([]);
+  const [selectedSlot, setSelectedSlot] = useState(null);
+  const [mySubmission, setMySubmission] = useState(null);
+  const [saveStatus, setSaveStatus] = useState("");
+  const [officialLineup, setOfficialLineup] = useState(null);
+  const [lineupLoading, setLineupLoading] = useState(false);
+  const [viewingMatch, setViewingMatch] = useState(null);
+  const [rankingData, setRankingData] = useState([]);
+  const [loadingRanking, setLoadingRanking] = useState(false);
 
-  // 초기 로드
   useEffect(() => {
-    const u = store.get('sw:user');
-    if (u) { setUsername(u); setUsernameSet(true); }
-    const p = store.get('sw:preds');
-    if (p) setAllPreds(p);
-
-    // Sofascore에서 일정 가져오기
-    fetch('/.netlify/functions/proxy?path=/api/schedule')
+    const nn = store.get('sw:nickname');
+    if (nn) setNickname(nn);
+    fetch(`${PROXY}?path=/api/schedule`)
       .then(r => r.json())
       .then(d => {
         setPastMatches(d.past || []);
         setUpcomingMatches(d.upcoming || []);
-
-        // 전체 선수단 가져오기
-        fetchLineupForSquad();
+        if (d.upcoming?.length > 0) setSelectedMatch(d.upcoming[0]);
       })
       .catch(() => {})
       .finally(() => setScheduleLoading(false));
+    fetch(`${PROXY}?path=/api/squad`)
+      .then(r => r.json())
+      .then(d => { if (d.players) setSquad(d.players); })
+      .catch(() => {});
   }, []);
 
-  // 전체 선수단 가져오기
-  const fetchLineupForSquad = () => {
-    fetch('/.netlify/functions/proxy?path=/api/squad')
-      .then(r => r.json())
-      .then(d => {
-        if (d.players?.length > 0) {
-          setSquad(d.players);
-          store.set('sw:squad', d.players);
-        }
-      })
-      .catch(() => {
-        const cached = store.get('sw:squad');
-        if (cached) setSquad(cached);
-      });
-  };
+  useEffect(() => {
+    if (!selectedMatch || !nickname) return;
+    resetSlots(formation);
+    const saved = store.get(`sw:pred_${selectedMatch.id}_${nickname}`);
+    if (saved) { setFormation(saved.formation); setSlots(saved.slots); setMySubmission(saved); }
+    else setMySubmission(null);
+  }, [selectedMatch?.id, nickname]);
 
-  // 경기 클릭
-  const handleMatchClick = (m) => {
-    setSelectedMatch(m);
-    setOfficialLineup(null);
-    const isPast = new Date(m.date) < new Date();
-    if (isPast) {
-      setView('lineup');
-      // 선발 라인업 자동 로드
-      setLineupLoading(true);
-      fetch(`/.netlify/functions/proxy?path=/api/lineup?eventId=${m.id}`)
-        .then(r => r.json())
-        .then(d => { if (d.lineup) setOfficialLineup(d.lineup); })
-        .catch(() => {})
-        .finally(() => setLineupLoading(false));
-    } else {
-      setView('predict');
-      const mine = allPreds[m.id]?.find(p => p.username === username);
-      if (mine) { setFormation(mine.formation); setSlots(mine.slots); setSavedPred(true); }
-      else { setSlots({}); setSavedPred(false); }
+  useEffect(() => { if (tab === "ranking") loadRanking(); }, [tab]);
+
+  function resetSlots(f) {
+    const layout = FORMATION_LAYOUTS[f] || FORMATION_LAYOUTS["4-3-3"];
+    setSlots(layout.map(l => ({ pos: l.pos, player: null })));
+    setSelectedSlot(null);
+  }
+
+  function handleFormationChange(f) { setFormation(f); resetSlots(f); }
+  function handleSlotClick(i) { setSelectedSlot(selectedSlot === i ? null : i); }
+
+  function handlePlayerSelect(player) {
+    if (selectedSlot === null) return;
+    const newSlots = slots.map((s, i) => {
+      if (i === selectedSlot) return { ...s, player };
+      if (s.player?.number === player.number) return { ...s, player: null };
+      return s;
+    });
+    setSlots(newSlots);
+    setSelectedSlot(null);
+  }
+
+  function countFilled() { return slots.filter(s => s.player).length; }
+
+  function handleSave() {
+    if (!nickname) { setSaveStatus("닉네임을 먼저 설정해주세요!"); return; }
+    if (countFilled() < 11) { setSaveStatus("선수 11명을 모두 배치해주세요!"); return; }
+    const data = { nickname, matchId: selectedMatch.id, formation, slots, savedAt: Date.now() };
+    store.set(`sw:pred_${selectedMatch.id}_${nickname}`, data);
+    const rankKey = `sw:rank_${nickname}`;
+    const existing = store.get(rankKey) || {};
+    existing[selectedMatch.id] = data;
+    store.set(rankKey, existing);
+    setMySubmission(data);
+    setSaveStatus("✅ 예측 저장 완료!");
+    setTimeout(() => setSaveStatus(""), 3000);
+  }
+
+  function handleSetNickname() {
+    if (!nicknameInput.trim()) return;
+    const nn = nicknameInput.trim().slice(0, 10);
+    setNickname(nn);
+    store.set('sw:nickname', nn);
+    setNicknameInput("");
+  }
+
+  function loadRanking() {
+    setLoadingRanking(true);
+    const entries = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key?.startsWith('sw:rank_')) {
+        const data = store.get(key);
+        if (data) entries.push({ nickname: key.replace('sw:rank_', ''), count: Object.values(data).length });
+      }
     }
-  };
+    setRankingData(entries);
+    setLoadingRanking(false);
+  }
 
-  // 예측 저장
-  const savePred = () => {
-    const updated = { ...allPreds };
-    const arr = [...(updated[selectedMatch.id] || [])];
-    const pred = { username, formation, slots, savedAt: new Date().toISOString() };
-    const idx = arr.findIndex(p => p.username === username);
-    if (idx >= 0) arr[idx] = pred; else arr.push(pred);
-    updated[selectedMatch.id] = arr;
-    setAllPreds(updated);
-    store.set('sw:preds', updated);
-    setSavedPred(true);
-  };
+  async function handleViewLineup(match) {
+    setViewingMatch(match);
+    setOfficialLineup(null);
+    setLineupLoading(true);
+    try {
+      const r = await fetch(`${PROXY}?path=/api/lineup?eventId=${match.id}`);
+      const d = await r.json();
+      if (d.lineup) setOfficialLineup(d.lineup);
+    } catch {}
+    setLineupLoading(false);
+  }
 
-  // 일치율 계산
-  const calcScore = (pred, official) => {
-    if (!official?.players) return null;
-    const officialNames = official.players.map(p => p.name.toLowerCase());
-    const predNames = Object.values(pred.slots).filter(s => s.player).map(s => (s.player.name || '').toLowerCase());
-    let hit = 0;
-    predNames.forEach(n => { if (officialNames.some(o => o.includes(n.split(' ').pop()) || n.includes(o.split(' ').pop()))) hit++; });
-    return Math.round((hit / 11) * 100);
-  };
+  const squadByPos = {};
+  posOrder.forEach(p => { squadByPos[p] = []; });
+  squad.forEach(p => { const g = p.position?.[0]||'M'; if (squadByPos[g]) squadByPos[g].push(p); });
+  const usedNumbers = new Set(slots.filter(s => s.player).map(s => s.player.number));
 
-  const matchPreds = selectedMatch ? (allPreds[selectedMatch.id] || []) : [];
-  const rankedPreds = [...matchPreds].map(p => ({ ...p, score: calcScore(p, officialLineup) })).sort((a, b) => {
-    if (a.score === null && b.score === null) return 0;
-    if (a.score === null) return 1;
-    if (b.score === null) return -1;
-    return b.score - a.score;
-  });
-
-  const assignedNums = new Set(Object.values(slots).filter(s => s.player).map(s => s.player.number));
-  const filteredSquad = squad.filter(p => posFilter === 'ALL' || p.position?.[0] === posFilter.replace('GK', 'G').replace('DF', 'D').replace('MF', 'M').replace('FW', 'F'));
-
-  // ── 닉네임 화면 ─────────────────────────────────────────────────────────────
-  if (!usernameSet) return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg,#0a0e1a,#0d1b2a)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 20, padding: '48px 40px', width: 'min(90%,360px)', textAlign: 'center' }}>
-        <div style={{ width: 72, height: 72, borderRadius: '50%', background: `radial-gradient(circle,${BLUE_L},${BLUE})`, margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32, boxShadow: '0 8px 32px rgba(0,75,154,0.5)' }}>⚽</div>
-        <h1 style={{ fontSize: 22, fontWeight: 800, marginBottom: 4 }}>수원삼성 블루윙즈</h1>
-        <p style={{ color: '#aaa', fontSize: 13, marginBottom: 24 }}>선발명단 예측 게임</p>
-        <input type="text" placeholder="닉네임을 입력하세요" value={username} onChange={e => setUsername(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && username.trim() && (store.set('sw:user', username.trim()), setUsernameSet(true))}
-          style={{ width: '100%', padding: '12px 16px', borderRadius: 10, border: '1.5px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.07)', color: 'white', fontSize: 15, outline: 'none', marginBottom: 12 }} />
-        <button onClick={() => { if (!username.trim()) return; store.set('sw:user', username.trim()); setUsernameSet(true); }}
-          style={{ width: '100%', padding: 13, borderRadius: 10, background: `linear-gradient(135deg,${BLUE_L},${BLUE})`, border: 'none', color: 'white', fontSize: 15, fontWeight: 700, boxShadow: '0 4px 20px rgba(0,75,154,0.4)' }}>
-          시작하기
-        </button>
-      </div>
-    </div>
-  );
-
-  // ── 메인 화면 ───────────────────────────────────────────────────────────────
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg,#0a0e1a,#0d1b2a)' }}>
-      {/* 헤더 */}
-      <div style={{ background: 'rgba(0,0,0,0.4)', borderBottom: '1px solid rgba(255,255,255,0.08)', padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 100 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }} onClick={() => { setView('home'); setSelectedMatch(null); }}>
-          <div style={{ width: 32, height: 32, borderRadius: '50%', background: `radial-gradient(circle,${BLUE_L},${BLUE})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>⚽</div>
+    <div style={{ minHeight:"100vh", background:"#0a0e1a", color:"white", fontFamily:"'Noto Sans KR','Apple SD Gothic Neo',sans-serif" }}>
+      <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet" />
+
+      <div style={{ background:"linear-gradient(135deg,#1e3a8a 0%,#1d4ed8 50%,#2563eb 100%)", padding:"16px 20px 0", boxShadow:"0 4px 24px rgba(0,0,0,0.4)" }}>
+        <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:12 }}>
+          <div style={{ width:42, height:42, borderRadius:"50%", background:"linear-gradient(135deg,#1e40af,#3b82f6)", border:"2px solid #60a5fa", display:"flex", alignItems:"center", justifyContent:"center", fontSize:20 }}>⚽</div>
           <div>
-            <div style={{ fontSize: 13, fontWeight: 800 }}>수원삼성 블루윙즈</div>
-            <div style={{ fontSize: 9, color: '#aaa' }}>선발명단 예측 게임</div>
+            <div style={{ fontSize:18, fontWeight:900, letterSpacing:"-0.02em" }}>수원삼성 선발 예측</div>
+            <div style={{ fontSize:11, color:"rgba(255,255,255,0.6)" }}>2026 K리그2 · 이정효 감독</div>
+          </div>
+          <div style={{ marginLeft:"auto" }}>
+            {nickname ? (
+              <div style={{ fontSize:12, background:"rgba(255,255,255,0.15)", padding:"4px 10px", borderRadius:20, fontWeight:700 }}>👤 {nickname}</div>
+            ) : (
+              <div style={{ display:"flex", gap:6 }}>
+                <input value={nicknameInput} onChange={e=>setNicknameInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleSetNickname()} placeholder="닉네임 입력"
+                  style={{ background:"rgba(255,255,255,0.15)", border:"1px solid rgba(255,255,255,0.3)", borderRadius:8, padding:"5px 10px", color:"white", fontSize:12, width:90, outline:"none" }} />
+                <button onClick={handleSetNickname} style={{ background:"#3b82f6", border:"none", borderRadius:8, padding:"5px 10px", color:"white", fontSize:11, cursor:"pointer", fontWeight:700 }}>확인</button>
+              </div>
+            )}
           </div>
         </div>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          {view !== 'home' && <button onClick={() => { setView('home'); setSelectedMatch(null); }} style={{ padding: '5px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.1)', color: '#aaa', fontSize: 11 }}>← 홈</button>}
-          <span style={{ fontSize: 11, color: '#aaa' }}>👤 {username}</span>
+        <div style={{ display:"flex" }}>
+          {[{id:"predict",label:"📋 선발 예측"},{id:"history",label:"📅 이전 라인업"},{id:"ranking",label:"🏆 순위표"}].map(t => (
+            <button key={t.id} onClick={()=>setTab(t.id)} style={{ flex:1, padding:"10px 0", background:"none", border:"none", borderBottom:tab===t.id?"3px solid #fbbf24":"3px solid transparent", color:tab===t.id?"#fbbf24":"rgba(255,255,255,0.55)", fontSize:12, fontWeight:tab===t.id?700:500, cursor:"pointer", fontFamily:"'Noto Sans KR',sans-serif" }}>{t.label}</button>
+          ))}
         </div>
       </div>
 
-      <div style={{ padding: 16, maxWidth: 800, margin: '0 auto' }}>
+      <div style={{ padding:16, maxWidth:480, margin:"0 auto" }}>
 
-        {/* ── 홈: 경기 목록 ── */}
-        {view === 'home' && (
-          <>
-            {scheduleLoading && <div style={{ textAlign: 'center', padding: 40, color: '#90cdf4' }}>⚽ 경기 일정 불러오는 중...</div>}
-
+        {tab === "predict" && (
+          <div>
+            {scheduleLoading && <div style={{ textAlign:"center", padding:40, color:"rgba(255,255,255,0.4)" }}>⚽ 경기 일정 불러오는 중...</div>}
             {!scheduleLoading && upcomingMatches.length > 0 && (
-              <div style={{ marginBottom: 24 }}>
-                <div style={{ fontSize: 11, color: '#90cdf4', fontWeight: 700, letterSpacing: 1, marginBottom: 10 }}>📅 예정 경기</div>
-                {upcomingMatches.map(m => {
-                  const d = new Date(m.date);
-                  return (
-                    <div key={m.id} onClick={() => handleMatchClick(m)} style={{ padding: '14px 16px', borderRadius: 12, background: 'rgba(0,75,154,0.15)', border: '1.5px solid rgba(0,75,154,0.35)', cursor: 'pointer', marginBottom: 8 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div>
-                          <div style={{ fontSize: 10, color: '#aaa', marginBottom: 3 }}>{m.round ? `${m.round}R · ` : ''}{d.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })} {d.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</div>
-                          <div style={{ fontSize: 14, fontWeight: 700 }}>{m.home ? '수원삼성' : m.opponent} vs {m.home ? m.opponent : '수원삼성'}</div>
-                          <div style={{ fontSize: 10, color: '#aaa', marginTop: 2 }}>{m.home ? '홈' : '원정'}</div>
-                        </div>
-                        <div style={{ fontSize: 11, color: '#90cdf4', background: 'rgba(144,205,244,0.1)', padding: '3px 10px', borderRadius: 20 }}>예측하기 →</div>
-                      </div>
-                    </div>
-                  );
-                })}
+              <div style={{ marginBottom:14 }}>
+                <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginBottom:8, textTransform:"uppercase", letterSpacing:"0.1em" }}>예측할 경기 선택</div>
+                <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+                  {upcomingMatches.slice(0,5).map(m => <MatchCard key={m.id} match={m} active={selectedMatch?.id===m.id} onClick={()=>setSelectedMatch(m)} />)}
+                </div>
               </div>
             )}
-
-            {!scheduleLoading && pastMatches.length > 0 && (
-              <div>
-                <div style={{ fontSize: 11, color: '#aaa', fontWeight: 700, letterSpacing: 1, marginBottom: 10 }}>📋 이전 경기</div>
-                {pastMatches.map(m => {
-                  const d = new Date(m.date);
-                  return (
-                    <div key={m.id} onClick={() => handleMatchClick(m)} style={{ padding: '12px 16px', borderRadius: 12, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', cursor: 'pointer', marginBottom: 7 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div>
-                          <div style={{ fontSize: 10, color: '#666', marginBottom: 2 }}>{m.round ? `${m.round}R · ` : ''}{d.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}</div>
-                          <div style={{ fontSize: 13, fontWeight: 700 }}>{m.home ? '수원삼성' : m.opponent} vs {m.home ? m.opponent : '수원삼성'}</div>
-                        </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
-                          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                            {m.score && <span style={{ fontSize: 14, fontWeight: 800 }}>{m.score}</span>}
-                            {m.result && <span style={{ fontSize: 11, fontWeight: 700, padding: '1px 6px', borderRadius: 20, color: m.result === 'W' ? '#68d391' : m.result === 'D' ? '#f6ad55' : '#fc8181', background: m.result === 'W' ? 'rgba(104,211,145,0.15)' : m.result === 'D' ? 'rgba(246,173,85,0.15)' : 'rgba(252,129,129,0.15)' }}>{m.result === 'W' ? '승' : m.result === 'D' ? '무' : '패'}</span>}
-                          </div>
-                          <div style={{ fontSize: 10, color: '#555' }}>라인업 · 순위 →</div>
+            {selectedMatch && <>
+              <div style={{ marginBottom:12 }}>
+                <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginBottom:8, textTransform:"uppercase", letterSpacing:"0.1em" }}>포메이션</div>
+                <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+                  {Object.keys(FORMATION_LAYOUTS).map(f => (
+                    <button key={f} onClick={()=>handleFormationChange(f)} style={{ flex:1, padding:"8px 0", minWidth:70, background:formation===f?"#1d4ed8":"rgba(255,255,255,0.05)", border:formation===f?"1.5px solid #3b82f6":"1.5px solid rgba(255,255,255,0.1)", borderRadius:8, color:"white", fontSize:12, fontWeight:700, cursor:"pointer" }}>{f}</button>
+                  ))}
+                </div>
+              </div>
+              <div style={{ marginBottom:12 }}>
+                <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginBottom:8, textTransform:"uppercase", letterSpacing:"0.1em" }}>작전판 ({countFilled()}/11) · 포지션 클릭 후 선수 선택</div>
+                <PitchView slots={slots} formation={formation} onSlotClick={handleSlotClick} selectedSlot={selectedSlot} interactive={true} />
+              </div>
+              {selectedSlot !== null && (
+                <div style={{ marginBottom:12, background:"rgba(255,255,255,0.04)", border:"1.5px solid rgba(59,130,246,0.3)", borderRadius:12, padding:12 }}>
+                  <div style={{ fontSize:11, color:"#60a5fa", marginBottom:10, fontWeight:700 }}>[{slots[selectedSlot]?.pos}] 포지션 선수 선택</div>
+                  {posOrder.map(posKey => {
+                    const players = squadByPos[posKey] || [];
+                    if (!players.length) return null;
+                    return (
+                      <div key={posKey} style={{ marginBottom:10 }}>
+                        <div style={{ fontSize:10, color:"rgba(255,255,255,0.35)", marginBottom:5 }}>{posGroupLabel[posKey]}</div>
+                        <div style={{ display:"flex", flexWrap:"wrap", gap:5 }}>
+                          {players.map(p => {
+                            const inUse = usedNumbers.has(p.number) && slots[selectedSlot]?.player?.number !== p.number;
+                            return (
+                              <button key={p.number} onClick={()=>!inUse&&handlePlayerSelect(p)} style={{ padding:"5px 8px", background:inUse?"rgba(255,255,255,0.03)":"rgba(29,78,216,0.3)", border:inUse?"1px solid rgba(255,255,255,0.06)":"1px solid rgba(59,130,246,0.4)", borderRadius:6, color:inUse?"rgba(255,255,255,0.25)":"white", fontSize:11, cursor:inUse?"default":"pointer", fontWeight:600, textDecoration:inUse?"line-through":"none", fontFamily:"'Noto Sans KR',sans-serif" }}>
+                                {p.number} {p.nameKo||p.name}
+                              </button>
+                            );
+                          })}
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
+              )}
+              <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+                <button onClick={handleSave} style={{ width:"100%", padding:14, background:countFilled()===11?"linear-gradient(135deg,#1d4ed8,#2563eb)":"rgba(255,255,255,0.05)", border:"none", borderRadius:10, color:"white", fontSize:14, fontWeight:700, cursor:"pointer", boxShadow:countFilled()===11?"0 4px 16px rgba(37,99,235,0.4)":"none" }}>
+                  {mySubmission?"🔄 예측 수정하기":"✅ 예측 제출하기"} ({countFilled()}/11)
+                </button>
+                {saveStatus && <div style={{ textAlign:"center", fontSize:12, padding:8, color:saveStatus.includes("✅")?"#22c55e":"#fbbf24" }}>{saveStatus}</div>}
               </div>
-            )}
-          </>
+              {mySubmission && (
+                <div style={{ marginTop:10, padding:"10px 14px", background:"rgba(34,197,94,0.08)", border:"1px solid rgba(34,197,94,0.2)", borderRadius:8, fontSize:11, color:"#4ade80" }}>
+                  ✅ 예측 완료! 경기 후 결과에 따라 점수가 반영됩니다.
+                  <div style={{ color:"rgba(255,255,255,0.4)", marginTop:3 }}>{mySubmission.formation} · {new Date(mySubmission.savedAt).toLocaleString("ko-KR",{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"})}</div>
+                </div>
+              )}
+            </>}
+          </div>
         )}
 
-        {/* ── 이전 경기: 라인업 / 순위 탭 ── */}
-        {(view === 'lineup' || view === 'leaderboard') && selectedMatch && (
-          <>
-            <div style={{ display: 'flex', gap: 0, marginBottom: 16, background: 'rgba(255,255,255,0.05)', borderRadius: 10, padding: 3 }}>
-              {[['lineup', '📋 선발 라인업'], ['leaderboard', '🏆 예측 순위']].map(([v, label]) => (
-                <button key={v} onClick={() => setView(v)} style={{ flex: 1, padding: 9, borderRadius: 8, border: 'none', background: view === v ? 'rgba(0,75,154,0.6)' : 'transparent', color: view === v ? 'white' : '#666', fontWeight: view === v ? 700 : 400, fontSize: 13 }}>{label}</button>
-              ))}
-            </div>
-
-            {/* 선발 라인업 */}
-            {view === 'lineup' && (
+        {tab === "history" && (
+          <div>
+            <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginBottom:12, textTransform:"uppercase", letterSpacing:"0.1em" }}>이전 경기 실제 선발</div>
+            {viewingMatch ? (
               <div>
-                <div style={{ background: 'rgba(0,75,154,0.2)', border: '1px solid rgba(0,75,154,0.4)', borderRadius: 10, padding: '12px 14px', marginBottom: 14 }}>
-                  <div style={{ fontSize: 11, color: '#aaa', marginBottom: 3 }}>{selectedMatch.round ? `${selectedMatch.round}R · ` : ''}{new Date(selectedMatch.date).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })}</div>
-                  <div style={{ fontSize: 15, fontWeight: 800 }}>{selectedMatch.home ? '수원삼성' : selectedMatch.opponent} vs {selectedMatch.home ? selectedMatch.opponent : '수원삼성'}</div>
-                  <div style={{ display: 'flex', gap: 8, marginTop: 6, alignItems: 'center' }}>
-                    {selectedMatch.score && <span style={{ fontSize: 16, fontWeight: 800 }}>{selectedMatch.score}</span>}
-                    {selectedMatch.result && <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 20, color: selectedMatch.result === 'W' ? '#68d391' : selectedMatch.result === 'D' ? '#f6ad55' : '#fc8181', background: selectedMatch.result === 'W' ? 'rgba(104,211,145,0.15)' : 'rgba(252,129,129,0.15)' }}>{selectedMatch.result === 'W' ? '승' : selectedMatch.result === 'D' ? '무' : '패'}</span>}
+                <div style={{ background:"rgba(255,255,255,0.04)", border:"1.5px solid rgba(255,255,255,0.1)", borderRadius:12, overflow:"hidden", marginBottom:8 }}>
+                  <div style={{ padding:"12px 14px", borderBottom:"1px solid rgba(255,255,255,0.06)", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                    <div>
+                      <div style={{ fontSize:10, color:"rgba(255,255,255,0.4)", marginBottom:2 }}>{viewingMatch.round}R · {new Date(viewingMatch.date).toLocaleDateString('ko-KR',{month:'short',day:'numeric'})} · {viewingMatch.home?"홈":"원정"}</div>
+                      <div style={{ fontSize:14, fontWeight:700 }}>vs {viewingMatch.opponent}</div>
+                    </div>
+                    <div style={{ textAlign:"right" }}>
+                      {viewingMatch.score && <div style={{ fontSize:18, fontWeight:900, color:viewingMatch.result==='W'?'#22c55e':viewingMatch.result==='D'?'#eab308':'#ef4444', fontFamily:"monospace" }}>{viewingMatch.score}</div>}
+                      {viewingMatch.result && <div style={{ fontSize:11, fontWeight:700, color:viewingMatch.result==='W'?'#22c55e':viewingMatch.result==='D'?'#eab308':'#ef4444' }}>{viewingMatch.result==='W'?'승':viewingMatch.result==='D'?'무':'패'}</div>}
+                    </div>
+                  </div>
+                  <div style={{ padding:12 }}>
+                    {lineupLoading && <div style={{ textAlign:"center", padding:20, color:"rgba(255,255,255,0.4)" }}>선발 명단 불러오는 중...</div>}
+                    {!lineupLoading && !officialLineup && <div style={{ textAlign:"center", padding:20, color:"rgba(255,255,255,0.3)" }}>선발 명단 데이터가 없습니다.</div>}
+                    {!lineupLoading && officialLineup && (() => {
+                      const fmKey = officialLineup.formation?.replace(/\s/g,'-')||'4-3-3';
+                      const layout = FORMATION_LAYOUTS[fmKey]||FORMATION_LAYOUTS['4-3-3'];
+                      const readonlySlots = layout.map((pos,i) => ({ pos:pos.pos, player:officialLineup.players[i]||null }));
+                      return <>
+                        <div style={{ fontSize:10, color:"rgba(255,255,255,0.35)", marginBottom:8 }}>{officialLineup.formation} 포메이션</div>
+                        <PitchView formation={fmKey} slots={readonlySlots} interactive={false} />
+                        <div style={{ marginTop:10, display:"flex", flexWrap:"wrap", gap:5 }}>
+                          {officialLineup.players.map((p,i) => (
+                            <div key={i} style={{ display:"flex", alignItems:"center", gap:4, background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:8, padding:"4px 8px" }}>
+                              <span style={{ fontSize:9, color:"#888" }}>#{p.number}</span>
+                              <span style={{ fontSize:11, fontWeight:600 }}>{p.nameKo||p.name}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </>;
+                    })()}
                   </div>
                 </div>
-
-                {lineupLoading && <div style={{ textAlign: 'center', padding: 40, color: '#90cdf4' }}>선발 명단 불러오는 중...</div>}
-                {!lineupLoading && !officialLineup && <div style={{ textAlign: 'center', padding: 32, color: '#666' }}>선발 명단 데이터가 없습니다.</div>}
-                {!lineupLoading && officialLineup && (
-                  <>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, alignItems: 'center' }}>
-                      <div style={{ fontSize: 12, color: '#aaa', fontWeight: 600 }}>실제 선발 라인업</div>
-                      <span style={{ fontSize: 11, color: '#90cdf4', background: 'rgba(144,205,244,0.1)', padding: '2px 8px', borderRadius: 20 }}>{officialLineup.formation}</span>
-                    </div>
-                    {/* 피치 표시 */}
-                    {(() => {
-                      const fmKey = officialLineup.formation?.replace(/\s/g, '-') || '4-3-3';
-                      const fm = FORMATIONS[fmKey] || FORMATIONS['4-3-3'];
-                      const readonlySlots = {};
-                      fm.positions.forEach((pos, i) => {
-                        const p = officialLineup.players[i];
-                        if (p) readonlySlots[pos.id] = { player: { ...p, position: p.position } };
-                      });
-                      return <Pitch formation={fmKey} slots={readonlySlots} readOnly />;
-                    })()}
-                    <div style={{ marginTop: 12, display: 'flex', flexWrap: 'wrap', gap: 5 }}>
-                      {officialLineup.players.map((p, i) => (
-                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: '4px 8px' }}>
-                          <span style={{ fontSize: 10, fontWeight: 700, color: POS_COLORS[p.position?.[0]] || '#aaa' }}>{p.position}</span>
-                          <span style={{ fontSize: 10, color: '#888' }}>#{p.number}</span>
-                          <span style={{ fontSize: 11, fontWeight: 600 }}>{p.nameKo || p.name}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </>
-                )}
+                <button onClick={()=>setViewingMatch(null)} style={{ width:"100%", padding:10, background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:8, color:"rgba(255,255,255,0.5)", fontSize:12, cursor:"pointer" }}>← 목록으로</button>
               </div>
-            )}
-
-            {/* 예측 순위 */}
-            {view === 'leaderboard' && (
-              <div>
-                {!officialLineup && (
-                  <div style={{ padding: 14, background: 'rgba(246,173,85,0.08)', border: '1px solid rgba(246,173,85,0.2)', borderRadius: 10, marginBottom: 12, fontSize: 12, color: '#f6ad55' }}>
-                    ⏳ 선발 라인업 탭에서 먼저 명단을 확인하면 일치율이 계산됩니다.
-                  </div>
-                )}
-                {rankedPreds.length === 0 ? (
-                  <div style={{ textAlign: 'center', color: '#666', padding: 24, fontSize: 13 }}>아직 예측한 참여자가 없습니다.</div>
-                ) : rankedPreds.map((p, i) => (
-                  <div key={p.username} onClick={() => { setViewingPred(p); setView('predDetail'); }}
-                    style={{ display: 'flex', alignItems: 'center', padding: '10px 14px', borderRadius: 10, background: i === 0 ? 'rgba(255,215,0,0.08)' : 'rgba(255,255,255,0.04)', border: `1px solid ${i === 0 ? 'rgba(255,215,0,0.25)' : 'rgba(255,255,255,0.07)'}`, marginBottom: 6, gap: 10, cursor: 'pointer' }}>
-                    <div style={{ width: 28, height: 28, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 12, background: i === 0 ? 'linear-gradient(135deg,#f6d365,#fda085)' : i === 1 ? 'linear-gradient(135deg,#c0c0c0,#888)' : i === 2 ? 'linear-gradient(135deg,#cd7f32,#8b4513)' : 'rgba(255,255,255,0.1)' }}>{i + 1}</div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 13, fontWeight: 600 }}>{p.username}</div>
-                      <div style={{ fontSize: 10, color: '#aaa' }}>{p.formation}</div>
+            ) : (
+              <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+                {pastMatches.length===0 && <div style={{ textAlign:"center", padding:24, color:"rgba(255,255,255,0.3)" }}>이전 경기 데이터가 없습니다.</div>}
+                {pastMatches.slice(0,10).map(m => (
+                  <div key={m.id} onClick={()=>handleViewLineup(m)} style={{ background:"rgba(255,255,255,0.03)", border:"1.5px solid rgba(255,255,255,0.08)", borderRadius:12, padding:"12px 14px", cursor:"pointer", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                    <div>
+                      <div style={{ fontSize:10, color:"rgba(255,255,255,0.4)", marginBottom:2 }}>{m.round}R · {new Date(m.date).toLocaleDateString('ko-KR',{month:'short',day:'numeric'})} · {m.home?"홈":"원정"}</div>
+                      <div style={{ fontSize:14, fontWeight:700 }}>vs {m.opponent}</div>
                     </div>
-                    <div>{p.score !== null ? <div style={{ fontSize: 20, fontWeight: 800, color: p.score >= 70 ? '#68d391' : p.score >= 40 ? '#f6ad55' : '#fc8181' }}>{p.score}%</div> : <div style={{ fontSize: 11, color: '#555' }}>집계 전</div>}</div>
-                    <div style={{ fontSize: 12, color: '#666' }}>›</div>
+                    <div style={{ textAlign:"right", display:"flex", flexDirection:"column", alignItems:"flex-end", gap:2 }}>
+                      {m.score && <div style={{ fontSize:16, fontWeight:900, color:m.result==='W'?'#22c55e':m.result==='D'?'#eab308':'#ef4444', fontFamily:"monospace" }}>{m.score}</div>}
+                      {m.result && <div style={{ fontSize:10, fontWeight:700, color:m.result==='W'?'#22c55e':m.result==='D'?'#eab308':'#ef4444' }}>{m.result==='W'?'승':m.result==='D'?'무':'패'}</div>}
+                      <div style={{ fontSize:9, color:"#60a5fa" }}>라인업 보기 →</div>
+                    </div>
                   </div>
                 ))}
               </div>
             )}
-          </>
-        )}
-
-        {/* ── 예측 작전판 ── */}
-        {view === 'predict' && selectedMatch && (
-          <div>
-            <div style={{ background: 'rgba(0,75,154,0.2)', border: '1px solid rgba(0,75,154,0.4)', borderRadius: 10, padding: '12px 14px', marginBottom: 14 }}>
-              <div style={{ fontSize: 11, color: '#aaa', marginBottom: 3 }}>{selectedMatch.round ? `${selectedMatch.round}R · ` : ''}{new Date(selectedMatch.date).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })} {new Date(selectedMatch.date).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</div>
-              <div style={{ fontSize: 15, fontWeight: 800 }}>{selectedMatch.home ? '수원삼성' : selectedMatch.opponent} vs {selectedMatch.home ? selectedMatch.opponent : '수원삼성'}</div>
-            </div>
-
-            {/* 포메이션 선택 */}
-            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
-              {Object.keys(FORMATIONS).map(f => (
-                <button key={f} onClick={() => { setFormation(f); setSlots({}); }} style={{ padding: '5px 12px', borderRadius: 20, border: `1.5px solid ${formation === f ? BLUE : 'rgba(255,255,255,0.12)'}`, background: formation === f ? 'rgba(0,75,154,0.4)' : 'rgba(255,255,255,0.05)', color: formation === f ? 'white' : '#aaa', fontSize: 11, fontWeight: formation === f ? 700 : 400 }}>{f}</button>
-              ))}
-            </div>
-
-            <div style={{ fontSize: 11, color: '#aaa', marginBottom: 6, fontWeight: 600 }}>작전판 <span style={{ color: '#555', fontWeight: 400 }}>선수 선택 후 슬롯 탭 · 드래그로 이동</span></div>
-            <Pitch formation={formation} slots={slots}
-              onSlotClick={id => { if (selectedPlayer) { setSlots(s => ({ ...s, [id]: { ...s[id], player: selectedPlayer } })); setSelectedPlayer(null); } }}
-              onSlotMove={(id, x, y) => setSlots(s => ({ ...s, [id]: { ...s[id], customPos: { x, y } } }))}
-              selectedPlayer={selectedPlayer}
-              onRemove={id => setSlots(s => { const n = { ...s }; if (n[id]) n[id] = { ...n[id], player: null }; return n; })} />
-
-            {/* 선수 목록 */}
-            <div style={{ marginTop: 14 }}>
-              <div style={{ display: 'flex', gap: 5, marginBottom: 8, flexWrap: 'wrap' }}>
-                {['ALL', 'GK', 'DF', 'MF', 'FW'].map(p => (
-                  <button key={p} onClick={() => setPosFilter(p)} style={{ padding: '3px 10px', borderRadius: 20, border: `1px solid ${posFilter === p ? BLUE : 'rgba(255,255,255,0.1)'}`, background: posFilter === p ? 'rgba(0,75,154,0.3)' : 'transparent', color: posFilter === p ? 'white' : '#888', fontSize: 11 }}>{p}</button>
-                ))}
-              </div>
-              {squad.length === 0 && <div style={{ color: '#555', fontSize: 12, padding: 8 }}>선수 데이터를 불러오는 중입니다. 이전 경기를 먼저 클릭해주세요.</div>}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(95px,1fr))', gap: 5, maxHeight: 260, overflowY: 'auto' }}>
-                {filteredSquad.map(p => {
-                  const isSel = selectedPlayer?.number === p.number;
-                  const isAss = assignedNums.has(p.number);
-                  const col = POS_COLORS[p.position?.[0]] || '#aaa';
-                  return (
-                    <div key={p.number} onClick={() => !isAss && setSelectedPlayer(isSel ? null : p)} style={{ padding: '6px 8px', borderRadius: 8, cursor: isAss ? 'not-allowed' : 'pointer', opacity: isAss ? 0.4 : 1, background: isSel ? 'rgba(255,220,0,0.15)' : 'rgba(255,255,255,0.05)', border: `1px solid ${isSel ? 'rgba(255,220,0,0.5)' : 'rgba(255,255,255,0.08)'}` }}>
-                      <div style={{ display: 'flex', gap: 4, alignItems: 'center', marginBottom: 2 }}>
-                        <span style={{ fontSize: 9, fontWeight: 700, color: col, background: `${col}20`, padding: '1px 3px', borderRadius: 3 }}>{p.position}</span>
-                        <span style={{ fontSize: 9, color: '#666' }}>#{p.number}</span>
-                      </div>
-                      <div style={{ fontSize: 11, fontWeight: 600, lineHeight: 1.2 }}>{p.nameKo || p.name}</div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            <button onClick={savePred} style={{ width: '100%', padding: 13, borderRadius: 10, marginTop: 14, background: savedPred ? 'rgba(72,187,120,0.2)' : `linear-gradient(135deg,${BLUE_L},${BLUE})`, border: savedPred ? '1.5px solid rgba(72,187,120,0.4)' : 'none', color: 'white', fontWeight: 700, fontSize: 14 }}>
-              {savedPred ? '✅ 예측 저장완료' : '💾 예측 저장하기'}
-            </button>
           </div>
         )}
 
-        {/* ── 예측 상세 ── */}
-        {view === 'predDetail' && viewingPred && (
+        {tab === "ranking" && (
           <div>
-            <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 10, padding: '12px 14px', marginBottom: 14 }}>
-              <div style={{ fontSize: 12, color: '#aaa', marginBottom: 2 }}>{viewingPred.username}의 예측</div>
-              <div style={{ fontSize: 11, color: '#666' }}>{viewingPred.formation} · {new Date(viewingPred.savedAt).toLocaleString('ko-KR')}</div>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
+              <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", textTransform:"uppercase", letterSpacing:"0.1em" }}>예측 순위표</div>
+              <button onClick={loadRanking} style={{ background:"rgba(255,255,255,0.07)", border:"1px solid rgba(255,255,255,0.12)", borderRadius:6, padding:"5px 10px", color:"rgba(255,255,255,0.6)", fontSize:11, cursor:"pointer" }}>🔄 새로고침</button>
             </div>
-            <Pitch formation={viewingPred.formation} slots={viewingPred.slots} readOnly />
-            <button onClick={() => setView('leaderboard')} style={{ width: '100%', marginTop: 14, padding: 12, borderRadius: 10, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#aaa', fontSize: 13 }}>← 순위로 돌아가기</button>
+            {loadingRanking ? (
+              <div style={{ textAlign:"center", padding:40, color:"rgba(255,255,255,0.3)" }}>로딩 중...</div>
+            ) : rankingData.length===0 ? (
+              <div style={{ textAlign:"center", padding:40, color:"rgba(255,255,255,0.25)", fontSize:13, lineHeight:1.8 }}>아직 예측 데이터가 없어요.<br/>친구들과 링크를 공유하고<br/>선발을 예측해보세요! ⚽</div>
+            ) : (
+              <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+                {rankingData.map((entry,idx) => (
+                  <div key={idx} style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 14px", background:entry.nickname===nickname?"rgba(59,130,246,0.1)":"rgba(255,255,255,0.03)", border:entry.nickname===nickname?"1.5px solid rgba(59,130,246,0.4)":"1.5px solid rgba(255,255,255,0.06)", borderRadius:10 }}>
+                    <div style={{ width:28, height:28, borderRadius:"50%", background:idx===0?"#fbbf24":idx===1?"#94a3b8":idx===2?"#cd7c3f":"rgba(255,255,255,0.1)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:900, color:idx<3?"#0a0e1a":"rgba(255,255,255,0.4)", flexShrink:0 }}>{idx+1}</div>
+                    <div style={{ flex:1 }}>
+                      <div style={{ fontSize:13, fontWeight:700 }}>{entry.nickname}{entry.nickname===nickname&&<span style={{ fontSize:10, color:"#60a5fa", marginLeft:6 }}>나</span>}</div>
+                      <div style={{ fontSize:10, color:"rgba(255,255,255,0.3)" }}>예측 {entry.count}경기</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div style={{ marginTop:16, padding:"12px 14px", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:10, fontSize:11, color:"rgba(255,255,255,0.35)", lineHeight:1.8 }}>
+              <div style={{ fontWeight:700, color:"rgba(255,255,255,0.5)", marginBottom:4 }}>📌 채점 기준 (예정)</div>
+              선발 선수 1명 적중 = +5pt<br/>포메이션 적중 = +10pt<br/>11명 전원 적중 = 보너스 +30pt
+            </div>
           </div>
         )}
       </div>
