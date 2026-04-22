@@ -3,56 +3,160 @@ import { useState, useEffect } from "react";
 
 const FORMATION_LAYOUTS = {
   "4-3-3": [
-    { pos: "GK", top: 87, left: 50 },
-    { pos: "RB", top: 68, left: 80 },
-    { pos: "CB", top: 68, left: 60 },
-    { pos: "CB", top: 68, left: 40 },
-    { pos: "LB", top: 68, left: 20 },
-    { pos: "CM", top: 48, left: 70 },
-    { pos: "CM", top: 48, left: 50 },
-    { pos: "CM", top: 48, left: 30 },
-    { pos: "RW", top: 25, left: 78 },
-    { pos: "ST", top: 18, left: 50 },
-    { pos: "LW", top: 25, left: 22 },
+    { pos:"GK", top:87, left:50 },
+    { pos:"RB", top:68, left:80 },
+    { pos:"CB", top:68, left:60 },
+    { pos:"CB", top:68, left:40 },
+    { pos:"LB", top:68, left:20 },
+    { pos:"CM", top:48, left:70 },
+    { pos:"CM", top:48, left:50 },
+    { pos:"CM", top:48, left:30 },
+    { pos:"RW", top:25, left:78 },
+    { pos:"ST", top:18, left:50 },
+    { pos:"LW", top:25, left:22 },
   ],
   "4-4-2": [
-    { pos: "GK", top: 87, left: 50 },
-    { pos: "RB", top: 68, left: 80 },
-    { pos: "CB", top: 68, left: 60 },
-    { pos: "CB", top: 68, left: 40 },
-    { pos: "LB", top: 68, left: 20 },
-    { pos: "RM", top: 48, left: 80 },
-    { pos: "CM", top: 48, left: 60 },
-    { pos: "CM", top: 48, left: 40 },
-    { pos: "LM", top: 48, left: 20 },
-    { pos: "ST", top: 20, left: 62 },
-    { pos: "ST", top: 20, left: 38 },
+    { pos:"GK", top:87, left:50 },
+    { pos:"RB", top:68, left:80 },
+    { pos:"CB", top:68, left:60 },
+    { pos:"CB", top:68, left:40 },
+    { pos:"LB", top:68, left:20 },
+    { pos:"RM", top:48, left:80 },
+    { pos:"CM", top:48, left:60 },
+    { pos:"CM", top:48, left:40 },
+    { pos:"LM", top:48, left:20 },
+    { pos:"ST", top:20, left:62 },
+    { pos:"ST", top:20, left:38 },
   ],
   "4-2-3-1": [
-    { pos: "GK",  top: 87, left: 50 },
-    { pos: "RB",  top: 70, left: 82 },
-    { pos: "CB",  top: 70, left: 62 },
-    { pos: "CB",  top: 70, left: 38 },
-    { pos: "LB",  top: 70, left: 18 },
-    { pos: "DM",  top: 55, left: 62 },
-    { pos: "DM",  top: 55, left: 38 },
-    { pos: "RAM", top: 35, left: 78 },
-    { pos: "CAM", top: 35, left: 50 },
-    { pos: "LAM", top: 35, left: 22 },
-    { pos: "ST",  top: 16, left: 50 },
+    { pos:"GK",  top:87, left:50 },
+    { pos:"RB",  top:70, left:82 },
+    { pos:"CB",  top:70, left:62 },
+    { pos:"CB",  top:70, left:38 },
+    { pos:"LB",  top:70, left:18 },
+    { pos:"DM",  top:55, left:62 },
+    { pos:"DM",  top:55, left:38 },
+    { pos:"RAM", top:35, left:78 },
+    { pos:"CAM", top:35, left:50 },
+    { pos:"LAM", top:35, left:22 },
+    { pos:"ST",  top:16, left:50 },
+  ],
+  "4-1-4-1": [
+    { pos:"GK",  top:87, left:50 },
+    { pos:"RB",  top:72, left:82 },
+    { pos:"CB",  top:72, left:62 },
+    { pos:"CB",  top:72, left:38 },
+    { pos:"LB",  top:72, left:18 },
+    { pos:"DM",  top:58, left:50 },
+    { pos:"RM",  top:42, left:82 },
+    { pos:"CM",  top:42, left:62 },
+    { pos:"CM",  top:42, left:38 },
+    { pos:"LM",  top:42, left:18 },
+    { pos:"ST",  top:16, left:50 },
+  ],
+  "4-5-1": [
+    { pos:"GK",  top:87, left:50 },
+    { pos:"RB",  top:70, left:82 },
+    { pos:"CB",  top:70, left:62 },
+    { pos:"CB",  top:70, left:38 },
+    { pos:"LB",  top:70, left:18 },
+    { pos:"RM",  top:48, left:82 },
+    { pos:"CM",  top:48, left:67 },
+    { pos:"CM",  top:48, left:50 },
+    { pos:"CM",  top:48, left:33 },
+    { pos:"LM",  top:48, left:18 },
+    { pos:"ST",  top:16, left:50 },
+  ],
+  "4-3-2-1": [
+    { pos:"GK",  top:87, left:50 },
+    { pos:"RB",  top:72, left:82 },
+    { pos:"CB",  top:72, left:62 },
+    { pos:"CB",  top:72, left:38 },
+    { pos:"LB",  top:72, left:18 },
+    { pos:"CM",  top:55, left:67 },
+    { pos:"CM",  top:55, left:50 },
+    { pos:"CM",  top:55, left:33 },
+    { pos:"SS",  top:35, left:62 },
+    { pos:"SS",  top:35, left:38 },
+    { pos:"ST",  top:16, left:50 },
   ],
   "3-4-3": [
-    { pos: "GK", top: 87, left: 50 },
-    { pos: "CB", top: 68, left: 67 },
-    { pos: "CB", top: 68, left: 50 },
-    { pos: "CB", top: 68, left: 33 },
-    { pos: "RM", top: 50, left: 82 },
-    { pos: "CM", top: 50, left: 62 },
-    { pos: "CM", top: 50, left: 38 },
-    { pos: "LM", top: 50, left: 18 },
-    { pos: "RW", top: 22, left: 75 },
-    { pos: "ST", top: 16, left: 50 },
-    { pos: "LW", top: 22, left: 25 },
+    { pos:"GK",  top:87, left:50 },
+    { pos:"CB",  top:68, left:67 },
+    { pos:"CB",  top:68, left:50 },
+    { pos:"CB",  top:68, left:33 },
+    { pos:"RM",  top:50, left:82 },
+    { pos:"CM",  top:50, left:62 },
+    { pos:"CM",  top:50, left:38 },
+    { pos:"LM",  top:50, left:18 },
+    { pos:"RW",  top:22, left:75 },
+    { pos:"ST",  top:16, left:50 },
+    { pos:"LW",  top:22, left:25 },
+  ],
+  "3-4-2-1": [
+    { pos:"GK",  top:87, left:50 },
+    { pos:"CB",  top:70, left:67 },
+    { pos:"CB",  top:70, left:50 },
+    { pos:"CB",  top:70, left:33 },
+    { pos:"RM",  top:52, left:82 },
+    { pos:"CM",  top:52, left:62 },
+    { pos:"CM",  top:52, left:38 },
+    { pos:"LM",  top:52, left:18 },
+    { pos:"SS",  top:32, left:62 },
+    { pos:"SS",  top:32, left:38 },
+    { pos:"ST",  top:16, left:50 },
+  ],
+  "3-5-2": [
+    { pos:"GK",  top:87, left:50 },
+    { pos:"CB",  top:70, left:67 },
+    { pos:"CB",  top:70, left:50 },
+    { pos:"CB",  top:70, left:33 },
+    { pos:"RWB", top:52, left:88 },
+    { pos:"CM",  top:52, left:67 },
+    { pos:"CM",  top:52, left:50 },
+    { pos:"CM",  top:52, left:33 },
+    { pos:"LWB", top:52, left:12 },
+    { pos:"ST",  top:20, left:62 },
+    { pos:"ST",  top:20, left:38 },
+  ],
+  "5-3-2": [
+    { pos:"GK",  top:87, left:50 },
+    { pos:"RWB", top:68, left:88 },
+    { pos:"CB",  top:70, left:72 },
+    { pos:"CB",  top:70, left:50 },
+    { pos:"CB",  top:70, left:28 },
+    { pos:"LWB", top:68, left:12 },
+    { pos:"CM",  top:48, left:67 },
+    { pos:"CM",  top:48, left:50 },
+    { pos:"CM",  top:48, left:33 },
+    { pos:"ST",  top:20, left:62 },
+    { pos:"ST",  top:20, left:38 },
+  ],
+  "5-4-1": [
+    { pos:"GK",  top:87, left:50 },
+    { pos:"RWB", top:68, left:88 },
+    { pos:"CB",  top:70, left:72 },
+    { pos:"CB",  top:70, left:50 },
+    { pos:"CB",  top:70, left:28 },
+    { pos:"LWB", top:68, left:12 },
+    { pos:"RM",  top:46, left:80 },
+    { pos:"CM",  top:46, left:60 },
+    { pos:"CM",  top:46, left:40 },
+    { pos:"LM",  top:46, left:20 },
+    { pos:"ST",  top:16, left:50 },
+  ],
+  "5-2-3": [
+    { pos:"GK",  top:87, left:50 },
+    { pos:"RWB", top:68, left:88 },
+    { pos:"CB",  top:70, left:72 },
+    { pos:"CB",  top:70, left:50 },
+    { pos:"CB",  top:70, left:28 },
+    { pos:"LWB", top:68, left:12 },
+    { pos:"CM",  top:50, left:62 },
+    { pos:"CM",  top:50, left:38 },
+    { pos:"RW",  top:22, left:78 },
+    { pos:"ST",  top:18, left:50 },
+    { pos:"LW",  top:22, left:22 },
   ],
 };
 
@@ -146,6 +250,7 @@ export default function App() {
   const [lineupLoading, setLineupLoading] = useState(false);
   const [viewingMatch, setViewingMatch] = useState(null);
   const [matchPredictions, setMatchPredictions] = useState([]);
+  const [otherPredictions, setOtherPredictions] = useState([]);
   const [rankingData, setRankingData] = useState([]);
   const [loadingRanking, setLoadingRanking] = useState(false);
 
@@ -178,8 +283,10 @@ export default function App() {
     fetch(`${PROXY}?path=/api/predictions?matchId=${selectedMatch.id}`)
       .then(r => r.json())
       .then(d => {
-        const mine = (d.predictions || []).find(p => p.nickname === nickname);
+        const preds = d.predictions || [];
+        const mine = preds.find(p => p.nickname === nickname);
         if (mine) { setFormation(mine.formation); setSlots(mine.slots); setMySubmission(mine); store.set(`sw:pred_${selectedMatch.id}_${nickname}`, mine); }
+        setOtherPredictions(preds);
       })
       .catch(() => {});
   }, [selectedMatch?.id, nickname]);
@@ -223,6 +330,11 @@ export default function App() {
       setMySubmission(data);
       setSaveStatus("✅ 예측 저장 완료!");
       setTimeout(() => setSaveStatus(""), 3000);
+      // 다른 사람 예측도 새로고침
+      fetch(`${PROXY}?path=/api/predictions?matchId=${selectedMatch.id}`)
+        .then(r => r.json())
+        .then(d => setOtherPredictions(d.predictions || []))
+        .catch(() => {});
     } catch(e) {
       store.set(`sw:pred_${selectedMatch.id}_${nickname}`, data);
       setMySubmission(data);
@@ -375,6 +487,31 @@ export default function App() {
                 <div style={{ marginTop:10, padding:"10px 14px", background:"rgba(34,197,94,0.08)", border:"1px solid rgba(34,197,94,0.2)", borderRadius:8, fontSize:11, color:"#4ade80" }}>
                   ✅ 예측 완료! 경기 후 결과에 따라 점수가 반영됩니다.
                   <div style={{ color:"rgba(255,255,255,0.4)", marginTop:3 }}>{mySubmission.formation} · {new Date(mySubmission.savedAt).toLocaleString("ko-KR",{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"})}</div>
+                </div>
+              )}
+
+              {otherPredictions.length > 0 && (
+                <div style={{ marginTop:16 }}>
+                  <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginBottom:8, textTransform:"uppercase", letterSpacing:"0.1em" }}>친구들 예측 ({otherPredictions.length}명)</div>
+                  <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+                    {otherPredictions.map((p, i) => (
+                      <div key={i} style={{ background:p.nickname===nickname?"rgba(59,130,246,0.1)":"rgba(255,255,255,0.04)", border:p.nickname===nickname?"1px solid rgba(59,130,246,0.3)":"1px solid rgba(255,255,255,0.08)", borderRadius:10, padding:"10px 12px" }}>
+                        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:6 }}>
+                          <span style={{ fontSize:13, fontWeight:700, color:p.nickname===nickname?"#60a5fa":"white" }}>
+                            {p.nickname}{p.nickname===nickname&&<span style={{fontSize:10,marginLeft:4,color:"#60a5fa"}}>나</span>}
+                          </span>
+                          <span style={{ fontSize:11, color:"#aaa" }}>{p.formation}</span>
+                        </div>
+                        <div style={{ display:"flex", flexWrap:"wrap", gap:4 }}>
+                          {(p.slots||[]).filter(s=>s.player).map((s,j) => (
+                            <div key={j} style={{ fontSize:10, background:"rgba(29,78,216,0.3)", border:"1px solid rgba(59,130,246,0.3)", borderRadius:6, padding:"2px 6px" }}>
+                              {s.player.nameKo||s.player.name}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </>}
