@@ -206,6 +206,52 @@ function PitchView({ slots, formation, onSlotClick, selectedSlot, interactive })
   );
 }
 
+function OtherPredictions({ preds, myNickname }) {
+  const [expanded, setExpanded] = useState(null);
+  return (
+    <div style={{ marginTop:16 }}>
+      <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginBottom:8, textTransform:"uppercase", letterSpacing:"0.1em" }}>친구들 예측 ({preds.length}명)</div>
+      <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+        {preds.map((p, i) => {
+          const isMe = p.nickname === myNickname;
+          const isOpen = expanded === i;
+          const fm = FORMATION_LAYOUTS[p.formation] || FORMATION_LAYOUTS["4-3-3"];
+          const readonlySlots = fm.map((pos, idx) => ({
+            pos: pos.pos,
+            player: (p.slots||[])[idx]?.player || null,
+          }));
+          return (
+            <div key={i} style={{ background:isMe?"rgba(59,130,246,0.1)":"rgba(255,255,255,0.04)", border:isMe?"1px solid rgba(59,130,246,0.3)":"1px solid rgba(255,255,255,0.08)", borderRadius:10, overflow:"hidden" }}>
+              <div onClick={() => setExpanded(isOpen ? null : i)}
+                style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"10px 12px", cursor:"pointer" }}>
+                <span style={{ fontSize:13, fontWeight:700, color:isMe?"#60a5fa":"white" }}>
+                  {p.nickname}{isMe&&<span style={{fontSize:10,marginLeft:4,color:"#60a5fa"}}>나</span>}
+                </span>
+                <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                  <span style={{ fontSize:11, color:"#aaa" }}>{p.formation}</span>
+                  <span style={{ fontSize:12, color:"rgba(255,255,255,0.4)" }}>{isOpen?"▲":"▼"}</span>
+                </div>
+              </div>
+              {isOpen && (
+                <div style={{ padding:"0 12px 12px" }}>
+                  <PitchView formation={p.formation} slots={readonlySlots} interactive={false} />
+                  <div style={{ marginTop:8, display:"flex", flexWrap:"wrap", gap:4 }}>
+                    {readonlySlots.filter(s=>s.player).map((s,j) => (
+                      <div key={j} style={{ fontSize:10, background:"rgba(29,78,216,0.3)", border:"1px solid rgba(59,130,246,0.3)", borderRadius:6, padding:"2px 6px" }}>
+                        {s.pos} {s.player.nameKo||s.player.name}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function MatchCard({ match, active, onClick }) {
   const isPast = match.status === 'finished';
   const resultLabel = match.result === 'W' ? '승' : match.result === 'D' ? '무' : match.result === 'L' ? '패' : null;
@@ -253,6 +299,9 @@ export default function App() {
   const [otherPredictions, setOtherPredictions] = useState([]);
   const [rankingData, setRankingData] = useState([]);
   const [loadingRanking, setLoadingRanking] = useState(false);
+  const [rankingView, setRankingView] = useState(null); // null | { nickname, preds }
+  const [rankingPredDetail, setRankingPredDetail] = useState(null); // { matchId, slots, formation }
+  const [allPredData, setAllPredData] = useState({});
 
   useEffect(() => {
     const nn = store.get('sw:nickname');
@@ -274,11 +323,14 @@ export default function App() {
 
   useEffect(() => {
     if (!selectedMatch || !nickname) return;
-    resetSlots(formation);
+    // 경기 변경시 완전 초기화
+    setFormation("4-3-3");
+    resetSlots("4-3-3");
+    setMySubmission(null);
+    setOtherPredictions([]);
     // 로컬 캐시 먼저 표시
     const cached = store.get(`sw:pred_${selectedMatch.id}_${nickname}`);
     if (cached) { setFormation(cached.formation); setSlots(cached.slots); setMySubmission(cached); }
-    else setMySubmission(null);
     // 서버에서 최신 데이터 확인
     fetch(`${PROXY}?path=/api/predictions?matchId=${selectedMatch.id}`)
       .then(r => r.json())
@@ -351,12 +403,27 @@ export default function App() {
     setNicknameInput("");
   }
 
+  async function handleDeletePred() {
+    if (!nickname || !selectedMatch) return;
+    try {
+      await fetch(`${PROXY}?path=/api/predictions?matchId=${selectedMatch.id}&nickname=${encodeURIComponent(nickname)}`, {
+        method: 'DELETE',
+      });
+    } catch {}
+    store.set(`sw:pred_${selectedMatch.id}_${nickname}`, null);
+    setMySubmission(null);
+    setFormation("4-3-3");
+    resetSlots("4-3-3");
+    setOtherPredictions(prev => prev.filter(p => p.nickname !== nickname));
+  }
+
   async function loadRanking() {
     setLoadingRanking(true);
     try {
       const r = await fetch(`${PROXY}?path=/api/predictions`);
       const d = await r.json();
       const preds = d.predictions || {};
+      setAllPredData(preds);
       // 닉네임별 예측 수 집계
       const nickMap = {};
       Object.values(preds).forEach(matchPreds => {
@@ -485,34 +552,18 @@ export default function App() {
               </div>
               {mySubmission && (
                 <div style={{ marginTop:10, padding:"10px 14px", background:"rgba(34,197,94,0.08)", border:"1px solid rgba(34,197,94,0.2)", borderRadius:8, fontSize:11, color:"#4ade80" }}>
-                  ✅ 예측 완료! 경기 후 결과에 따라 점수가 반영됩니다.
+                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                    <span>✅ 예측 완료!</span>
+{selectedMatch && new Date(selectedMatch.date) > new Date() && (
+                      <button onClick={handleDeletePred} disabled={selectedMatch && new Date(selectedMatch.date) <= new Date()} style={{ background:"rgba(239,68,68,0.2)", border:"1px solid rgba(239,68,68,0.4)", borderRadius:6, padding:"2px 8px", color: selectedMatch && new Date(selectedMatch.date) <= new Date() ? "rgba(252,129,129,0.3)" : "#fc8181", fontSize:10, cursor: selectedMatch && new Date(selectedMatch.date) <= new Date() ? "not-allowed" : "pointer" }}>삭제</button>
+                    )}
+                  </div>
                   <div style={{ color:"rgba(255,255,255,0.4)", marginTop:3 }}>{mySubmission.formation} · {new Date(mySubmission.savedAt).toLocaleString("ko-KR",{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"})}</div>
                 </div>
               )}
 
               {otherPredictions.length > 0 && (
-                <div style={{ marginTop:16 }}>
-                  <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginBottom:8, textTransform:"uppercase", letterSpacing:"0.1em" }}>친구들 예측 ({otherPredictions.length}명)</div>
-                  <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
-                    {otherPredictions.map((p, i) => (
-                      <div key={i} style={{ background:p.nickname===nickname?"rgba(59,130,246,0.1)":"rgba(255,255,255,0.04)", border:p.nickname===nickname?"1px solid rgba(59,130,246,0.3)":"1px solid rgba(255,255,255,0.08)", borderRadius:10, padding:"10px 12px" }}>
-                        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:6 }}>
-                          <span style={{ fontSize:13, fontWeight:700, color:p.nickname===nickname?"#60a5fa":"white" }}>
-                            {p.nickname}{p.nickname===nickname&&<span style={{fontSize:10,marginLeft:4,color:"#60a5fa"}}>나</span>}
-                          </span>
-                          <span style={{ fontSize:11, color:"#aaa" }}>{p.formation}</span>
-                        </div>
-                        <div style={{ display:"flex", flexWrap:"wrap", gap:4 }}>
-                          {(p.slots||[]).filter(s=>s.player).map((s,j) => (
-                            <div key={j} style={{ fontSize:10, background:"rgba(29,78,216,0.3)", border:"1px solid rgba(59,130,246,0.3)", borderRadius:6, padding:"2px 6px" }}>
-                              {s.player.nameKo||s.player.name}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                <OtherPredictions preds={otherPredictions} myNickname={nickname} />
               )}
             </>}
           </div>
@@ -557,26 +608,7 @@ export default function App() {
                   </div>
                 </div>
                 {matchPredictions.length > 0 && (
-                  <div style={{ marginTop:12 }}>
-                    <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginBottom:8, textTransform:"uppercase", letterSpacing:"0.1em" }}>친구들 예측 ({matchPredictions.length}명)</div>
-                    <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
-                      {matchPredictions.map((p, i) => (
-                        <div key={i} style={{ background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:10, padding:"10px 12px" }}>
-                          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:6 }}>
-                            <span style={{ fontSize:13, fontWeight:700, color: p.nickname===nickname?"#60a5fa":"white" }}>{p.nickname}{p.nickname===nickname&&<span style={{fontSize:10,marginLeft:4}}>나</span>}</span>
-                            <span style={{ fontSize:11, color:"#aaa" }}>{p.formation}</span>
-                          </div>
-                          <div style={{ display:"flex", flexWrap:"wrap", gap:4 }}>
-                            {(p.slots||[]).filter(s=>s.player).map((s,j) => (
-                              <div key={j} style={{ fontSize:10, background:"rgba(29,78,216,0.3)", border:"1px solid rgba(59,130,246,0.3)", borderRadius:6, padding:"2px 6px" }}>
-                                {s.player.nameKo||s.player.name}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                  <OtherPredictions preds={matchPredictions} myNickname={nickname} />
                 )}
                 <button onClick={()=>setViewingMatch(null)} style={{ width:"100%", padding:10, background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:8, color:"rgba(255,255,255,0.5)", fontSize:12, cursor:"pointer" }}>← 목록으로</button>
               </div>
@@ -603,31 +635,84 @@ export default function App() {
 
         {tab === "ranking" && (
           <div>
-            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
-              <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", textTransform:"uppercase", letterSpacing:"0.1em" }}>예측 순위표</div>
-              <button onClick={loadRanking} style={{ background:"rgba(255,255,255,0.07)", border:"1px solid rgba(255,255,255,0.12)", borderRadius:6, padding:"5px 10px", color:"rgba(255,255,255,0.6)", fontSize:11, cursor:"pointer" }}>🔄 새로고침</button>
-            </div>
-            {loadingRanking ? (
-              <div style={{ textAlign:"center", padding:40, color:"rgba(255,255,255,0.3)" }}>로딩 중...</div>
-            ) : rankingData.length===0 ? (
-              <div style={{ textAlign:"center", padding:40, color:"rgba(255,255,255,0.25)", fontSize:13, lineHeight:1.8 }}>아직 예측 데이터가 없어요.<br/>친구들과 링크를 공유하고<br/>선발을 예측해보세요! ⚽</div>
-            ) : (
-              <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
-                {rankingData.map((entry,idx) => (
-                  <div key={idx} style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 14px", background:entry.nickname===nickname?"rgba(59,130,246,0.1)":"rgba(255,255,255,0.03)", border:entry.nickname===nickname?"1.5px solid rgba(59,130,246,0.4)":"1.5px solid rgba(255,255,255,0.06)", borderRadius:10 }}>
-                    <div style={{ width:28, height:28, borderRadius:"50%", background:idx===0?"#fbbf24":idx===1?"#94a3b8":idx===2?"#cd7c3f":"rgba(255,255,255,0.1)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:900, color:idx<3?"#0a0e1a":"rgba(255,255,255,0.4)", flexShrink:0 }}>{idx+1}</div>
-                    <div style={{ flex:1 }}>
-                      <div style={{ fontSize:13, fontWeight:700 }}>{entry.nickname}{entry.nickname===nickname&&<span style={{ fontSize:10, color:"#60a5fa", marginLeft:6 }}>나</span>}</div>
-                      <div style={{ fontSize:10, color:"rgba(255,255,255,0.3)" }}>예측 {entry.count}경기</div>
+            {/* 닉네임 상세 보기 */}
+            {rankingView ? (
+              <div>
+                <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:14 }}>
+                  <button onClick={() => { setRankingView(null); setRankingPredDetail(null); }} style={{ background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:8, padding:"5px 10px", color:"#aaa", fontSize:12, cursor:"pointer" }}>← 순위표</button>
+                  <div style={{ fontSize:15, fontWeight:700 }}>{rankingView.nickname}의 예측</div>
+                </div>
+
+                {rankingPredDetail ? (
+                  <div>
+                    <button onClick={() => setRankingPredDetail(null)} style={{ background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:8, padding:"5px 10px", color:"#aaa", fontSize:12, cursor:"pointer", marginBottom:12 }}>← 경기 목록</button>
+                    <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginBottom:8 }}>{rankingPredDetail.formation}</div>
+                    <PitchView formation={rankingPredDetail.formation} slots={rankingPredDetail.slots} interactive={false} />
+                    <div style={{ marginTop:8, display:"flex", flexWrap:"wrap", gap:4 }}>
+                      {(rankingPredDetail.slots||[]).filter(s=>s.player).map((s,j) => (
+                        <div key={j} style={{ fontSize:10, background:"rgba(29,78,216,0.3)", border:"1px solid rgba(59,130,246,0.3)", borderRadius:6, padding:"2px 6px" }}>
+                          {s.pos} {s.player.nameKo||s.player.name}
+                        </div>
+                      ))}
                     </div>
                   </div>
-                ))}
+                ) : (
+                  <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+                    {rankingView.preds.length === 0 && <div style={{ textAlign:"center", padding:24, color:"rgba(255,255,255,0.3)" }}>예측 데이터가 없습니다.</div>}
+                    {rankingView.preds.map((p, i) => {
+                      const d = new Date(p.savedAt);
+                      return (
+                        <div key={i} onClick={() => setRankingPredDetail(p)}
+                          style={{ background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:10, padding:"10px 14px", cursor:"pointer", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                          <div>
+                            <div style={{ fontSize:12, fontWeight:700 }}>{p.round ? `${p.round}R` : ''} vs {p.opponent}</div>
+                            <div style={{ fontSize:10, color:"rgba(255,255,255,0.4)", marginTop:2 }}>{p.formation} · {d.toLocaleDateString('ko-KR',{month:'short',day:'numeric'})}</div>
+                          </div>
+                          <div style={{ fontSize:12, color:"#60a5fa" }}>보기 →</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* 순위표 메인 */
+              <div>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
+                  <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", textTransform:"uppercase", letterSpacing:"0.1em" }}>예측 순위표</div>
+                  <button onClick={loadRanking} style={{ background:"rgba(255,255,255,0.07)", border:"1px solid rgba(255,255,255,0.12)", borderRadius:6, padding:"5px 10px", color:"rgba(255,255,255,0.6)", fontSize:11, cursor:"pointer" }}>🔄 새로고침</button>
+                </div>
+                {loadingRanking ? (
+                  <div style={{ textAlign:"center", padding:40, color:"rgba(255,255,255,0.3)" }}>로딩 중...</div>
+                ) : rankingData.length===0 ? (
+                  <div style={{ textAlign:"center", padding:40, color:"rgba(255,255,255,0.25)", fontSize:13, lineHeight:1.8 }}>아직 예측 데이터가 없어요.<br/>친구들과 링크를 공유하고<br/>선발을 예측해보세요! ⚽</div>
+                ) : (
+                  <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+                    {rankingData.map((entry,idx) => {
+                      // 이 닉네임의 전체 예측 수집
+                      const myPreds = Object.entries(allPredData).flatMap(([matchId, preds]) =>
+                        preds.filter(p => p.nickname === entry.nickname)
+                      );
+                      return (
+                        <div key={idx} onClick={() => { setRankingView({ nickname: entry.nickname, preds: myPreds }); setRankingPredDetail(null); }}
+                          style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 14px", background:entry.nickname===nickname?"rgba(59,130,246,0.1)":"rgba(255,255,255,0.03)", border:entry.nickname===nickname?"1.5px solid rgba(59,130,246,0.4)":"1.5px solid rgba(255,255,255,0.06)", borderRadius:10, cursor:"pointer" }}>
+                          <div style={{ width:28, height:28, borderRadius:"50%", background:idx===0?"#fbbf24":idx===1?"#94a3b8":idx===2?"#cd7c3f":"rgba(255,255,255,0.1)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:900, color:idx<3?"#0a0e1a":"rgba(255,255,255,0.4)", flexShrink:0 }}>{idx+1}</div>
+                          <div style={{ flex:1 }}>
+                            <div style={{ fontSize:13, fontWeight:700 }}>{entry.nickname}{entry.nickname===nickname&&<span style={{ fontSize:10, color:"#60a5fa", marginLeft:6 }}>나</span>}</div>
+                            <div style={{ fontSize:10, color:"rgba(255,255,255,0.3)" }}>예측 {entry.count}경기</div>
+                          </div>
+                          <div style={{ fontSize:12, color:"#60a5fa" }}>›</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+                <div style={{ marginTop:16, padding:"12px 14px", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:10, fontSize:11, color:"rgba(255,255,255,0.35)", lineHeight:1.8 }}>
+                  <div style={{ fontWeight:700, color:"rgba(255,255,255,0.5)", marginBottom:4 }}>📌 채점 기준 (예정)</div>
+                  선발 선수 1명 적중 = +5pt<br/>포메이션 적중 = +10pt<br/>11명 전원 적중 = 보너스 +30pt
+                </div>
               </div>
             )}
-            <div style={{ marginTop:16, padding:"12px 14px", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:10, fontSize:11, color:"rgba(255,255,255,0.35)", lineHeight:1.8 }}>
-              <div style={{ fontWeight:700, color:"rgba(255,255,255,0.5)", marginBottom:4 }}>📌 채점 기준 (예정)</div>
-              선발 선수 1명 적중 = +5pt<br/>포메이션 적중 = +10pt<br/>11명 전원 적중 = 보너스 +30pt
-            </div>
           </div>
         )}
       </div>
