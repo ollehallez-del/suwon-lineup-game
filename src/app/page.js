@@ -179,7 +179,7 @@ export default function App() {
     if (p) setAllPreds(p);
 
     // Sofascore에서 일정 가져오기
-    fetch('http://jajjv-180-228-163-44.run.pinggy-free.link/api/schedule')
+    fetch('https://jajjv-180-228-163-44.run.pinggy-free.link/api/schedule')
       .then(r => r.json())
       .then(d => {
         setPastMatches(d.past || []);
@@ -194,7 +194,7 @@ export default function App() {
 
   // 전체 선수단 가져오기
   const fetchLineupForSquad = () => {
-    fetch('http://jajjv-180-228-163-44.run.pinggy-free.link/api/squad')
+    fetch('https://jajjv-180-228-163-44.run.pinggy-free.link/api/squad')
       .then(r => r.json())
       .then(d => {
         if (d.players?.length > 0) {
@@ -217,7 +217,7 @@ export default function App() {
       setView('lineup');
       // 선발 라인업 자동 로드
       setLineupLoading(true);
-      fetch(`http://jajjv-180-228-163-44.run.pinggy-free.link/api/lineup?eventId=${m.id}`)
+      fetch(`https://jajjv-180-228-163-44.run.pinggy-free.link/api/lineup?eventId=${m.id}`)
         .then(r => r.json())
         .then(d => { if (d.lineup) setOfficialLineup(d.lineup); })
         .catch(() => {})
