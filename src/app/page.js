@@ -145,6 +145,7 @@ export default function App() {
   const [officialLineup, setOfficialLineup] = useState(null);
   const [lineupLoading, setLineupLoading] = useState(false);
   const [viewingMatch, setViewingMatch] = useState(null);
+  const [matchPredictions, setMatchPredictions] = useState([]);
   const [rankingData, setRankingData] = useState([]);
   const [loadingRanking, setLoadingRanking] = useState(false);
 
@@ -169,9 +170,18 @@ export default function App() {
   useEffect(() => {
     if (!selectedMatch || !nickname) return;
     resetSlots(formation);
-    const saved = store.get(`sw:pred_${selectedMatch.id}_${nickname}`);
-    if (saved) { setFormation(saved.formation); setSlots(saved.slots); setMySubmission(saved); }
+    // 로컬 캐시 먼저 표시
+    const cached = store.get(`sw:pred_${selectedMatch.id}_${nickname}`);
+    if (cached) { setFormation(cached.formation); setSlots(cached.slots); setMySubmission(cached); }
     else setMySubmission(null);
+    // 서버에서 최신 데이터 확인
+    fetch(`${PROXY}?path=/api/predictions?matchId=${selectedMatch.id}`)
+      .then(r => r.json())
+      .then(d => {
+        const mine = (d.predictions || []).find(p => p.nickname === nickname);
+        if (mine) { setFormation(mine.formation); setSlots(mine.slots); setMySubmission(mine); store.set(`sw:pred_${selectedMatch.id}_${nickname}`, mine); }
+      })
+      .catch(() => {});
   }, [selectedMatch?.id, nickname]);
 
   useEffect(() => { if (tab === "ranking") loadRanking(); }, [tab]);
@@ -198,18 +208,27 @@ export default function App() {
 
   function countFilled() { return slots.filter(s => s.player).length; }
 
-  function handleSave() {
+  async function handleSave() {
     if (!nickname) { setSaveStatus("닉네임을 먼저 설정해주세요!"); return; }
     if (countFilled() < 11) { setSaveStatus("선수 11명을 모두 배치해주세요!"); return; }
-    const data = { nickname, matchId: selectedMatch.id, formation, slots, savedAt: Date.now() };
-    store.set(`sw:pred_${selectedMatch.id}_${nickname}`, data);
-    const rankKey = `sw:rank_${nickname}`;
-    const existing = store.get(rankKey) || {};
-    existing[selectedMatch.id] = data;
-    store.set(rankKey, existing);
-    setMySubmission(data);
-    setSaveStatus("✅ 예측 저장 완료!");
-    setTimeout(() => setSaveStatus(""), 3000);
+    const data = { nickname, matchId: selectedMatch.id, round: selectedMatch.round, opponent: selectedMatch.opponent, formation, slots, savedAt: Date.now() };
+    setSaveStatus("저장 중...");
+    try {
+      await fetch(`${PROXY}?path=/api/predictions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      store.set(`sw:pred_${selectedMatch.id}_${nickname}`, data);
+      setMySubmission(data);
+      setSaveStatus("✅ 예측 저장 완료!");
+      setTimeout(() => setSaveStatus(""), 3000);
+    } catch(e) {
+      store.set(`sw:pred_${selectedMatch.id}_${nickname}`, data);
+      setMySubmission(data);
+      setSaveStatus("✅ 저장됨 (오프라인)");
+      setTimeout(() => setSaveStatus(""), 3000);
+    }
   }
 
   function handleSetNickname() {
@@ -220,28 +239,43 @@ export default function App() {
     setNicknameInput("");
   }
 
-  function loadRanking() {
+  async function loadRanking() {
     setLoadingRanking(true);
-    const entries = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key?.startsWith('sw:rank_')) {
-        const data = store.get(key);
-        if (data) entries.push({ nickname: key.replace('sw:rank_', ''), count: Object.values(data).length });
-      }
+    try {
+      const r = await fetch(`${PROXY}?path=/api/predictions`);
+      const d = await r.json();
+      const preds = d.predictions || {};
+      // 닉네임별 예측 수 집계
+      const nickMap = {};
+      Object.values(preds).forEach(matchPreds => {
+        matchPreds.forEach(p => {
+          if (!nickMap[p.nickname]) nickMap[p.nickname] = 0;
+          nickMap[p.nickname]++;
+        });
+      });
+      const entries = Object.entries(nickMap).map(([nick, count]) => ({ nickname: nick, count }));
+      entries.sort((a, b) => b.count - a.count);
+      setRankingData(entries);
+    } catch(e) {
+      setRankingData([]);
     }
-    setRankingData(entries);
     setLoadingRanking(false);
   }
 
   async function handleViewLineup(match) {
     setViewingMatch(match);
     setOfficialLineup(null);
+    setMatchPredictions([]);
     setLineupLoading(true);
     try {
-      const r = await fetch(`${PROXY}?path=/api/lineup?eventId=${match.id}`);
-      const d = await r.json();
-      if (d.lineup) setOfficialLineup(d.lineup);
+      const [lineupRes, predRes] = await Promise.all([
+        fetch(`${PROXY}?path=/api/lineup?eventId=${match.id}`),
+        fetch(`${PROXY}?path=/api/predictions?matchId=${match.id}`),
+      ]);
+      const lineupData = await lineupRes.json();
+      const predData = await predRes.json();
+      if (lineupData.lineup) setOfficialLineup(lineupData.lineup);
+      setMatchPredictions(predData.predictions || []);
     } catch {}
     setLineupLoading(false);
   }
@@ -385,6 +419,28 @@ export default function App() {
                     })()}
                   </div>
                 </div>
+                {matchPredictions.length > 0 && (
+                  <div style={{ marginTop:12 }}>
+                    <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginBottom:8, textTransform:"uppercase", letterSpacing:"0.1em" }}>친구들 예측 ({matchPredictions.length}명)</div>
+                    <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+                      {matchPredictions.map((p, i) => (
+                        <div key={i} style={{ background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:10, padding:"10px 12px" }}>
+                          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:6 }}>
+                            <span style={{ fontSize:13, fontWeight:700, color: p.nickname===nickname?"#60a5fa":"white" }}>{p.nickname}{p.nickname===nickname&&<span style={{fontSize:10,marginLeft:4}}>나</span>}</span>
+                            <span style={{ fontSize:11, color:"#aaa" }}>{p.formation}</span>
+                          </div>
+                          <div style={{ display:"flex", flexWrap:"wrap", gap:4 }}>
+                            {(p.slots||[]).filter(s=>s.player).map((s,j) => (
+                              <div key={j} style={{ fontSize:10, background:"rgba(29,78,216,0.3)", border:"1px solid rgba(59,130,246,0.3)", borderRadius:6, padding:"2px 6px" }}>
+                                {s.player.nameKo||s.player.name}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 <button onClick={()=>setViewingMatch(null)} style={{ width:"100%", padding:10, background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:8, color:"rgba(255,255,255,0.5)", fontSize:12, cursor:"pointer" }}>← 목록으로</button>
               </div>
             ) : (

@@ -1,6 +1,3 @@
-// netlify/functions/proxy.js
-// Gist에서 최신 pinggy URL을 읽어서 태블릿 서버로 중계
-
 const GIST_ID = '18d30d84225a0ce6f35a3914b9c2bdcd';
 
 async function getPinggyUrl() {
@@ -20,7 +17,13 @@ exports.handler = async (event) => {
     const base = await getPinggyUrl();
     const targetUrl = base.replace(/\/$/, '') + path;
 
-    const res = await fetch(targetUrl);
+    const options = {
+      method: event.httpMethod || 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    };
+    if (event.body) options.body = event.body;
+
+    const res = await fetch(targetUrl, options);
     const text = await res.text();
 
     return {
@@ -28,13 +31,18 @@ exports.handler = async (event) => {
       headers: {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': '*',
       },
       body: text,
     };
   } catch (e) {
     return {
       statusCode: 500,
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+      },
       body: JSON.stringify({ error: e.message }),
     };
   }
