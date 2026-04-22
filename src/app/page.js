@@ -179,34 +179,27 @@ export default function App() {
     if (p) setAllPreds(p);
 
     // Sofascore에서 일정 가져오기
-    fetch('https://tropical-unthread-skilled.ngrok-free.dev/api/schedule')
+    fetch('http://jajjv-180-228-163-44.run.pinggy-free.link/api/schedule')
       .then(r => r.json())
       .then(d => {
         setPastMatches(d.past || []);
-        setUpcomingMatches(d.next || []);
+        setUpcomingMatches(d.upcoming || []);
 
-        // 선수단은 가장 최근 경기 선발에서 추출
-        if (d.past?.length > 0) {
-          const latest = d.past[0];
-          fetchLineupForSquad(latest.id);
-        }
+        // 전체 선수단 가져오기
+        fetchLineupForSquad();
       })
       .catch(() => {})
       .finally(() => setScheduleLoading(false));
   }, []);
 
-  // 선수단 추출용 (최근 경기 선발 → squad 구성)
-  const fetchLineupForSquad = (eventId) => {
-    fetch(`https://tropical-unthread-skilled.ngrok-free.dev/api/lineup?eventId=${eventId}`, { headers: { 'ngrok-skip-browser-warnin
+  // 전체 선수단 가져오기
+  const fetchLineupForSquad = () => {
+    fetch('http://jajjv-180-228-163-44.run.pinggy-free.link/api/squad')
       .then(r => r.json())
       .then(d => {
-        if (d.lineup?.players?.length > 0) {
-          const players = d.lineup.players.map(p => ({
-            ...p,
-            status: 'available',
-          }));
-          setSquad(players);
-          store.set('sw:squad', players);
+        if (d.players?.length > 0) {
+          setSquad(d.players);
+          store.set('sw:squad', d.players);
         }
       })
       .catch(() => {
@@ -224,7 +217,7 @@ export default function App() {
       setView('lineup');
       // 선발 라인업 자동 로드
       setLineupLoading(true);
-      fetch(`https://tropical-unthread-skilled.ngrok-free.dev/api/lineup?eventId=${m.id}`)
+      fetch(`http://jajjv-180-228-163-44.run.pinggy-free.link/api/lineup?eventId=${m.id}`)
         .then(r => r.json())
         .then(d => { if (d.lineup) setOfficialLineup(d.lineup); })
         .catch(() => {})
