@@ -824,9 +824,7 @@ export default function App() {
                       const d = await r.json();
                       setHistoryScoringStatus("✅ 채점 완료!");
                       setTimeout(() => setHistoryScoringStatus(""), 3000);
-                      alert(`채점 완료!
-${Object.entries(d.scores||{}).map(([n,s])=>`${n}: ${s}pt`).join('
-')}`);
+                      alert('채점 완료!\n' + Object.entries(d.scores||{}).map(([n,s])=>`${n}: ${s}pt`).join('\n'));
                     } catch {
                       setHistoryScoringStatus("채점 실패");
                       setTimeout(() => setHistoryScoringStatus(""), 3000);
