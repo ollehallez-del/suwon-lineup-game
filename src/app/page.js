@@ -169,8 +169,19 @@ const store = {
   set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
 };
 
-function PitchView({ slots, formation, onSlotClick, selectedSlot, interactive }) {
+function PitchView({ slots, formation, onSlotClick, selectedSlot, interactive, actualPlayers }) {
   const layout = FORMATION_LAYOUTS[formation] || FORMATION_LAYOUTS["4-3-3"];
+  // actualPlayers: 실제 선발 선수 이름 배열 (비교용)
+  function isHit(player) {
+    if (!actualPlayers || !player) return null;
+    const pLast = (player.nameKo || player.name || '').slice(-2);
+    const pName = (player.name || '').toLowerCase().split(' ').pop();
+    return actualPlayers.some(a => {
+      const aLast = (a.nameKo || a.name || '').slice(-2);
+      const aName = (a.name || '').toLowerCase().split(' ').pop();
+      return pLast === aLast || pName === aName || pName.includes(aName) || aName.includes(pName);
+    });
+  }
   return (
     <div style={{ position:"relative", width:"100%", paddingBottom:"140%", background:"linear-gradient(180deg,#1a4d2e 0%,#1e5c35 20%,#16a34a 40%,#1e5c35 60%,#1a4d2e 100%)", borderRadius:12, overflow:"hidden", border:"2px solid #22c55e", boxShadow:"0 0 40px rgba(34,197,94,0.15)" }}>
       <svg style={{ position:"absolute", inset:0, width:"100%", height:"100%" }} viewBox="0 0 100 140">
@@ -189,7 +200,21 @@ function PitchView({ slots, formation, onSlotClick, selectedSlot, interactive })
         return (
           <div key={i} onClick={() => interactive && onSlotClick && onSlotClick(i)}
             style={{ position:"absolute", left:`${slot.left}%`, top:`${slot.top}%`, transform:"translate(-50%,-50%)", display:"flex", flexDirection:"column", alignItems:"center", cursor:interactive?"pointer":"default", zIndex:10 }}>
-            <div style={{ width:44, height:44, borderRadius:"50%", background:player?(isSelected?"linear-gradient(135deg,#fbbf24,#f59e0b)":"linear-gradient(135deg,#1d4ed8,#2563eb)"):(isSelected?"rgba(251,191,36,0.4)":"rgba(255,255,255,0.08)"), border:isSelected?"2.5px solid #fbbf24":(player?"2px solid rgba(255,255,255,0.6)":"2px dashed rgba(255,255,255,0.25)"), display:"flex", alignItems:"center", justifyContent:"center", boxShadow:player?"0 2px 12px rgba(0,0,0,0.4)":"none", flexShrink:0 }}>
+            {(() => {
+              const hit = player ? isHit(player) : null;
+              const bg = player
+                ? (isSelected ? "linear-gradient(135deg,#fbbf24,#f59e0b)"
+                  : hit === true ? "linear-gradient(135deg,#16a34a,#22c55e)"
+                  : hit === false ? "linear-gradient(135deg,#dc2626,#ef4444)"
+                  : "linear-gradient(135deg,#1d4ed8,#2563eb)")
+                : (isSelected ? "rgba(251,191,36,0.4)" : "rgba(255,255,255,0.08)");
+              const border = isSelected ? "2.5px solid #fbbf24"
+                : hit === true ? "2px solid #4ade80"
+                : hit === false ? "2px solid #f87171"
+                : player ? "2px solid rgba(255,255,255,0.6)"
+                : "2px dashed rgba(255,255,255,0.25)";
+              return (
+            <div style={{ width:44, height:44, borderRadius:"50%", background:bg, border, display:"flex", alignItems:"center", justifyContent:"center", boxShadow:player?"0 2px 12px rgba(0,0,0,0.4)":"none", flexShrink:0 }}>
               {player ? (
                 <span style={{ fontSize:8, textAlign:"center", lineHeight:1.1, padding:"0 2px", color:"white", fontWeight:700 }}>
                   {player.number}<br/>{(player.nameKo||player.name).slice(0,3)}
@@ -198,6 +223,8 @@ function PitchView({ slots, formation, onSlotClick, selectedSlot, interactive })
                 <span style={{ opacity:0.4, fontSize:14, color:"white" }}>+</span>
               )}
             </div>
+              );
+            })()}
             <div style={{ marginTop:2, fontSize:7, color:"rgba(255,255,255,0.55)", background:"rgba(0,0,0,0.35)", padding:"1px 3px", borderRadius:3 }}>{slot.pos}</div>
           </div>
         );
@@ -206,7 +233,7 @@ function PitchView({ slots, formation, onSlotClick, selectedSlot, interactive })
   );
 }
 
-function OtherPredictions({ preds, myNickname }) {
+function OtherPredictions({ preds, myNickname, scores, officialPlayers }) {
   const [expanded, setExpanded] = useState(null);
   return (
     <div style={{ marginTop:16 }}>
@@ -214,7 +241,7 @@ function OtherPredictions({ preds, myNickname }) {
       <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
         {preds.map((p, i) => {
           const isMe = p.nickname === myNickname;
-          const isOpen = expanded === i;
+          const isOpen = expanded === p.nickname;
           const fm = FORMATION_LAYOUTS[p.formation] || FORMATION_LAYOUTS["4-3-3"];
           const readonlySlots = fm.map((pos, idx) => ({
             pos: pos.pos,
@@ -222,19 +249,22 @@ function OtherPredictions({ preds, myNickname }) {
           }));
           return (
             <div key={i} style={{ background:isMe?"rgba(59,130,246,0.1)":"rgba(255,255,255,0.04)", border:isMe?"1px solid rgba(59,130,246,0.3)":"1px solid rgba(255,255,255,0.08)", borderRadius:10, overflow:"hidden" }}>
-              <div onClick={() => setExpanded(isOpen ? null : i)}
+              <div onClick={() => setExpanded(isOpen ? null : p.nickname)}
                 style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"10px 12px", cursor:"pointer" }}>
                 <span style={{ fontSize:13, fontWeight:700, color:isMe?"#60a5fa":"white" }}>
                   {p.nickname}{isMe&&<span style={{fontSize:10,marginLeft:4,color:"#60a5fa"}}>나</span>}
                 </span>
                 <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                  {scores?.[p.nickname] !== undefined && (
+                    <span style={{ fontSize:13, fontWeight:900, color:"#fbbf24", fontFamily:"monospace" }}>{scores[p.nickname]}pt</span>
+                  )}
                   <span style={{ fontSize:11, color:"#aaa" }}>{p.formation}</span>
                   <span style={{ fontSize:12, color:"rgba(255,255,255,0.4)" }}>{isOpen?"▲":"▼"}</span>
                 </div>
               </div>
               {isOpen && (
                 <div style={{ padding:"0 12px 12px" }}>
-                  <PitchView formation={p.formation} slots={readonlySlots} interactive={false} />
+                  <PitchView formation={p.formation} slots={readonlySlots} interactive={false} actualPlayers={officialPlayers} />
                   <div style={{ marginTop:8, display:"flex", flexWrap:"wrap", gap:4 }}>
                     {readonlySlots.filter(s=>s.player).map((s,j) => (
                       <div key={j} style={{ fontSize:10, background:"rgba(29,78,216,0.3)", border:"1px solid rgba(59,130,246,0.3)", borderRadius:6, padding:"2px 6px" }}>
@@ -281,7 +311,13 @@ function MatchCard({ match, active, onClick }) {
 export default function App() {
   const [tab, setTab] = useState("predict");
   const [nickname, setNickname] = useState("");
-  const [nicknameInput, setNicknameInput] = useState("");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loginInput, setLoginInput] = useState("");
+  const [loginError, setLoginError] = useState("");
+  const [loginLoading, setLoginLoading] = useState(false);
+  const [showChangeNick, setShowChangeNick] = useState(false);
+  const [changeInput, setChangeInput] = useState("");
+  const [changeError, setChangeError] = useState("");
   const [pastMatches, setPastMatches] = useState([]);
   const [upcomingMatches, setUpcomingMatches] = useState([]);
   const [scheduleLoading, setScheduleLoading] = useState(true);
@@ -292,20 +328,24 @@ export default function App() {
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [mySubmission, setMySubmission] = useState(null);
   const [saveStatus, setSaveStatus] = useState("");
+  const [lineupAvailable, setLineupAvailable] = useState(false);
+  const [scoringStatus, setScoringStatus] = useState("");
   const [officialLineup, setOfficialLineup] = useState(null);
   const [lineupLoading, setLineupLoading] = useState(false);
   const [viewingMatch, setViewingMatch] = useState(null);
   const [matchPredictions, setMatchPredictions] = useState([]);
+  const [historyScoringStatus, setHistoryScoringStatus] = useState("");
   const [otherPredictions, setOtherPredictions] = useState([]);
   const [rankingData, setRankingData] = useState([]);
   const [loadingRanking, setLoadingRanking] = useState(false);
-  const [rankingView, setRankingView] = useState(null); // null | { nickname, preds }
-  const [rankingPredDetail, setRankingPredDetail] = useState(null); // { matchId, slots, formation }
+  const [rankingView, setRankingView] = useState(null);
+  const [rankingPredDetail, setRankingPredDetail] = useState(null);
   const [allPredData, setAllPredData] = useState({});
+  const [scoreData, setScoreData] = useState({ totals: {}, detail: {} });
 
   useEffect(() => {
     const nn = store.get('sw:nickname');
-    if (nn) setNickname(nn);
+    if (nn) { setNickname(nn); setIsLoggedIn(true); }
     fetch(`${PROXY}?path=/api/schedule`)
       .then(r => r.json())
       .then(d => {
@@ -328,16 +368,41 @@ export default function App() {
     resetSlots("4-3-3");
     setMySubmission(null);
     setOtherPredictions([]);
-    // 로컬 캐시 먼저 표시
-    const cached = store.get(`sw:pred_${selectedMatch.id}_${nickname}`);
-    if (cached) { setFormation(cached.formation); setSlots(cached.slots); setMySubmission(cached); }
+    setScoringStatus("");
+    // 로컬 캐시 먼저 표시 (서버 응답 전까지만)
+    const cachedRaw = localStorage.getItem(`sw:pred_${selectedMatch.id}_${nickname}`);
+    if (cachedRaw) {
+      try {
+        const cached = JSON.parse(cachedRaw);
+        if (cached && cached.formation) { setFormation(cached.formation); setSlots(cached.slots); setMySubmission(cached); }
+      } catch {}
+    }
+    // 라인업 발표 여부 확인
+    setLineupAvailable(false);
+    fetch(`${PROXY}?path=/api/lineup?eventId=${selectedMatch.id}`)
+      .then(r => r.json())
+      .then(d => { if (d.lineup?.players?.length > 0) setLineupAvailable(true); })
+      .catch(() => {});
+
     // 서버에서 최신 데이터 확인
     fetch(`${PROXY}?path=/api/predictions?matchId=${selectedMatch.id}`)
       .then(r => r.json())
       .then(d => {
         const preds = d.predictions || [];
         const mine = preds.find(p => p.nickname === nickname);
-        if (mine) { setFormation(mine.formation); setSlots(mine.slots); setMySubmission(mine); store.set(`sw:pred_${selectedMatch.id}_${nickname}`, mine); }
+        if (mine) {
+          // 서버에 있으면 표시
+          setFormation(mine.formation);
+          setSlots(mine.slots);
+          setMySubmission(mine);
+          store.set(`sw:pred_${selectedMatch.id}_${nickname}`, mine);
+        } else {
+          // 서버에 없으면 삭제된 것 - 로컬도 제거
+          localStorage.removeItem(`sw:pred_${selectedMatch.id}_${nickname}`);
+          setMySubmission(null);
+          setFormation("4-3-3");
+          resetSlots("4-3-3");
+        }
         setOtherPredictions(preds);
       })
       .catch(() => {});
@@ -369,6 +434,7 @@ export default function App() {
 
   async function handleSave() {
     if (!nickname) { setSaveStatus("닉네임을 먼저 설정해주세요!"); return; }
+    if (!selectedMatch) { setSaveStatus("경기를 먼저 선택해주세요!"); return; }
     if (countFilled() < 11) { setSaveStatus("선수 11명을 모두 배치해주세요!"); return; }
     const data = { nickname, matchId: selectedMatch.id, round: selectedMatch.round, opponent: selectedMatch.opponent, formation, slots, savedAt: Date.now() };
     setSaveStatus("저장 중...");
@@ -392,15 +458,72 @@ export default function App() {
       setMySubmission(data);
       setSaveStatus("✅ 저장됨 (오프라인)");
       setTimeout(() => setSaveStatus(""), 3000);
+      // 오프라인이어도 내 예측을 otherPredictions에 반영
+      setOtherPredictions(prev => {
+        const idx = prev.findIndex(p => p.nickname === nickname);
+        if (idx >= 0) { const next = [...prev]; next[idx] = data; return next; }
+        return [...prev, data];
+      });
     }
   }
 
-  function handleSetNickname() {
-    if (!nicknameInput.trim()) return;
-    const nn = nicknameInput.trim().slice(0, 10);
-    setNickname(nn);
-    store.set('sw:nickname', nn);
-    setNicknameInput("");
+  async function handleLogin() {
+    const nn = loginInput.trim().slice(0, 10);
+    if (!nn) { setLoginError("닉네임을 입력해주세요."); return; }
+    setLoginLoading(true);
+    setLoginError("");
+    try {
+      const r = await fetch(`${PROXY}?path=/api/auth`, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ action:'login', nickname:nn }),
+      });
+      const d = await r.json();
+      if (d.ok) {
+        setNickname(d.nickname);
+        setIsLoggedIn(true);
+        store.set('sw:nickname', d.nickname);
+      } else {
+        setLoginError(d.error || "로그인 실패");
+      }
+    } catch {
+      setLoginError("서버 연결 실패. 잠시 후 다시 시도해주세요.");
+    }
+    setLoginLoading(false);
+  }
+
+  async function handleChangeNickname() {
+    const newNick = changeInput.trim().slice(0, 10);
+    if (!newNick) { setChangeError("새 닉네임을 입력해주세요."); return; }
+    try {
+      const r = await fetch(`${PROXY}?path=/api/auth`, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ action:'change', nickname, newNickname:newNick }),
+      });
+      const d = await r.json();
+      if (d.ok) {
+        // 구 닉네임 로컬캐시 정리
+        const oldNick = nickname;
+        Object.keys(localStorage).filter(k => k.includes(`_${oldNick}`)).forEach(k => localStorage.removeItem(k));
+        setNickname(d.nickname);
+        store.set('sw:nickname', d.nickname);
+        setShowChangeNick(false);
+        setChangeInput("");
+        setChangeError("");
+      } else {
+        setChangeError(d.error || "변경 실패");
+      }
+    } catch {
+      setChangeError("서버 연결 실패.");
+    }
+  }
+
+  function handleLogout() {
+    store.set('sw:nickname', null);
+    setNickname("");
+    setIsLoggedIn(false);
+    setLoginInput("");
   }
 
   async function handleDeletePred() {
@@ -410,7 +533,8 @@ export default function App() {
         method: 'DELETE',
       });
     } catch {}
-    store.set(`sw:pred_${selectedMatch.id}_${nickname}`, null);
+    // 로컬 캐시 완전 삭제
+    localStorage.removeItem(`sw:pred_${selectedMatch.id}_${nickname}`);
     setMySubmission(null);
     setFormation("4-3-3");
     resetSlots("4-3-3");
@@ -420,10 +544,15 @@ export default function App() {
   async function loadRanking() {
     setLoadingRanking(true);
     try {
-      const r = await fetch(`${PROXY}?path=/api/predictions`);
-      const d = await r.json();
+      const [predRes, scoreRes] = await Promise.all([
+        fetch(`${PROXY}?path=/api/predictions`),
+        fetch(`${PROXY}?path=/api/score`),
+      ]);
+      const d = await predRes.json();
+      const sd = await scoreRes.json();
       const preds = d.predictions || {};
       setAllPredData(preds);
+      setScoreData(sd);
       // 닉네임별 예측 수 집계
       const nickMap = {};
       Object.values(preds).forEach(matchPreds => {
@@ -432,8 +561,13 @@ export default function App() {
           nickMap[p.nickname]++;
         });
       });
-      const entries = Object.entries(nickMap).map(([nick, count]) => ({ nickname: nick, count }));
-      entries.sort((a, b) => b.count - a.count);
+      const totals = sd.totals || {};
+      const entries = Object.entries(nickMap).map(([nick, count]) => ({
+        nickname: nick,
+        count,
+        score: totals[nick] || 0,
+      }));
+      entries.sort((a, b) => b.score - a.score || b.count - a.count);
       setRankingData(entries);
     } catch(e) {
       setRankingData([]);
@@ -476,29 +610,68 @@ export default function App() {
             <div style={{ fontSize:11, color:"rgba(255,255,255,0.6)" }}>2026 K리그2 · 이정효 감독</div>
           </div>
           <div style={{ marginLeft:"auto" }}>
-            {nickname ? (
-              <div style={{ fontSize:12, background:"rgba(255,255,255,0.15)", padding:"4px 10px", borderRadius:20, fontWeight:700 }}>👤 {nickname}</div>
-            ) : (
-              <div style={{ display:"flex", gap:6 }}>
-                <input value={nicknameInput} onChange={e=>setNicknameInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleSetNickname()} placeholder="닉네임 입력"
-                  style={{ background:"rgba(255,255,255,0.15)", border:"1px solid rgba(255,255,255,0.3)", borderRadius:8, padding:"5px 10px", color:"white", fontSize:12, width:90, outline:"none" }} />
-                <button onClick={handleSetNickname} style={{ background:"#3b82f6", border:"none", borderRadius:8, padding:"5px 10px", color:"white", fontSize:11, cursor:"pointer", fontWeight:700 }}>확인</button>
+            {isLoggedIn && (
+              <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+                <div onClick={()=>setShowChangeNick(!showChangeNick)} style={{ fontSize:12, background:"rgba(255,255,255,0.15)", padding:"4px 10px", borderRadius:20, fontWeight:700, cursor:"pointer" }}>👤 {nickname} ✏️</div>
+                <button onClick={handleLogout} style={{ background:"rgba(255,255,255,0.1)", border:"none", borderRadius:8, padding:"4px 8px", color:"rgba(255,255,255,0.5)", fontSize:10, cursor:"pointer" }}>로그아웃</button>
               </div>
             )}
           </div>
         </div>
         <div style={{ display:"flex" }}>
           {[{id:"predict",label:"📋 선발 예측"},{id:"history",label:"📅 이전 라인업"},{id:"ranking",label:"🏆 순위표"}].map(t => (
-            <button key={t.id} onClick={()=>setTab(t.id)} style={{ flex:1, padding:"10px 0", background:"none", border:"none", borderBottom:tab===t.id?"3px solid #fbbf24":"3px solid transparent", color:tab===t.id?"#fbbf24":"rgba(255,255,255,0.55)", fontSize:12, fontWeight:tab===t.id?700:500, cursor:"pointer", fontFamily:"'Noto Sans KR',sans-serif" }}>{t.label}</button>
+            <button key={t.id} onClick={()=>{ setTab(t.id); if(t.id==="ranking"){ setRankingView(null); setRankingPredDetail(null); } if(t.id==="history"){ setViewingMatch(null); } }} style={{ flex:1, padding:"10px 0", background:"none", border:"none", borderBottom:tab===t.id?"3px solid #fbbf24":"3px solid transparent", color:tab===t.id?"#fbbf24":"rgba(255,255,255,0.55)", fontSize:12, fontWeight:tab===t.id?700:500, cursor:"pointer", fontFamily:"'Noto Sans KR',sans-serif" }}>{t.label}</button>
           ))}
         </div>
       </div>
 
+      {/* 닉네임 변경 모달 */}
+      {showChangeNick && (
+        <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.7)", zIndex:100, display:"flex", alignItems:"center", justifyContent:"center", padding:20 }}>
+          <div style={{ background:"#1a1f2e", border:"1px solid rgba(255,255,255,0.1)", borderRadius:16, padding:24, width:"100%", maxWidth:360 }}>
+            <div style={{ fontSize:16, fontWeight:700, marginBottom:16 }}>닉네임 변경</div>
+            <input value={changeInput} onChange={e=>setChangeInput(e.target.value)}
+              placeholder="새 닉네임 (최대 10자)" maxLength={10}
+              onKeyDown={e=>e.key==="Enter"&&handleChangeNickname()}
+              style={{ width:"100%", background:"rgba(255,255,255,0.08)", border:"1px solid rgba(255,255,255,0.15)", borderRadius:8, padding:"10px 12px", color:"white", fontSize:13, outline:"none", marginBottom:8, boxSizing:"border-box" }} />
+            {changeError && <div style={{ fontSize:11, color:"#f87171", marginBottom:8 }}>{changeError}</div>}
+            <div style={{ display:"flex", gap:8 }}>
+              <button onClick={()=>{setShowChangeNick(false);setChangeError("");}} style={{ flex:1, padding:10, background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:8, color:"#aaa", fontSize:13, cursor:"pointer" }}>취소</button>
+              <button onClick={handleChangeNickname} style={{ flex:1, padding:10, background:"#1d4ed8", border:"none", borderRadius:8, color:"white", fontSize:13, fontWeight:700, cursor:"pointer" }}>변경</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div style={{ padding:16, maxWidth:480, margin:"0 auto" }}>
 
+      {/* 로그인 화면 */}
+      {!isLoggedIn ? (
+        <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:"60vh", gap:16 }}>
+          <div style={{ fontSize:16, fontWeight:700, color:"rgba(255,255,255,0.7)", marginBottom:8 }}>닉네임을 입력해주세요</div>
+          <div style={{ width:"100%", maxWidth:320, display:"flex", flexDirection:"column", gap:10 }}>
+            <input value={loginInput} onChange={e=>setLoginInput(e.target.value)}
+              placeholder="닉네임 입력 (최대 10자)" maxLength={10}
+              onKeyDown={e=>e.key==="Enter"&&handleLogin()}
+              style={{ width:"100%", background:"rgba(255,255,255,0.08)", border:"1px solid rgba(255,255,255,0.15)", borderRadius:10, padding:"12px 14px", color:"white", fontSize:14, outline:"none", boxSizing:"border-box" }} />
+            {loginError && <div style={{ fontSize:12, color:"#f87171", textAlign:"center" }}>{loginError}</div>}
+            <button onClick={handleLogin} disabled={loginLoading} style={{ width:"100%", padding:14, background:"linear-gradient(135deg,#1d4ed8,#2563eb)", border:"none", borderRadius:10, color:"white", fontSize:15, fontWeight:700, cursor:"pointer", boxShadow:"0 4px 16px rgba(37,99,235,0.4)" }}>
+              {loginLoading ? "확인 중..." : "시작하기"}
+            </button>
+            <div style={{ fontSize:11, color:"rgba(255,255,255,0.3)", textAlign:"center", lineHeight:1.6 }}>
+              닉네임만 입력하면 바로 시작할 수 있어요!
+            </div>
+          </div>
+        </div>
+      ) : (
+
+        <>
         {tab === "predict" && (
           <div>
             {scheduleLoading && <div style={{ textAlign:"center", padding:40, color:"rgba(255,255,255,0.4)" }}>⚽ 경기 일정 불러오는 중...</div>}
+            {!scheduleLoading && upcomingMatches.length === 0 && (
+              <div style={{ textAlign:"center", padding:40, color:"rgba(255,255,255,0.3)", fontSize:13 }}>예정된 경기가 없습니다.</div>
+            )}
             {!scheduleLoading && upcomingMatches.length > 0 && (
               <div style={{ marginBottom:14 }}>
                 <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginBottom:8, textTransform:"uppercase", letterSpacing:"0.1em" }}>예측할 경기 선택</div>
@@ -523,6 +696,7 @@ export default function App() {
               {selectedSlot !== null && (
                 <div style={{ marginBottom:12, background:"rgba(255,255,255,0.04)", border:"1.5px solid rgba(59,130,246,0.3)", borderRadius:12, padding:12 }}>
                   <div style={{ fontSize:11, color:"#60a5fa", marginBottom:10, fontWeight:700 }}>[{slots[selectedSlot]?.pos}] 포지션 선수 선택</div>
+                  {squad.length === 0 && <div style={{ fontSize:11, color:"rgba(255,255,255,0.3)", padding:8 }}>⚠️ 선수 목록을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.</div>}
                   {posOrder.map(posKey => {
                     const players = squadByPos[posKey] || [];
                     if (!players.length) return null;
@@ -545,8 +719,8 @@ export default function App() {
                 </div>
               )}
               <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
-                <button onClick={handleSave} style={{ width:"100%", padding:14, background:countFilled()===11?"linear-gradient(135deg,#1d4ed8,#2563eb)":"rgba(255,255,255,0.05)", border:"none", borderRadius:10, color:"white", fontSize:14, fontWeight:700, cursor:"pointer", boxShadow:countFilled()===11?"0 4px 16px rgba(37,99,235,0.4)":"none" }}>
-                  {mySubmission?"🔄 예측 수정하기":"✅ 예측 제출하기"} ({countFilled()}/11)
+                <button onClick={handleSave} disabled={saveStatus==="저장 중..."} style={{ width:"100%", padding:14, background:countFilled()===11?"linear-gradient(135deg,#1d4ed8,#2563eb)":"rgba(255,255,255,0.05)", border:"none", borderRadius:10, color:"white", fontSize:14, fontWeight:700, cursor:saveStatus==="저장 중..."?"not-allowed":"pointer", boxShadow:countFilled()===11?"0 4px 16px rgba(37,99,235,0.4)":"none", opacity:saveStatus==="저장 중..."?0.6:1 }}>
+                  {saveStatus==="저장 중..."?"저장 중...":(mySubmission?"🔄 예측 수정하기":"✅ 예측 제출하기")} ({countFilled()}/11)
                 </button>
                 {saveStatus && <div style={{ textAlign:"center", fontSize:12, padding:8, color:saveStatus.includes("✅")?"#22c55e":"#fbbf24" }}>{saveStatus}</div>}
               </div>
@@ -555,15 +729,42 @@ export default function App() {
                   <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
                     <span>✅ 예측 완료!</span>
 {selectedMatch && new Date(selectedMatch.date) > new Date() && (
-                      <button onClick={handleDeletePred} disabled={selectedMatch && new Date(selectedMatch.date) <= new Date()} style={{ background:"rgba(239,68,68,0.2)", border:"1px solid rgba(239,68,68,0.4)", borderRadius:6, padding:"2px 8px", color: selectedMatch && new Date(selectedMatch.date) <= new Date() ? "rgba(252,129,129,0.3)" : "#fc8181", fontSize:10, cursor: selectedMatch && new Date(selectedMatch.date) <= new Date() ? "not-allowed" : "pointer" }}>삭제</button>
+                      <button onClick={handleDeletePred} style={{ background:"rgba(239,68,68,0.2)", border:"1px solid rgba(239,68,68,0.4)", borderRadius:6, padding:"2px 8px", color:"#fc8181", fontSize:10, cursor:"pointer" }}>삭제</button>
                     )}
                   </div>
                   <div style={{ color:"rgba(255,255,255,0.4)", marginTop:3 }}>{mySubmission.formation} · {new Date(mySubmission.savedAt).toLocaleString("ko-KR",{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"})}</div>
                 </div>
               )}
 
+              {lineupAvailable && otherPredictions.length > 0 && (
+                <button onClick={async () => {
+                  setScoringStatus("채점 중...");
+                  try {
+                    const r = await fetch(`${PROXY}?path=/api/score`, {
+                      method:'POST',
+                      headers:{'Content-Type':'application/json'},
+                      body: JSON.stringify({ matchId: selectedMatch.id, eventId: selectedMatch.id }),
+                    });
+                    const d = await r.json();
+                    setScoringStatus("✅ 채점 완료!");
+                    // 점수 새로고침
+                    const sr = await fetch(`${PROXY}?path=/api/score`);
+                    const sd = await sr.json();
+                    setScoreData(sd);
+                    setTimeout(() => setScoringStatus(""), 3000);
+                  } catch(e) {
+                    setScoringStatus("채점 실패. 다시 시도해주세요.");
+                  }
+                }} disabled={scoringStatus === "채점 중..."} style={{ width:"100%", marginTop:8, padding:12, background: scoringStatus === "채점 중..." ? "rgba(180,83,9,0.4)" : "linear-gradient(135deg,#b45309,#d97706)", border:"none", borderRadius:10, color:"white", fontSize:13, fontWeight:700, cursor: scoringStatus === "채점 중..." ? "not-allowed" : "pointer", boxShadow:"0 4px 16px rgba(180,83,9,0.4)" }}>
+                  {scoringStatus === "채점 중..." ? "채점 중..." : "🏆 선발 발표됨! 지금 채점하기"}
+                </button>
+              )}
+              {scoringStatus && (
+                <div style={{ textAlign:"center", fontSize:12, padding:8, color:scoringStatus.includes("✅")?"#22c55e":"#fbbf24" }}>{scoringStatus}</div>
+              )}
+
               {otherPredictions.length > 0 && (
-                <OtherPredictions preds={otherPredictions} myNickname={nickname} />
+                <OtherPredictions preds={otherPredictions} myNickname={nickname} scores={selectedMatch ? scoreData.detail?.[selectedMatch.id] : undefined} />
               )}
             </>}
           </div>
@@ -608,7 +809,31 @@ export default function App() {
                   </div>
                 </div>
                 {matchPredictions.length > 0 && (
-                  <OtherPredictions preds={matchPredictions} myNickname={nickname} />
+                  <OtherPredictions preds={matchPredictions} myNickname={nickname} scores={viewingMatch ? scoreData.detail?.[viewingMatch.id] : undefined} officialPlayers={officialLineup?.players} />
+                )}
+                {officialLineup && matchPredictions.length > 0 && (
+                  <button onClick={async () => {
+                    if (historyScoringStatus === "채점 중...") return;
+                    setHistoryScoringStatus("채점 중...");
+                    try {
+                      const r = await fetch(`${PROXY}?path=/api/score`, {
+                        method:'POST',
+                        headers:{'Content-Type':'application/json'},
+                        body: JSON.stringify({ matchId: viewingMatch.id, eventId: viewingMatch.id }),
+                      });
+                      const d = await r.json();
+                      setHistoryScoringStatus("✅ 채점 완료!");
+                      setTimeout(() => setHistoryScoringStatus(""), 3000);
+                      alert(`채점 완료!
+${Object.entries(d.scores||{}).map(([n,s])=>`${n}: ${s}pt`).join('
+')}`);
+                    } catch {
+                      setHistoryScoringStatus("채점 실패");
+                      setTimeout(() => setHistoryScoringStatus(""), 3000);
+                    }
+                  }} disabled={historyScoringStatus === "채점 중..."} style={{ width:"100%", padding:10, background: historyScoringStatus==="채점 중..."?"rgba(251,191,36,0.05)":"rgba(251,191,36,0.15)", border:"1px solid rgba(251,191,36,0.3)", borderRadius:8, color:"#fbbf24", fontSize:12, cursor:historyScoringStatus==="채점 중..."?"not-allowed":"pointer", marginBottom:8, fontWeight:700 }}>
+                    {historyScoringStatus || "🏆 채점하기"}
+                  </button>
                 )}
                 <button onClick={()=>setViewingMatch(null)} style={{ width:"100%", padding:10, background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:8, color:"rgba(255,255,255,0.5)", fontSize:12, cursor:"pointer" }}>← 목록으로</button>
               </div>
@@ -668,7 +893,12 @@ export default function App() {
                             <div style={{ fontSize:12, fontWeight:700 }}>{p.round ? `${p.round}R` : ''} vs {p.opponent}</div>
                             <div style={{ fontSize:10, color:"rgba(255,255,255,0.4)", marginTop:2 }}>{p.formation} · {d.toLocaleDateString('ko-KR',{month:'short',day:'numeric'})}</div>
                           </div>
-                          <div style={{ fontSize:12, color:"#60a5fa" }}>보기 →</div>
+                          <div style={{ textAlign:"right" }}>
+                            {scoreData.detail?.[p.matchId]?.[rankingView.nickname] !== undefined && (
+                              <div style={{ fontSize:14, fontWeight:900, color:"#fbbf24", fontFamily:"monospace" }}>{scoreData.detail[p.matchId][rankingView.nickname]}pt</div>
+                            )}
+                            <div style={{ fontSize:12, color:"#60a5fa" }}>보기 →</div>
+                          </div>
                         </div>
                       );
                     })}
@@ -701,14 +931,17 @@ export default function App() {
                             <div style={{ fontSize:13, fontWeight:700 }}>{entry.nickname}{entry.nickname===nickname&&<span style={{ fontSize:10, color:"#60a5fa", marginLeft:6 }}>나</span>}</div>
                             <div style={{ fontSize:10, color:"rgba(255,255,255,0.3)" }}>예측 {entry.count}경기</div>
                           </div>
-                          <div style={{ fontSize:12, color:"#60a5fa" }}>›</div>
+                          <div style={{ textAlign:"right" }}>
+                            <div style={{ fontSize:18, fontWeight:900, color:"#fbbf24", fontFamily:"monospace" }}>{entry.score}pt</div>
+                            <div style={{ fontSize:10, color:"#60a5fa" }}>›</div>
+                          </div>
                         </div>
                       );
                     })}
                   </div>
                 )}
                 <div style={{ marginTop:16, padding:"12px 14px", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:10, fontSize:11, color:"rgba(255,255,255,0.35)", lineHeight:1.8 }}>
-                  <div style={{ fontWeight:700, color:"rgba(255,255,255,0.5)", marginBottom:4 }}>📌 채점 기준 (예정)</div>
+                  <div style={{ fontWeight:700, color:"rgba(255,255,255,0.5)", marginBottom:4 }}>📌 채점 기준</div>
                   선발 선수 1명 적중 = +5pt<br/>포메이션 적중 = +10pt<br/>11명 전원 적중 = 보너스 +30pt
                 </div>
               </div>
@@ -716,6 +949,8 @@ export default function App() {
           </div>
         )}
       </div>
+      </>
+      )}
     </div>
   );
 }
