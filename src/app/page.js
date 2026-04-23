@@ -529,7 +529,7 @@ export default function App() {
   async function handleDeletePred() {
     if (!nickname || !selectedMatch) return;
     try {
-      await fetch(`${PROXY}?path=/api/predictions?matchId=${selectedMatch.id}&nickname=${encodeURIComponent(nickname)}`, {
+      await fetch(`${PROXY}?path=${encodeURIComponent(`/api/predictions?matchId=${selectedMatch.id}&nickname=${encodeURIComponent(nickname)}`)}`, {
         method: 'DELETE',
       });
     } catch {}

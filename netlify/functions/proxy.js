@@ -11,8 +11,6 @@ async function getPinggyUrl() {
 }
 
 exports.handler = async (event) => {
-  const path = event.queryStringParameters?.path || '/api/schedule';
-
   // OPTIONS preflight 처리
   if (event.httpMethod === 'OPTIONS') {
     return {
@@ -25,6 +23,10 @@ exports.handler = async (event) => {
       body: '',
     };
   }
+
+  // path 파라미터 디코딩 (encodeURIComponent로 인코딩된 경우 포함)
+  const rawPath = event.queryStringParameters?.path || '/api/schedule';
+  const path = decodeURIComponent(rawPath);
 
   try {
     const base = await getPinggyUrl();
