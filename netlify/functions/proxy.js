@@ -13,6 +13,19 @@ async function getPinggyUrl() {
 exports.handler = async (event) => {
   const path = event.queryStringParameters?.path || '/api/schedule';
 
+  // OPTIONS preflight 처리
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers': '*',
+      },
+      body: '',
+    };
+  }
+
   try {
     const base = await getPinggyUrl();
     const targetUrl = base.replace(/\/$/, '') + path;
@@ -31,7 +44,7 @@ exports.handler = async (event) => {
       headers: {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
         'Access-Control-Allow-Headers': '*',
       },
       body: text,
