@@ -338,8 +338,6 @@ export default function App() {
   const [scoringStatus, setScoringStatus] = useState("");
   const [currentLineup, setCurrentLineup] = useState(null);
   const [pollingInterval, setPollingInterval] = useState(null);
-  const [currentLineup, setCurrentLineup] = useState(null);
-  const [pollingInterval, setPollingInterval] = useState(null); // 현재 선택 경기 실제 선발
   const [officialLineup, setOfficialLineup] = useState(null);
   const [lineupLoading, setLineupLoading] = useState(false);
   const [viewingMatch, setViewingMatch] = useState(null);
