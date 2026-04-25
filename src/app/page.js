@@ -417,7 +417,36 @@ export default function App() {
   }
 
   function handleFormationChange(f) { setFormation(f); resetSlots(f); }
-  function handleSlotClick(i) { setSelectedSlot(selectedSlot === i ? null : i); }
+  function handleSlotClick(i) {
+    if (selectedSlot === null) {
+      // 아무것도 선택 안 된 상태 → 클릭한 슬롯 선택
+      setSelectedSlot(i);
+    } else if (selectedSlot === i) {
+      // 같은 슬롯 클릭 → 선택 해제
+      setSelectedSlot(null);
+    } else if (slots[selectedSlot]?.player && slots[i]?.player) {
+      // 둘 다 선수 있음 → 위치 교체
+      const newSlots = slots.map((s, idx) => {
+        if (idx === selectedSlot) return { ...s, player: slots[i].player };
+        if (idx === i) return { ...s, player: slots[selectedSlot].player };
+        return s;
+      });
+      setSlots(newSlots);
+      setSelectedSlot(null);
+    } else if (slots[selectedSlot]?.player && !slots[i]?.player) {
+      // 선수 있는 곳 → 빈 곳: 이동
+      const newSlots = slots.map((s, idx) => {
+        if (idx === selectedSlot) return { ...s, player: null };
+        if (idx === i) return { ...s, player: slots[selectedSlot].player };
+        return s;
+      });
+      setSlots(newSlots);
+      setSelectedSlot(null);
+    } else {
+      // 빈 곳 → 다른 곳: 새 선수 선택 모드로 전환
+      setSelectedSlot(i);
+    }
+  }
 
   function handlePlayerSelect(player) {
     if (selectedSlot === null) return;
@@ -690,7 +719,7 @@ export default function App() {
                 </div>
               </div>
               <div style={{ marginBottom:12 }}>
-                <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginBottom:8, textTransform:"uppercase", letterSpacing:"0.1em" }}>작전판 ({countFilled()}/11) · 포지션 클릭 후 선수 선택</div>
+                <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginBottom:8, textTransform:"uppercase", letterSpacing:"0.1em" }}>작전판 ({countFilled()}/11) · 포지션 클릭 후 선수 선택 · 선수끼리 클릭하면 위치 교체</div>
                 <PitchView slots={slots} formation={formation} onSlotClick={handleSlotClick} selectedSlot={selectedSlot} interactive={true} />
               </div>
               {selectedSlot !== null && (
