@@ -330,6 +330,10 @@ export default function App() {
   const [saveStatus, setSaveStatus] = useState("");
   const [lineupAvailable, setLineupAvailable] = useState(false);
   const [scoringStatus, setScoringStatus] = useState("");
+  const [currentLineup, setCurrentLineup] = useState(null);
+  const [pollingInterval, setPollingInterval] = useState(null);
+  const [currentLineup, setCurrentLineup] = useState(null);
+  const [pollingInterval, setPollingInterval] = useState(null); // 현재 선택 경기 실제 선발
   const [officialLineup, setOfficialLineup] = useState(null);
   const [lineupLoading, setLineupLoading] = useState(false);
   const [viewingMatch, setViewingMatch] = useState(null);
@@ -359,6 +363,11 @@ export default function App() {
       .then(r => r.json())
       .then(d => { if (d.players) setSquad(d.players); })
       .catch(() => {});
+    // 초기 접속 시 점수 데이터 자동 로드
+    fetch(`${PROXY}?path=/api/score`)
+      .then(r => r.json())
+      .then(d => setScoreData(d))
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -377,12 +386,44 @@ export default function App() {
         if (cached && cached.formation) { setFormation(cached.formation); setSlots(cached.slots); setMySubmission(cached); }
       } catch {}
     }
-    // 라인업 발표 여부 확인
+    // 이전 폴링 중지
+    setPollingInterval(prev => { if (prev) clearInterval(prev); return null; });
     setLineupAvailable(false);
-    fetch(`${PROXY}?path=/api/lineup?eventId=${selectedMatch.id}`)
-      .then(r => r.json())
-      .then(d => { if (d.lineup?.players?.length > 0) setLineupAvailable(true); })
-      .catch(() => {});
+    setCurrentLineup(null);
+
+    const matchId = selectedMatch.id;
+
+    async function checkAndScore() {
+      try {
+        const r = await fetch(`${PROXY}?path=/api/lineup?eventId=${matchId}`);
+        const d = await r.json();
+        if (d.lineup?.players?.length > 0) {
+          setLineupAvailable(true);
+          setCurrentLineup(d.lineup);
+          // 자동 채점
+          const sr = await fetch(`${PROXY}?path=/api/score`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ matchId, eventId: matchId }),
+          });
+          const sd = await sr.json();
+          // 점수 새로고침
+          const scoreRes = await fetch(`${PROXY}?path=/api/score`);
+          const scoreData = await scoreRes.json();
+          setScoreData(scoreData);
+          setScoringStatus("✅ 자동 채점 완료!");
+          setTimeout(() => setScoringStatus(""), 5000);
+          // 폴링 중지
+          setPollingInterval(prev => { if (prev) clearInterval(prev); return null; });
+        }
+      } catch {}
+    }
+
+    // 즉시 한번 확인
+    checkAndScore();
+    // 30초마다 반복 확인
+    const interval = setInterval(checkAndScore, 30000);
+    setPollingInterval(interval);
 
     // 서버에서 최신 데이터 확인
     fetch(`${PROXY}?path=/api/predictions?matchId=${selectedMatch.id}`)
@@ -409,6 +450,13 @@ export default function App() {
   }, [selectedMatch?.id, nickname]);
 
   useEffect(() => { if (tab === "ranking") loadRanking(); }, [tab]);
+
+  // 폴링 정리 (컴포넌트 언마운트 시)
+  useEffect(() => {
+    return () => {
+      setPollingInterval(prev => { if (prev) clearInterval(prev); return null; });
+    };
+  }, []);
 
   function resetSlots(f) {
     const layout = FORMATION_LAYOUTS[f] || FORMATION_LAYOUTS["4-3-3"];
@@ -720,7 +768,7 @@ export default function App() {
               </div>
               <div style={{ marginBottom:12 }}>
                 <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginBottom:8, textTransform:"uppercase", letterSpacing:"0.1em" }}>작전판 ({countFilled()}/11) · 포지션 클릭 후 선수 선택 · 선수끼리 클릭하면 위치 교체</div>
-                <PitchView slots={slots} formation={formation} onSlotClick={handleSlotClick} selectedSlot={selectedSlot} interactive={true} />
+                <PitchView slots={slots} formation={formation} onSlotClick={handleSlotClick} selectedSlot={selectedSlot} interactive={true} actualPlayers={currentLineup?.players} />
               </div>
               {selectedSlot !== null && (
                 <div style={{ marginBottom:12, background:"rgba(255,255,255,0.04)", border:"1.5px solid rgba(59,130,246,0.3)", borderRadius:12, padding:12 }}>
@@ -765,28 +813,15 @@ export default function App() {
                 </div>
               )}
 
-              {lineupAvailable && otherPredictions.length > 0 && (
-                <button onClick={async () => {
-                  setScoringStatus("채점 중...");
-                  try {
-                    const r = await fetch(`${PROXY}?path=/api/score`, {
-                      method:'POST',
-                      headers:{'Content-Type':'application/json'},
-                      body: JSON.stringify({ matchId: selectedMatch.id, eventId: selectedMatch.id }),
-                    });
-                    const d = await r.json();
-                    setScoringStatus("✅ 채점 완료!");
-                    // 점수 새로고침
-                    const sr = await fetch(`${PROXY}?path=/api/score`);
-                    const sd = await sr.json();
-                    setScoreData(sd);
-                    setTimeout(() => setScoringStatus(""), 3000);
-                  } catch(e) {
-                    setScoringStatus("채점 실패. 다시 시도해주세요.");
-                  }
-                }} disabled={scoringStatus === "채점 중..."} style={{ width:"100%", marginTop:8, padding:12, background: scoringStatus === "채점 중..." ? "rgba(180,83,9,0.4)" : "linear-gradient(135deg,#b45309,#d97706)", border:"none", borderRadius:10, color:"white", fontSize:13, fontWeight:700, cursor: scoringStatus === "채점 중..." ? "not-allowed" : "pointer", boxShadow:"0 4px 16px rgba(180,83,9,0.4)" }}>
-                  {scoringStatus === "채점 중..." ? "채점 중..." : "🏆 선발 발표됨! 지금 채점하기"}
-                </button>
+              {lineupAvailable && (
+                <div style={{ marginTop:8, padding:"8px 12px", background:"rgba(34,197,94,0.08)", border:"1px solid rgba(34,197,94,0.2)", borderRadius:8, fontSize:11, color:"#4ade80", textAlign:"center" }}>
+                  ✅ 선발 발표됨! {scoringStatus || "자동 채점 완료"}
+                </div>
+              )}
+              {!lineupAvailable && selectedMatch && (
+                <div style={{ marginTop:8, padding:"8px 12px", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:8, fontSize:11, color:"rgba(255,255,255,0.3)", textAlign:"center" }}>
+                  ⏳ 선발 발표 대기 중... (30초마다 자동 확인)
+                </div>
               )}
               {scoringStatus && (
                 <div style={{ textAlign:"center", fontSize:12, padding:8, color:scoringStatus.includes("✅")?"#22c55e":"#fbbf24" }}>{scoringStatus}</div>
@@ -969,7 +1004,7 @@ export default function App() {
                 )}
                 <div style={{ marginTop:16, padding:"12px 14px", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:10, fontSize:11, color:"rgba(255,255,255,0.35)", lineHeight:1.8 }}>
                   <div style={{ fontWeight:700, color:"rgba(255,255,255,0.5)", marginBottom:4 }}>📌 채점 기준</div>
-                  선발 선수 1명 적중 = +5pt<br/>포메이션 적중 = +10pt<br/>11명 전원 적중 = 보너스 +30pt
+                  선발 선수 1명 적중 = +5pt<br/>11명 전원 적중 = 보너스 +30pt<br/>경기당 최대 85pt
                 </div>
               </div>
             )}
