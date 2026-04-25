@@ -174,12 +174,18 @@ function PitchView({ slots, formation, onSlotClick, selectedSlot, interactive, a
   // actualPlayers: 실제 선발 선수 이름 배열 (비교용)
   function isHit(player) {
     if (!actualPlayers || !player) return null;
-    const pLast = (player.nameKo || player.name || '').slice(-2);
-    const pName = (player.name || '').toLowerCase().split(' ').pop();
     return actualPlayers.some(a => {
-      const aLast = (a.nameKo || a.name || '').slice(-2);
-      const aName = (a.name || '').toLowerCase().split(' ').pop();
-      return pLast === aLast || pName === aName || pName.includes(aName) || aName.includes(pName);
+      // 1순위: 등번호 일치
+      if (player.number && a.number && String(player.number) === String(a.number)) return true;
+      // 2순위: 영문 이름 전체 일치
+      const pName = (player.name || '').toLowerCase();
+      const aName = (a.name || '').toLowerCase();
+      if (pName && aName && pName === aName) return true;
+      // 3순위: 한글 이름 전체 일치 (slice 금지 - 오탐 방지)
+      const pKo = (player.nameKo || '');
+      const aKo = (a.nameKo || '');
+      if (pKo && aKo && pKo === aKo) return true;
+      return false;
     });
   }
   return (
@@ -344,6 +350,7 @@ export default function App() {
   const [loadingRanking, setLoadingRanking] = useState(false);
   const [rankingView, setRankingView] = useState(null);
   const [rankingPredDetail, setRankingPredDetail] = useState(null);
+  const [rankingLineup, setRankingLineup] = useState(null);
   const [allPredData, setAllPredData] = useState({});
   const [scoreData, setScoreData] = useState({ totals: {}, detail: {} });
 
@@ -932,9 +939,9 @@ export default function App() {
 
                 {rankingPredDetail ? (
                   <div>
-                    <button onClick={() => setRankingPredDetail(null)} style={{ background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:8, padding:"5px 10px", color:"#aaa", fontSize:12, cursor:"pointer", marginBottom:12 }}>← 경기 목록</button>
+                    <button onClick={() => { setRankingPredDetail(null); setRankingLineup(null); }} style={{ background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:8, padding:"5px 10px", color:"#aaa", fontSize:12, cursor:"pointer", marginBottom:12 }}>← 경기 목록</button>
                     <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginBottom:8 }}>{rankingPredDetail.formation}</div>
-                    <PitchView formation={rankingPredDetail.formation} slots={rankingPredDetail.slots} interactive={false} />
+                    <PitchView formation={rankingPredDetail.formation} slots={rankingPredDetail.slots} interactive={false} actualPlayers={rankingLineup?.players} />
                     <div style={{ marginTop:8, display:"flex", flexWrap:"wrap", gap:4 }}>
                       {(rankingPredDetail.slots||[]).filter(s=>s.player).map((s,j) => (
                         <div key={j} style={{ fontSize:10, background:"rgba(29,78,216,0.3)", border:"1px solid rgba(59,130,246,0.3)", borderRadius:6, padding:"2px 6px" }}>
@@ -949,7 +956,14 @@ export default function App() {
                     {rankingView.preds.map((p, i) => {
                       const d = new Date(p.savedAt);
                       return (
-                        <div key={i} onClick={() => setRankingPredDetail(p)}
+                        <div key={i} onClick={() => {
+                          setRankingPredDetail(p);
+                          setRankingLineup(null);
+                          fetch(`${PROXY}?path=/api/lineup?eventId=${p.matchId}`)
+                            .then(r => r.json())
+                            .then(d => { if (d.lineup?.players?.length > 0) setRankingLineup(d.lineup); })
+                            .catch(() => {});
+                        }}
                           style={{ background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:10, padding:"10px 14px", cursor:"pointer", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
                           <div>
                             <div style={{ fontSize:12, fontWeight:700 }}>{p.round ? `${p.round}R` : ''} vs {p.opponent}</div>
