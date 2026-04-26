@@ -615,26 +615,7 @@ export default function App() {
       });
       const d = await r.json();
       if (d.existingNick) {
-        // 기존 닉네임 - 확인 메시지
-        if (!window.confirm(`"${d.nickname}" 닉네임이 이미 사용 중입니다.
-이 닉네임으로 변경하시겠습니까?`)) {
-          return;
-        }
-        // force=true로 재시도
-        const r2 = await fetch(`${PROXY}?path=/api/auth`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'change', nickname, newNickname: d.nickname, force: true }),
-        });
-        const d2 = await r2.json();
-        if (!d2.ok) { setChangeError(d2.error || "변경 실패"); return; }
-        const oldNick = nickname;
-        Object.keys(localStorage).filter(k => k.includes(`_${oldNick}`)).forEach(k => localStorage.removeItem(k));
-        setNickname(d2.nickname);
-        store.set('sw:nickname', d2.nickname);
-        setShowChangeNick(false);
-        setChangeInput("");
-        setChangeError("");
+        setChangeError(`"${d.nickname}" 닉네임은 이미 사용 중입니다. 다른 닉네임을 입력해주세요.`);
         return;
       }
       if (d.ok) {
