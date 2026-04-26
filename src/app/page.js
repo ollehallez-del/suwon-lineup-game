@@ -324,6 +324,9 @@ export default function App() {
   const [showChangeNick, setShowChangeNick] = useState(false);
   const [changeInput, setChangeInput] = useState("");
   const [changeError, setChangeError] = useState("");
+  const [showDeleteNick, setShowDeleteNick] = useState(false);
+  const [deletePassword, setDeletePassword] = useState("");
+  const [deleteError, setDeleteError] = useState("");
   const [pastMatches, setPastMatches] = useState([]);
   const [upcomingMatches, setUpcomingMatches] = useState([]);
   const [scheduleLoading, setScheduleLoading] = useState(true);
@@ -562,6 +565,14 @@ export default function App() {
       });
       const d = await r.json();
       if (d.ok) {
+        if (d.existing) {
+          // 기존 닉네임 - 확인 메시지
+          if (!window.confirm(`"${d.nickname}" 닉네임이 이미 사용 중입니다.
+이 닉네임으로 계속 접속하시겠습니까?`)) {
+            setLoginLoading(false);
+            return;
+          }
+        }
         setNickname(d.nickname);
         setIsLoggedIn(true);
         store.set('sw:nickname', d.nickname);
@@ -574,9 +585,28 @@ export default function App() {
     setLoginLoading(false);
   }
 
+  async function handleDeleteNickname() {
+    if (deletePassword !== "3579") { setDeleteError("비밀번호가 틀렸습니다."); return; }
+    try {
+      await fetch(`${PROXY}?path=/api/auth`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'delete', nickname }),
+      });
+    } catch {}
+    // 로컬 데이터 정리
+    Object.keys(localStorage).filter(k => k.includes(`_${nickname}`) || k === 'sw:nickname').forEach(k => localStorage.removeItem(k));
+    setNickname("");
+    setIsLoggedIn(false);
+    setShowDeleteNick(false);
+    setDeletePassword("");
+    setDeleteError("");
+  }
+
   async function handleChangeNickname() {
     const newNick = changeInput.trim().slice(0, 10);
     if (!newNick) { setChangeError("새 닉네임을 입력해주세요."); return; }
+    if (newNick === nickname) { setChangeError("현재 닉네임과 동일합니다."); return; }
     try {
       const r = await fetch(`${PROXY}?path=/api/auth`, {
         method:'POST',
@@ -584,6 +614,29 @@ export default function App() {
         body: JSON.stringify({ action:'change', nickname, newNickname:newNick }),
       });
       const d = await r.json();
+      if (d.existingNick) {
+        // 기존 닉네임 - 확인 메시지
+        if (!window.confirm(`"${d.nickname}" 닉네임이 이미 사용 중입니다.
+이 닉네임으로 변경하시겠습니까?`)) {
+          return;
+        }
+        // force=true로 재시도
+        const r2 = await fetch(`${PROXY}?path=/api/auth`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'change', nickname, newNickname: d.nickname, force: true }),
+        });
+        const d2 = await r2.json();
+        if (!d2.ok) { setChangeError(d2.error || "변경 실패"); return; }
+        const oldNick = nickname;
+        Object.keys(localStorage).filter(k => k.includes(`_${oldNick}`)).forEach(k => localStorage.removeItem(k));
+        setNickname(d2.nickname);
+        store.set('sw:nickname', d2.nickname);
+        setShowChangeNick(false);
+        setChangeInput("");
+        setChangeError("");
+        return;
+      }
       if (d.ok) {
         // 구 닉네임 로컬캐시 정리
         const oldNick = nickname;
@@ -707,6 +760,25 @@ export default function App() {
         </div>
       </div>
 
+      {/* 닉네임 삭제 모달 */}
+      {showDeleteNick && (
+        <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.7)", zIndex:100, display:"flex", alignItems:"center", justifyContent:"center", padding:20 }}>
+          <div style={{ background:"#1a1f2e", border:"1px solid rgba(239,68,68,0.3)", borderRadius:16, padding:24, width:"100%", maxWidth:360 }}>
+            <div style={{ fontSize:16, fontWeight:700, marginBottom:4, color:"white" }}>🗑️ 닉네임 삭제</div>
+            <div style={{ fontSize:12, color:"#f87171", marginBottom:16 }}>삭제 후 복구가 불가능합니다.</div>
+            <input type="password" value={deletePassword} onChange={e=>setDeletePassword(e.target.value)}
+              placeholder="관리자 비밀번호 입력"
+              onKeyDown={e=>e.key==="Enter"&&handleDeleteNickname()}
+              style={{ width:"100%", background:"rgba(255,255,255,0.08)", border:"1px solid rgba(239,68,68,0.3)", borderRadius:8, padding:"10px 12px", color:"white", fontSize:13, outline:"none", marginBottom:8, boxSizing:"border-box" }} />
+            {deleteError && <div style={{ fontSize:11, color:"#f87171", marginBottom:8 }}>{deleteError}</div>}
+            <div style={{ display:"flex", gap:8 }}>
+              <button onClick={()=>{setShowDeleteNick(false);setDeletePassword("");setDeleteError("");}} style={{ flex:1, padding:10, background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:8, color:"#aaa", fontSize:13, cursor:"pointer" }}>취소</button>
+              <button onClick={handleDeleteNickname} style={{ flex:1, padding:10, background:"#dc2626", border:"none", borderRadius:8, color:"white", fontSize:13, fontWeight:700, cursor:"pointer" }}>삭제</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* 닉네임 변경 모달 */}
       {showChangeNick && (
         <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.7)", zIndex:100, display:"flex", alignItems:"center", justifyContent:"center", padding:20 }}>
@@ -721,6 +793,7 @@ export default function App() {
               <button onClick={()=>{setShowChangeNick(false);setChangeError("");}} style={{ flex:1, padding:10, background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:8, color:"#aaa", fontSize:13, cursor:"pointer" }}>취소</button>
               <button onClick={handleChangeNickname} style={{ flex:1, padding:10, background:"#1d4ed8", border:"none", borderRadius:8, color:"white", fontSize:13, fontWeight:700, cursor:"pointer" }}>변경</button>
             </div>
+            <button onClick={()=>{setShowChangeNick(false);setShowDeleteNick(true);}} style={{ width:"100%", marginTop:8, padding:8, background:"rgba(239,68,68,0.1)", border:"1px solid rgba(239,68,68,0.3)", borderRadius:8, color:"#f87171", fontSize:12, cursor:"pointer" }}>🗑️ 닉네임 삭제</button>
           </div>
         </div>
       )}
