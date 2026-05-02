@@ -162,7 +162,7 @@ const FORMATION_LAYOUTS = {
 
 const posGroupLabel = { G: "골키퍼", D: "수비수", M: "미드필더", F: "공격수" };
 const posOrder = ["G", "D", "M", "F"];
-const PROXY = '/.netlify/functions/proxy';
+const PROXY = '/api/proxy';
 
 const store = {
   get: (k) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : null; } catch { return null; } },
