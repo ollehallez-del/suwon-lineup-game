@@ -1,4 +1,7 @@
+const https = require('https');
 const GIST_ID = '18d30d84225a0ce6f35a3914b9c2bdcd';
+
+const agent = new https.Agent({ rejectUnauthorized: false });
 
 async function getPinggyUrl() {
   const res = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
@@ -11,7 +14,6 @@ async function getPinggyUrl() {
 }
 
 exports.handler = async (event) => {
-  // OPTIONS preflight 처리
   if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: 200,
@@ -24,7 +26,6 @@ exports.handler = async (event) => {
     };
   }
 
-  // path 파라미터 디코딩 (encodeURIComponent로 인코딩된 경우 포함)
   const rawPath = event.queryStringParameters?.path || '/api/schedule';
   const path = decodeURIComponent(rawPath);
 
@@ -35,6 +36,7 @@ exports.handler = async (event) => {
     const options = {
       method: event.httpMethod || 'GET',
       headers: { 'Content-Type': 'application/json' },
+      agent,
     };
     if (event.body) options.body = event.body;
 
