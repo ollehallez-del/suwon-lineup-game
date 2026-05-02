@@ -162,7 +162,7 @@ const FORMATION_LAYOUTS = {
 
 const posGroupLabel = { G: "골키퍼", D: "수비수", M: "미드필더", F: "공격수" };
 const posOrder = ["G", "D", "M", "F"];
-const PROXY = '/.netlify/functions/proxy';
+const PROXY = '/api/proxy';
 
 const store = {
   get: (k) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : null; } catch { return null; } },
@@ -361,7 +361,7 @@ export default function App() {
     fetch(`${PROXY}?path=/api/schedule`)
       .then(r => r.json())
       .then(d => {
-        setPastMatches(d.past || []);
+        setPastMatches((d.past || []).filter(m => m.date.startsWith('2026')));
         setUpcomingMatches(d.upcoming || []);
         if (d.upcoming?.length > 0) setSelectedMatch(d.upcoming[0]);
       })
@@ -971,7 +971,7 @@ export default function App() {
             ) : (
               <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
                 {pastMatches.length===0 && <div style={{ textAlign:"center", padding:24, color:"rgba(255,255,255,0.3)" }}>이전 경기 데이터가 없습니다.</div>}
-                {pastMatches.slice(0,10).map(m => (
+                {pastMatches.map(m => (
                   <div key={m.id} onClick={()=>handleViewLineup(m)} style={{ background:"rgba(255,255,255,0.03)", border:"1.5px solid rgba(255,255,255,0.08)", borderRadius:12, padding:"12px 14px", cursor:"pointer", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
                     <div>
                       <div style={{ fontSize:10, color:"rgba(255,255,255,0.4)", marginBottom:2 }}>{m.round}R · {new Date(m.date).toLocaleDateString('ko-KR',{month:'short',day:'numeric'})} · {m.home?"홈":"원정"}</div>
