@@ -162,7 +162,7 @@ const FORMATION_LAYOUTS = {
 
 const posGroupLabel = { G: "골키퍼", D: "수비수", M: "미드필더", F: "공격수" };
 const posOrder = ["G", "D", "M", "F"];
-const PROXY = '/api/proxy';
+const PROXY = '/.netlify/functions/proxy';
 
 const store = {
   get: (k) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : null; } catch { return null; } },
@@ -400,6 +400,7 @@ export default function App() {
     setCurrentLineup(null);
 
     const matchId = selectedMatch.id;
+    const matchDate = new Date(selectedMatch.date);
 
     async function checkAndScore() {
       try {
@@ -427,11 +428,20 @@ export default function App() {
       } catch {}
     }
 
-    // 즉시 한번 확인
-    checkAndScore();
-    // 30초마다 반복 확인
-    const interval = setInterval(checkAndScore, 30000);
-    setPollingInterval(interval);
+    // 킥오프 90분 전 ~ 30분 후 사이에만 폴링
+    const now = new Date();
+    const diffMin = (matchDate - now) / 60000; // 양수면 경기 전, 음수면 경기 후
+    const inPollingWindow = diffMin <= 90 && diffMin >= -30;
+
+    if (inPollingWindow) {
+      // 폴링 구간 내 → 즉시 확인 후 5분마다 반복
+      checkAndScore();
+      const interval = setInterval(checkAndScore, 300000);
+      setPollingInterval(interval);
+    } else {
+      // 폴링 구간 밖 → 한 번만 확인 (이미 채점된 경우 대비)
+      checkAndScore();
+    }
 
     // 서버에서 최신 데이터 확인
     fetch(`${PROXY}?path=/api/predictions?matchId=${selectedMatch.id}`)
