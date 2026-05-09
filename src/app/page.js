@@ -734,13 +734,17 @@ export default function App() {
     setViewingMatch(match);
     setOfficialLineup(null);
     setMatchPredictions([]);
+    setMatchIncidents([]);
     setLineupLoading(true);
     try {
-      const [lineupRes, predRes] = await Promise.all([
+      const [lineupRes, predRes, incidentRes] = await Promise.all([
         fetch(`${PROXY}?path=/api/lineup?eventId=${match.id}`),
         fetch(`${PROXY}?path=/api/predictions?matchId=${match.id}`),
+        fetch(`${PROXY}?path=/api/incidents?eventId=${match.id}`),
       ]);
       const lineupData = await lineupRes.json();
+      const incidentData = await incidentRes.json();
+      setMatchIncidents(incidentData.incidents || []);
       const predData = await predRes.json();
       if (lineupData.lineup) setOfficialLineup(lineupData.lineup);
       setMatchPredictions(predData.predictions || []);
