@@ -1061,11 +1061,11 @@ export default function App() {
                   <div style={{ textAlign:"center" }}>득실차</div>
                 </div>
                 {leagueStandings.map((row, i) => {
-                  const isSuwon = row.isSuwon || row.team?.name?.includes('Suwon') || row.team?.name?.includes('수원');
+                  const isSuwon = row.isSuwon === true;
                   return (
                     <div key={i} style={{ display:"grid", gridTemplateColumns:"30px 1fr 36px 36px 50px 50px", gap:4, padding:"9px 12px", background: isSuwon ? "rgba(37,99,235,0.2)" : i%2===0 ? "rgba(255,255,255,0.02)" : "transparent", borderTop:"1px solid rgba(255,255,255,0.04)", fontSize:12 }}>
                       <div style={{ color: row.position <= 2 ? "#4ade80" : row.position >= 9 ? "#f87171" : "rgba(255,255,255,0.6)", fontWeight:700 }}>{row.position}</div>
-                      <div style={{ color: isSuwon ? "#60a5fa" : "white", fontWeight: isSuwon ? 700 : 400, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{row.team?.shortName || row.team?.name}</div>
+                      <div style={{ color: isSuwon ? "#60a5fa" : "white", fontWeight: isSuwon ? 700 : 400, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{row.team?.name}</div>
                       <div style={{ textAlign:"center", color:"rgba(255,255,255,0.6)" }}>{row.matches}</div>
                       <div style={{ textAlign:"center", color:"white", fontWeight:700 }}>{row.points}</div>
                       <div style={{ textAlign:"center", color:"rgba(255,255,255,0.6)" }}>{row.scoresFor}</div>
