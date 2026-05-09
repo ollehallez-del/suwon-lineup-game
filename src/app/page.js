@@ -355,8 +355,6 @@ export default function App() {
   const [rankingLineup, setRankingLineup] = useState(null);
   const [leagueStandings, setLeagueStandings] = useState([]);
   const [leagueLoading, setLeagueLoading] = useState(false);
-  const [leagueStandings, setLeagueStandings] = useState([]);
-  const [leagueLoading, setLeagueLoading] = useState(false);
   const [allPredData, setAllPredData] = useState({});
   const [scoreData, setScoreData] = useState({ totals: {}, detail: {} });
 
