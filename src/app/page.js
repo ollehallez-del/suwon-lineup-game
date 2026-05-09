@@ -970,7 +970,7 @@ export default function App() {
                                   {inc.time}{inc.addedTime > 0 ? `+${inc.addedTime}` : ""}'
                                 </span>
                                 <span>{inc.incidentClass === 'ownGoal' ? '🔴' : inc.incidentClass === 'penalty' ? '⚽P' : '⚽'}</span>
-                                <span style={{ color: inc.isHome ? "#60a5fa" : "#f87171", fontWeight:600 }}>{inc.player}</span>
+                                <span style={{ color: (viewingMatch.home ? inc.isHome : !inc.isHome) ? "#60a5fa" : "#f87171", fontWeight:600 }}>{inc.player}</span>
                                 {inc.assist && <span style={{ color:"rgba(255,255,255,0.4)", fontSize:11 }}>🅰️ {inc.assist}</span>}
                                 <span style={{ marginLeft:"auto", color:"rgba(255,255,255,0.5)", fontSize:11 }}>{inc.homeScore}:{inc.awayScore}</span>
                               </div>
