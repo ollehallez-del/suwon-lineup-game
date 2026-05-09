@@ -344,6 +344,7 @@ export default function App() {
   const [officialLineup, setOfficialLineup] = useState(null);
   const [lineupLoading, setLineupLoading] = useState(false);
   const [viewingMatch, setViewingMatch] = useState(null);
+  const [matchIncidents, setMatchIncidents] = useState([]);
   const [matchPredictions, setMatchPredictions] = useState([]);
   const [historyScoringStatus, setHistoryScoringStatus] = useState("");
   const [otherPredictions, setOtherPredictions] = useState([]);
@@ -352,6 +353,10 @@ export default function App() {
   const [rankingView, setRankingView] = useState(null);
   const [rankingPredDetail, setRankingPredDetail] = useState(null);
   const [rankingLineup, setRankingLineup] = useState(null);
+  const [leagueStandings, setLeagueStandings] = useState([]);
+  const [leagueLoading, setLeagueLoading] = useState(false);
+  const [leagueStandings, setLeagueStandings] = useState([]);
+  const [leagueLoading, setLeagueLoading] = useState(false);
   const [allPredData, setAllPredData] = useState({});
   const [scoreData, setScoreData] = useState({ totals: {}, detail: {} });
 
@@ -468,6 +473,32 @@ export default function App() {
   }, [selectedMatch?.id, nickname]);
 
   useEffect(() => { if (tab === "ranking") loadRanking(); }, [tab]);
+
+  useEffect(() => { if (tab === "league") loadLeague(); }, [tab]);
+
+  async function loadLeague() {
+    setLeagueLoading(true);
+    try {
+      const r = await fetch(`${PROXY}?path=/api/standings`);
+      const d = await r.json();
+      setLeagueStandings(d.standings || []);
+    } catch {}
+    setLeagueLoading(false);
+  }
+
+  useEffect(() => {
+    if (tab === "league") loadLeague();
+  }, [tab]);
+
+  async function loadLeague() {
+    setLeagueLoading(true);
+    try {
+      const r = await fetch(`${PROXY}?path=/api/standings`);
+      const d = await r.json();
+      setLeagueStandings(d.standings || []);
+    } catch {}
+    setLeagueLoading(false);
+  }
 
   // 폴링 정리 (컴포넌트 언마운트 시)
   useEffect(() => {
@@ -745,8 +776,8 @@ export default function App() {
           </div>
         </div>
         <div style={{ display:"flex" }}>
-          {[{id:"predict",label:"📋 선발 예측"},{id:"history",label:"📅 이전 라인업"},{id:"ranking",label:"🏆 순위표"}].map(t => (
-            <button key={t.id} onClick={()=>{ setTab(t.id); if(t.id==="ranking"){ setRankingView(null); setRankingPredDetail(null); } if(t.id==="history"){ setViewingMatch(null); } }} style={{ flex:1, padding:"10px 0", background:"none", border:"none", borderBottom:tab===t.id?"3px solid #fbbf24":"3px solid transparent", color:tab===t.id?"#fbbf24":"rgba(255,255,255,0.55)", fontSize:12, fontWeight:tab===t.id?700:500, cursor:"pointer", fontFamily:"'Noto Sans KR',sans-serif" }}>{t.label}</button>
+          {[{id:"predict",label:"📋 선발 예측"},{id:"history",label:"📅 이전 라인업"},{id:"ranking",label:"🏆 순위표"},{id:"league",label:"📊 리그순위"}].map(t => (
+            <button key={t.id} onClick={()=>{ setTab(t.id); if(t.id==="ranking"){ setRankingView(null); setRankingPredDetail(null); } if(t.id==="history"){ setViewingMatch(null); setMatchIncidents([]); } }} style={{ flex:1, padding:"10px 0", background:"none", border:"none", borderBottom:tab===t.id?"3px solid #fbbf24":"3px solid transparent", color:tab===t.id?"#fbbf24":"rgba(255,255,255,0.55)", fontSize:12, fontWeight:tab===t.id?700:500, cursor:"pointer", fontFamily:"'Noto Sans KR',sans-serif" }}>{t.label}</button>
           ))}
         </div>
       </div>
@@ -927,6 +958,23 @@ export default function App() {
                       const layout = FORMATION_LAYOUTS[fmKey]||FORMATION_LAYOUTS['4-3-3'];
                       const readonlySlots = layout.map((pos,i) => ({ pos:pos.pos, player:officialLineup.players[i]||null }));
                       return <>
+                        {/* 득점 기록 */}
+                        {matchIncidents.length > 0 && (
+                          <div style={{ marginBottom:12, padding:"10px 12px", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:10 }}>
+                            <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginBottom:8, fontWeight:700 }}>⚽ 득점 기록</div>
+                            {matchIncidents.map((inc, idx) => (
+                              <div key={idx} style={{ display:"flex", alignItems:"center", gap:6, marginBottom:4, fontSize:12 }}>
+                                <span style={{ color:"#fbbf24", fontWeight:700, minWidth:36 }}>
+                                  {inc.time}{inc.addedTime > 0 ? `+${inc.addedTime}` : ""}'
+                                </span>
+                                <span>{inc.incidentClass === 'ownGoal' ? '🔴' : inc.incidentClass === 'penalty' ? '⚽P' : '⚽'}</span>
+                                <span style={{ color: inc.isHome ? "#60a5fa" : "#f87171", fontWeight:600 }}>{inc.player}</span>
+                                {inc.assist && <span style={{ color:"rgba(255,255,255,0.4)", fontSize:11 }}>🅰️ {inc.assist}</span>}
+                                <span style={{ marginLeft:"auto", color:"rgba(255,255,255,0.5)", fontSize:11 }}>{inc.homeScore}:{inc.awayScore}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                         <div style={{ fontSize:10, color:"rgba(255,255,255,0.35)", marginBottom:8 }}>{officialLineup.formation} 포메이션</div>
                         <PitchView formation={fmKey} slots={readonlySlots} interactive={false} />
                         <div style={{ marginTop:10, display:"flex", flexWrap:"wrap", gap:5 }}>
@@ -966,7 +1014,7 @@ export default function App() {
                     {historyScoringStatus || "🏆 채점하기"}
                   </button>
                 )}
-                <button onClick={()=>setViewingMatch(null)} style={{ width:"100%", padding:10, background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:8, color:"rgba(255,255,255,0.5)", fontSize:12, cursor:"pointer" }}>← 목록으로</button>
+                <button onClick={()=>{ setViewingMatch(null); setMatchIncidents([]); }} style={{ width:"100%", padding:10, background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:8, color:"rgba(255,255,255,0.5)", fontSize:12, cursor:"pointer" }}>← 목록으로</button>
               </div>
             ) : (
               <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
@@ -984,6 +1032,47 @@ export default function App() {
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {tab === "league" && (
+          <div>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
+              <div style={{ fontSize:13, fontWeight:700, color:"white" }}>📊 K리그2 순위</div>
+              <button onClick={loadLeague} style={{ background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:8, padding:"4px 10px", color:"#aaa", fontSize:11, cursor:"pointer" }}>🔄 새로고침</button>
+            </div>
+            {leagueLoading && <div style={{ textAlign:"center", padding:40, color:"rgba(255,255,255,0.3)" }}>로딩 중...</div>}
+            {!leagueLoading && leagueStandings.length === 0 && (
+              <div style={{ textAlign:"center", padding:40, color:"rgba(255,255,255,0.3)", fontSize:13 }}>순위 데이터를 불러오지 못했습니다.</div>
+            )}
+            {!leagueLoading && leagueStandings.length > 0 && (
+              <div style={{ borderRadius:10, overflow:"hidden", border:"1px solid rgba(255,255,255,0.07)" }}>
+                {/* 헤더 */}
+                <div style={{ display:"grid", gridTemplateColumns:"30px 1fr 36px 36px 50px 50px", gap:4, padding:"8px 12px", background:"rgba(255,255,255,0.05)", fontSize:10, color:"rgba(255,255,255,0.4)", fontWeight:700 }}>
+                  <div>순위</div>
+                  <div>팀</div>
+                  <div style={{ textAlign:"center" }}>경기</div>
+                  <div style={{ textAlign:"center" }}>승점</div>
+                  <div style={{ textAlign:"center" }}>득점</div>
+                  <div style={{ textAlign:"center" }}>득실차</div>
+                </div>
+                {leagueStandings.map((row, i) => {
+                  const isSuwon = row.isSuwon || row.team?.name?.includes('Suwon') || row.team?.name?.includes('수원');
+                  return (
+                    <div key={i} style={{ display:"grid", gridTemplateColumns:"30px 1fr 36px 36px 50px 50px", gap:4, padding:"9px 12px", background: isSuwon ? "rgba(37,99,235,0.2)" : i%2===0 ? "rgba(255,255,255,0.02)" : "transparent", borderTop:"1px solid rgba(255,255,255,0.04)", fontSize:12 }}>
+                      <div style={{ color: row.position <= 2 ? "#4ade80" : row.position >= 9 ? "#f87171" : "rgba(255,255,255,0.6)", fontWeight:700 }}>{row.position}</div>
+                      <div style={{ color: isSuwon ? "#60a5fa" : "white", fontWeight: isSuwon ? 700 : 400, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{row.team?.shortName || row.team?.name}</div>
+                      <div style={{ textAlign:"center", color:"rgba(255,255,255,0.6)" }}>{row.matches}</div>
+                      <div style={{ textAlign:"center", color:"white", fontWeight:700 }}>{row.points}</div>
+                      <div style={{ textAlign:"center", color:"rgba(255,255,255,0.6)" }}>{row.scoresFor}</div>
+                      <div style={{ textAlign:"center", color: (row.scoresFor - row.scoresAgainst) > 0 ? "#4ade80" : (row.scoresFor - row.scoresAgainst) < 0 ? "#f87171" : "rgba(255,255,255,0.6)" }}>
+                        {(row.scoresFor - row.scoresAgainst) > 0 ? "+" : ""}{row.scoresFor - row.scoresAgainst}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
