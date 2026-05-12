@@ -747,13 +747,17 @@ export default function App() {
     setLineupLoading(true);
     try {
       const [lineupRes, predRes, incidentRes] = await Promise.all([
-        fetch(`${PROXY}?path=/api/lineup?eventId=${match.id}`),
-        fetch(`${PROXY}?path=/api/predictions?matchId=${match.id}`),
-        fetch(`${PROXY}?path=/api/incidents?eventId=${match.id}`),
+        fetch(`${PROXY}?path=${encodeURIComponent(`/api/lineup?eventId=${match.id}`)}`),
+        fetch(`${PROXY}?path=${encodeURIComponent(`/api/predictions?matchId=${match.id}`)}`),
+        fetch(`${PROXY}?path=${encodeURIComponent(`/api/incidents?eventId=${match.id}`)}`),
       ]);
       const lineupData = await lineupRes.json();
       const incidentData = await incidentRes.json();
       setMatchIncidents(incidentData.incidents || []);
+      // 코멘트 로드
+      const commentRes = await fetch(`${PROXY}?path=${encodeURIComponent(`/api/comments?matchId=${match.id}`)}`);
+      const commentData = await commentRes.json();
+      setMatchComments(commentData.comments || []);
       const predData = await predRes.json();
       if (lineupData.lineup) setOfficialLineup(lineupData.lineup);
       setMatchPredictions(predData.predictions || []);
