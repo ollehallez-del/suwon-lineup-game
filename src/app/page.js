@@ -994,7 +994,7 @@ export default function App() {
                               <input value={commentInput} onChange={e=>setCommentInput(e.target.value.slice(0,50))}
                                 onKeyDown={async e => {
                                   if (e.key !== 'Enter' || !commentInput.trim()) return;
-                                  const r = await fetch(`${PROXY}?path=/api/comments?matchId=${viewingMatch.id}`, {
+                                  const r = await fetch(`${PROXY}?path=${encodeURIComponent(`/api/comments?matchId=${viewingMatch.id}`)}`, {
                                     method:'POST', headers:{'Content-Type':'application/json'},
                                     body: JSON.stringify({ nickname, comment: commentInput }),
                                   });
@@ -1005,7 +1005,7 @@ export default function App() {
                                 style={{ flex:1, background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.12)", borderRadius:6, padding:"6px 10px", color:"white", fontSize:12, outline:"none" }} />
                               <button onClick={async () => {
                                 if (!commentInput.trim()) return;
-                                const r = await fetch(`${PROXY}?path=/api/comments?matchId=${viewingMatch.id}`, {
+                                const r = await fetch(`${PROXY}?path=${encodeURIComponent(`/api/comments?matchId=${viewingMatch.id}`)}`, {
                                   method:'POST', headers:{'Content-Type':'application/json'},
                                   body: JSON.stringify({ nickname, comment: commentInput }),
                                 });
