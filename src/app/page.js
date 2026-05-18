@@ -345,7 +345,11 @@ export default function App() {
   const [lineupLoading, setLineupLoading] = useState(false);
   const [viewingMatch, setViewingMatch] = useState(null);
   const [matchIncidents, setMatchIncidents] = useState([]);
-  const [matchComments, setMatchComments] = useState([]);
+  const [matchComments, setMatchComments] = useState
+  const [scorePreds, setScorePreds] = useState([]);
+  const [myScorePred, setMyScorePred] = useState(null);
+  const [scoreHome, setScoreHome] = useState(0);
+  const [scoreAway, setScoreAway] = useState(0);([]);
   const [commentInput, setCommentInput] = useState("");
   const [commentStatus, setCommentStatus] = useState("");
   const [matchPredictions, setMatchPredictions] = useState([]);
@@ -743,7 +747,7 @@ export default function App() {
     setViewingMatch(match);
     setOfficialLineup(null);
     setMatchPredictions([]);
-    setMatchIncidents([]); setMatchComments([]); setCommentInput(''); setCommentStatus('');
+    setMatchIncidents([]); setMatchComments([]); setCommentInput(''); setCommentStatus(''); setScorePreds([]); setMyScorePred(null); setScoreHome(0); setScoreAway(0);
     setLineupLoading(true);
     try {
       const [lineupRes, predRes, incidentRes] = await Promise.all([
@@ -758,6 +762,14 @@ export default function App() {
       const commentRes = await fetch(`${PROXY}?path=${encodeURIComponent(`/api/comments?matchId=${match.id}`)}`);
       const commentData = await commentRes.json();
       setMatchComments(commentData.comments || []);
+      // 승부 예측 로드
+      const scorePredRes = await fetch(`${PROXY}?path=${encodeURIComponent(`/api/score-pred?matchId=${match.id}`)}`);
+      const scorePredData = await scorePredRes.json();
+      const preds = scorePredData.predictions || [];
+      setScorePreds(preds);
+      const mine = preds.find(p => p.nickname === nickname);
+      if (mine) { setMyScorePred(mine); setScoreHome(mine.homeScore); setScoreAway(mine.awayScore); }
+      else { setMyScorePred(null); setScoreHome(0); setScoreAway(0); }
       const predData = await predRes.json();
       if (lineupData.lineup) setOfficialLineup(lineupData.lineup);
       setMatchPredictions(predData.predictions || []);
@@ -792,7 +804,7 @@ export default function App() {
         </div>
         <div style={{ display:"flex" }}>
           {[{id:"predict",label:"📋 선발 예측"},{id:"history",label:"📅 이전 라인업"},{id:"ranking",label:"🏆 순위표"},{id:"league",label:"📊 리그순위"}].map(t => (
-            <button key={t.id} onClick={()=>{ setTab(t.id); if(t.id==="ranking"){ setRankingView(null); setRankingPredDetail(null); } if(t.id==="history"){ setViewingMatch(null); setMatchIncidents([]); setMatchComments([]); setCommentInput(''); setCommentStatus(''); } }} style={{ flex:1, padding:"10px 0", background:"none", border:"none", borderBottom:tab===t.id?"3px solid #fbbf24":"3px solid transparent", color:tab===t.id?"#fbbf24":"rgba(255,255,255,0.55)", fontSize:12, fontWeight:tab===t.id?700:500, cursor:"pointer", fontFamily:"'Noto Sans KR',sans-serif" }}>{t.label}</button>
+            <button key={t.id} onClick={()=>{ setTab(t.id); if(t.id==="ranking"){ setRankingView(null); setRankingPredDetail(null); } if(t.id==="history"){ setViewingMatch(null); setMatchIncidents([]); setMatchComments([]); setCommentInput(''); setCommentStatus(''); setScorePreds([]); setMyScorePred(null); setScoreHome(0); setScoreAway(0); } }} style={{ flex:1, padding:"10px 0", background:"none", border:"none", borderBottom:tab===t.id?"3px solid #fbbf24":"3px solid transparent", color:tab===t.id?"#fbbf24":"rgba(255,255,255,0.55)", fontSize:12, fontWeight:tab===t.id?700:500, cursor:"pointer", fontFamily:"'Noto Sans KR',sans-serif" }}>{t.label}</button>
           ))}
         </div>
       </div>
@@ -925,6 +937,69 @@ export default function App() {
                     )}
                   </div>
                   <div style={{ color:"rgba(255,255,255,0.4)", marginTop:3 }}>{mySubmission.formation} · {new Date(mySubmission.savedAt).toLocaleString("ko-KR",{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"})}</div>
+                </div>
+              )}
+
+              {/* 승부 예측 섹션 */}
+              {selectedMatch && new Date(selectedMatch.date) > new Date() && (
+                <div style={{ marginBottom:12, padding:"12px 14px", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:10 }}>
+                  <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginBottom:10, fontWeight:700 }}>🎯 승부 예측</div>
+                  <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:12, marginBottom:10 }}>
+                    {/* 홈팀 */}
+                    <div style={{ textAlign:"center", flex:1 }}>
+                      <div style={{ fontSize:11, color:"#60a5fa", marginBottom:6, fontWeight:700 }}>{selectedMatch.home ? "수원" : selectedMatch.opponent}</div>
+                      <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}>
+                        <button onClick={()=>setScoreHome(Math.max(0,scoreHome-1))} style={{ width:26,height:26,borderRadius:6,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"white",fontSize:14,cursor:"pointer" }}>−</button>
+                        <span style={{ fontSize:26,fontWeight:900,minWidth:28,textAlign:"center" }}>{scoreHome}</span>
+                        <button onClick={()=>setScoreHome(scoreHome+1)} style={{ width:26,height:26,borderRadius:6,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"white",fontSize:14,cursor:"pointer" }}>+</button>
+                      </div>
+                    </div>
+                    <div style={{ fontSize:18,color:"rgba(255,255,255,0.3)",fontWeight:700 }}>:</div>
+                    {/* 원정팀 */}
+                    <div style={{ textAlign:"center", flex:1 }}>
+                      <div style={{ fontSize:11, color:"#f87171", marginBottom:6, fontWeight:700 }}>{selectedMatch.home ? selectedMatch.opponent : "수원"}</div>
+                      <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}>
+                        <button onClick={()=>setScoreAway(Math.max(0,scoreAway-1))} style={{ width:26,height:26,borderRadius:6,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"white",fontSize:14,cursor:"pointer" }}>−</button>
+                        <span style={{ fontSize:26,fontWeight:900,minWidth:28,textAlign:"center" }}>{scoreAway}</span>
+                        <button onClick={()=>setScoreAway(scoreAway+1)} style={{ width:26,height:26,borderRadius:6,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"white",fontSize:14,cursor:"pointer" }}>+</button>
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{ textAlign:"center", fontSize:11, marginBottom:8, color: scoreHome > scoreAway ? "#4ade80" : scoreHome < scoreAway ? "#f87171" : "#fbbf24" }}>
+                    {scoreHome > scoreAway ? "🔵 수원 승리" : scoreHome < scoreAway ? "🔴 상대팀 승리" : "⚪ 무승부"}
+                  </div>
+                  <button onClick={async () => {
+                    if (!nickname) return;
+                    const r = await fetch(`${PROXY}?path=${encodeURIComponent(`/api/score-pred?matchId=${selectedMatch.id}`)}`, {
+                      method:'POST', headers:{'Content-Type':'application/json'},
+                      body: JSON.stringify({ nickname, homeScore: scoreHome, awayScore: scoreAway }),
+                    });
+                    const d = await r.json();
+                    if (d.ok) {
+                      setMyScorePred({ nickname, homeScore: scoreHome, awayScore: scoreAway });
+                      setScorePreds(prev => {
+                        const idx = prev.findIndex(p => p.nickname === nickname);
+                        const entry = { nickname, homeScore: scoreHome, awayScore: scoreAway };
+                        if (idx !== -1) { const n=[...prev]; n[idx]=entry; return n; }
+                        return [...prev, entry];
+                      });
+                    }
+                  }} style={{ width:"100%", padding:8, background:"linear-gradient(135deg,#1d4ed8,#2563eb)", border:"none", borderRadius:8, color:"white", fontSize:12, fontWeight:700, cursor:"pointer" }}>
+                    {myScorePred ? "🔄 승부 예측 수정" : "✅ 승부 예측 저장"}
+                  </button>
+                  {/* 친구들 승부 예측 */}
+                  {scorePreds.length > 0 && (
+                    <div style={{ marginTop:10, borderTop:"1px solid rgba(255,255,255,0.06)", paddingTop:8 }}>
+                      {scorePreds.map((p, i) => (
+                        <div key={i} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:4, fontSize:12 }}>
+                          <span style={{ color: p.nickname===nickname?"#60a5fa":"white", fontWeight: p.nickname===nickname?700:400 }}>{p.nickname}</span>
+                          <span style={{ fontWeight:700, color: p.homeScore > p.awayScore ? "#4ade80" : p.homeScore < p.awayScore ? "#f87171" : "#fbbf24" }}>
+                            {p.homeScore} : {p.awayScore}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -1080,7 +1155,7 @@ export default function App() {
                     {historyScoringStatus || "🏆 채점하기"}
                   </button>
                 )}
-                <button onClick={()=>{ setViewingMatch(null); setMatchIncidents([]); setMatchComments([]); setCommentInput(''); setCommentStatus(''); setMatchComments([]); setCommentInput(''); setCommentStatus(''); }} style={{ width:"100%", padding:10, background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:8, color:"rgba(255,255,255,0.5)", fontSize:12, cursor:"pointer" }}>← 목록으로</button>
+                <button onClick={()=>{ setViewingMatch(null); setMatchIncidents([]); setMatchComments([]); setCommentInput(''); setCommentStatus(''); setScorePreds([]); setMyScorePred(null); setScoreHome(0); setScoreAway(0); setMatchComments([]); setCommentInput(''); setCommentStatus(''); }} style={{ width:"100%", padding:10, background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:8, color:"rgba(255,255,255,0.5)", fontSize:12, cursor:"pointer" }}>← 목록으로</button>
               </div>
             ) : (
               <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
