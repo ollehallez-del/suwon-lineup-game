@@ -1096,7 +1096,7 @@ export default function App() {
               )}
 
               {otherPredictions.length > 0 && (
-                <OtherPredictions preds={otherPredictions} myNickname={nickname} scores={selectedMatch ? scoreData.detail?.[selectedMatch.id] : undefined} />
+                <OtherPredictions preds={otherPredictions} myNickname={nickname} scores={selectedMatch ? scoreData.detail?.[selectedMatch.id] : undefined} officialPlayers={currentLineup?.players} scorePreds={scorePreds} />
               )}
             </>}
           </div>
