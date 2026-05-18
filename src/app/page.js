@@ -239,7 +239,7 @@ function PitchView({ slots, formation, onSlotClick, selectedSlot, interactive, a
   );
 }
 
-function OtherPredictions({ preds, myNickname, scores, officialPlayers }) {
+function OtherPredictions({ preds, myNickname, scores, officialPlayers, scorePreds }) {
   const [expanded, setExpanded] = useState(null);
   return (
     <div style={{ marginTop:16 }}>
@@ -259,6 +259,7 @@ function OtherPredictions({ preds, myNickname, scores, officialPlayers }) {
                 style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"10px 12px", cursor:"pointer" }}>
                 <span style={{ fontSize:13, fontWeight:700, color:isMe?"#60a5fa":"white" }}>
                   {p.nickname}{isMe&&<span style={{fontSize:10,marginLeft:4,color:"#60a5fa"}}>나</span>}
+                  {(() => { const sp = (scorePreds||[]).find(s=>s.nickname===p.nickname); return sp ? <span style={{fontSize:11,marginLeft:6,fontWeight:700,color:sp.homeScore>sp.awayScore?"#4ade80":sp.homeScore<sp.awayScore?"#f87171":"#fbbf24"}}>{sp.homeScore}:{sp.awayScore}</span> : null; })()}
                 </span>
                 <div style={{ display:"flex", alignItems:"center", gap:8 }}>
                   {scores?.[p.nickname] !== undefined && (
@@ -270,6 +271,19 @@ function OtherPredictions({ preds, myNickname, scores, officialPlayers }) {
               </div>
               {isOpen && (
                 <div style={{ padding:"0 12px 12px" }}>
+                  {/* 승부 예측 스코어 */}
+                  {(() => { const sp = (scorePreds||[]).find(s=>s.nickname===p.nickname); return sp ? (
+                    <div style={{ display:"flex", justifyContent:"center", alignItems:"center", gap:16, padding:"8px 0 10px", marginBottom:8, borderBottom:"1px solid rgba(255,255,255,0.06)" }}>
+                      <span style={{ fontSize:11, color:"rgba(255,255,255,0.4)" }}>승부 예측</span>
+                      <span style={{ fontSize:20, fontWeight:900, color:sp.homeScore>sp.awayScore?"#4ade80":sp.homeScore<sp.awayScore?"#f87171":"#fbbf24" }}>
+                        {sp.homeScore} : {sp.awayScore}
+                      </span>
+                      <span style={{ fontSize:11, color:sp.homeScore>sp.awayScore?"#4ade80":sp.homeScore<sp.awayScore?"#f87171":"#fbbf24" }}>
+                        {sp.homeScore>sp.awayScore?"수원 승":"수원 패"}
+                        {sp.homeScore===sp.awayScore?"무승부":""}
+                      </span>
+                    </div>
+                  ) : null; })()}
                   <PitchView formation={p.formation} slots={readonlySlots} interactive={false} actualPlayers={officialPlayers} />
                   <div style={{ marginTop:8, display:"flex", flexWrap:"wrap", gap:4 }}>
                     {readonlySlots.filter(s=>s.player).map((s,j) => (
@@ -373,7 +387,18 @@ export default function App() {
       .then(d => {
         setPastMatches((d.past || []).filter(m => m.date.startsWith('2026')));
         setUpcomingMatches(d.upcoming || []);
-        if (d.upcoming?.length > 0) setSelectedMatch(d.upcoming[0]);
+        if (d.upcoming?.length > 0) {
+        const firstMatch = d.upcoming[0];
+        setSelectedMatch(firstMatch);
+        // 초기 로딩 시 score-pred도 로드
+        try {
+          const r = await fetch(`${PROXY}?path=${encodeURIComponent(`/api/score-pred?matchId=${firstMatch.id}`)}`);
+          const sd = await r.json();
+          const preds = sd.predictions || [];
+          setScorePreds(preds);
+          // nickname은 아직 로드 안 됐을 수 있으므로 mine 체크는 경기 클릭 시에만
+        } catch {}
+      }
       })
       .catch(() => {})
       .finally(() => setScheduleLoading(false));
@@ -880,7 +905,18 @@ export default function App() {
               <div style={{ marginBottom:14 }}>
                 <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginBottom:8, textTransform:"uppercase", letterSpacing:"0.1em" }}>예측할 경기 선택</div>
                 <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
-                  {upcomingMatches.slice(0,5).map(m => <MatchCard key={m.id} match={m} active={selectedMatch?.id===m.id} onClick={()=>setSelectedMatch(m)} />)}
+                  {upcomingMatches.slice(0,5).map(m => <MatchCard key={m.id} match={m} active={selectedMatch?.id===m.id} onClick={async ()=>{
+                    setSelectedMatch(m);
+                    setScorePreds([]); setMyScorePred(null); setScoreHome(0); setScoreAway(0);
+                    try {
+                      const r = await fetch(`${PROXY}?path=${encodeURIComponent(`/api/score-pred?matchId=${m.id}`)}`);
+                      const d = await r.json();
+                      const preds = d.predictions || [];
+                      setScorePreds(preds);
+                      const mine = preds.find(p => p.nickname === nickname);
+                      if (mine) { setMyScorePred(mine); setScoreHome(mine.homeScore); setScoreAway(mine.awayScore); }
+                    } catch {}
+                  }} />)}
                 </div>
               </div>
             )}
