@@ -507,6 +507,51 @@ export default function App() {
 
   useEffect(() => { if (tab === "ranking") loadRanking(); }, [tab]);
 
+  useEffect(() => {
+    if (tab === "predict" && selectedMatch) {
+      fetch(`${PROXY}?path=${encodeURIComponent(`/api/score-pred?matchId=${selectedMatch.id}`)}`)
+        .then(r => r.json())
+        .then(sd => {
+          const preds = sd.predictions || [];
+          setScorePreds(preds);
+          const mine = preds.find(p => p.nickname === nickname);
+          if (mine) { setMyScorePred(mine); setScoreHome(mine.homeScore); setScoreAway(mine.awayScore); }
+          else { setMyScorePred(null); }
+        })
+        .catch(() => {});
+    }
+  }, [tab, selectedMatch]);
+
+  useEffect(() => {
+    if (tab === "predict" && selectedMatch) {
+      fetch(`${PROXY}?path=${encodeURIComponent(`/api/score-pred?matchId=${selectedMatch.id}`)}`)
+        .then(r => r.json())
+        .then(sd => {
+          const preds = sd.predictions || [];
+          setScorePreds(preds);
+          const mine = preds.find(p => p.nickname === nickname);
+          if (mine) { setMyScorePred(mine); setScoreHome(mine.homeScore); setScoreAway(mine.awayScore); }
+          else { setMyScorePred(null); }
+        })
+        .catch(() => {});
+    }
+  }, [tab, selectedMatch]);
+
+  useEffect(() => {
+    if (tab === "predict" && selectedMatch) {
+      fetch(`${PROXY}?path=${encodeURIComponent(`/api/score-pred?matchId=${selectedMatch.id}`)}`)
+        .then(r => r.json())
+        .then(sd => {
+          const preds = sd.predictions || [];
+          setScorePreds(preds);
+          const mine = preds.find(p => p.nickname === nickname);
+          if (mine) { setMyScorePred(mine); setScoreHome(mine.homeScore); setScoreAway(mine.awayScore); }
+          else { setMyScorePred(null); }
+        })
+        .catch(() => {});
+    }
+  }, [tab]);
+
   useEffect(() => { if (tab === "league") loadLeague(); }, [tab]);
 
   async function loadLeague() {
