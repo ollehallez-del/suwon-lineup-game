@@ -345,7 +345,7 @@ export default function App() {
   const [lineupLoading, setLineupLoading] = useState(false);
   const [viewingMatch, setViewingMatch] = useState(null);
   const [matchIncidents, setMatchIncidents] = useState([]);
-  const [matchComments, setMatchComments] = useState
+  const [matchComments, setMatchComments] = useState([]);
   const [scorePreds, setScorePreds] = useState([]);
   const [myScorePred, setMyScorePred] = useState(null);
   const [scoreHome, setScoreHome] = useState(0);
@@ -990,7 +990,7 @@ export default function App() {
                   {/* 친구들 승부 예측 */}
                   {scorePreds.length > 0 && (
                     <div style={{ marginTop:10, borderTop:"1px solid rgba(255,255,255,0.06)", paddingTop:8 }}>
-                      {scorePreds.map((p, i) => (
+                      {(scorePreds||[]).map((p, i) => (
                         <div key={i} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:4, fontSize:12 }}>
                           <span style={{ color: p.nickname===nickname?"#60a5fa":"white", fontWeight: p.nickname===nickname?700:400 }}>{p.nickname}</span>
                           <span style={{ fontWeight:700, color: p.homeScore > p.awayScore ? "#4ade80" : p.homeScore < p.awayScore ? "#f87171" : "#fbbf24" }}>
