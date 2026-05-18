@@ -388,17 +388,14 @@ export default function App() {
         setPastMatches((d.past || []).filter(m => m.date.startsWith('2026')));
         setUpcomingMatches(d.upcoming || []);
         if (d.upcoming?.length > 0) {
-        const firstMatch = d.upcoming[0];
-        setSelectedMatch(firstMatch);
-        // 초기 로딩 시 score-pred도 로드
-        try {
-          const r = await fetch(`${PROXY}?path=${encodeURIComponent(`/api/score-pred?matchId=${firstMatch.id}`)}`);
-          const sd = await r.json();
-          const preds = sd.predictions || [];
-          setScorePreds(preds);
-          // nickname은 아직 로드 안 됐을 수 있으므로 mine 체크는 경기 클릭 시에만
-        } catch {}
-      }
+          const firstMatch = d.upcoming[0];
+          setSelectedMatch(firstMatch);
+          // 초기 로딩 시 score-pred도 로드
+          fetch(`${PROXY}?path=${encodeURIComponent(`/api/score-pred?matchId=${firstMatch.id}`)}`)
+            .then(r => r.json())
+            .then(sd => { setScorePreds(sd.predictions || []); })
+            .catch(() => {});
+        }
       })
       .catch(() => {})
       .finally(() => setScheduleLoading(false));
