@@ -373,6 +373,7 @@ export default function App() {
   const [loadingRanking, setLoadingRanking] = useState(false);
   const [rankingView, setRankingView] = useState(null);
   const [rankingPredDetail, setRankingPredDetail] = useState(null);
+  const [rankingScorePred, setRankingScorePred] = useState(null);
   const [rankingLineup, setRankingLineup] = useState(null);
   const [leagueStandings, setLeagueStandings] = useState([]);
   const [leagueLoading, setLeagueLoading] = useState(false);
@@ -1209,7 +1210,7 @@ export default function App() {
                   </div>
                 </div>
                 {matchPredictions.length > 0 && (
-                  <OtherPredictions preds={matchPredictions} myNickname={nickname} scores={viewingMatch ? scoreData.detail?.[viewingMatch.id] : undefined} officialPlayers={officialLineup?.players} />
+                  <OtherPredictions preds={matchPredictions} myNickname={nickname} scores={viewingMatch ? scoreData.detail?.[viewingMatch.id] : undefined} officialPlayers={officialLineup?.players} scorePreds={scorePreds} />
                 )}
                 {officialLineup && matchPredictions.length > 0 && (
                   <button onClick={async () => {
@@ -1309,8 +1310,16 @@ export default function App() {
 
                 {rankingPredDetail ? (
                   <div>
-                    <button onClick={() => { setRankingPredDetail(null); setRankingLineup(null); }} style={{ background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:8, padding:"5px 10px", color:"#aaa", fontSize:12, cursor:"pointer", marginBottom:12 }}>← 경기 목록</button>
+                    <button onClick={() => { setRankingPredDetail(null); setRankingLineup(null); setRankingScorePred(null); }} style={{ background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:8, padding:"5px 10px", color:"#aaa", fontSize:12, cursor:"pointer", marginBottom:12 }}>← 경기 목록</button>
                     <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginBottom:8 }}>{rankingPredDetail.formation}</div>
+                    {rankingScorePred && (
+                      <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:10, padding:"8px 12px", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:8 }}>
+                        <span style={{ fontSize:11, color:"rgba(255,255,255,0.4)" }}>🎯 승부 예측</span>
+                        <span style={{ fontSize:18, fontWeight:900, color: rankingScorePred.homeScore>rankingScorePred.awayScore?"#4ade80":rankingScorePred.homeScore<rankingScorePred.awayScore?"#f87171":"#fbbf24" }}>
+                          {rankingScorePred.homeScore} : {rankingScorePred.awayScore}
+                        </span>
+                      </div>
+                    )}
                     <PitchView formation={rankingPredDetail.formation} slots={rankingPredDetail.slots} interactive={false} actualPlayers={rankingLineup?.players} />
                     <div style={{ marginTop:8, display:"flex", flexWrap:"wrap", gap:4 }}>
                       {(rankingPredDetail.slots||[]).filter(s=>s.player).map((s,j) => (
@@ -1329,9 +1338,17 @@ export default function App() {
                         <div key={i} onClick={() => {
                           setRankingPredDetail(p);
                           setRankingLineup(null);
+                          setRankingScorePred(null);
                           fetch(`${PROXY}?path=/api/lineup?eventId=${p.matchId}`)
                             .then(r => r.json())
                             .then(d => { if (d.lineup?.players?.length > 0) setRankingLineup(d.lineup); })
+                            .catch(() => {});
+                          fetch(`${PROXY}?path=${encodeURIComponent(`/api/score-pred?matchId=${p.matchId}`)}`)
+                            .then(r => r.json())
+                            .then(d => {
+                              const sp = (d.predictions||[]).find(s => s.nickname === rankingView.nickname);
+                              setRankingScorePred(sp || null);
+                            })
                             .catch(() => {});
                         }}
                           style={{ background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:10, padding:"10px 14px", cursor:"pointer", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
