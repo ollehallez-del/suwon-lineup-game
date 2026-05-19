@@ -964,7 +964,7 @@ export default function App() {
               </div>
             )}
             {selectedMatch && <>
-              {!myPrediction && <div style={{ marginBottom:12 }}>
+              {!mySubmission && <div style={{ marginBottom:12 }}>
                 <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginBottom:8, textTransform:"uppercase", letterSpacing:"0.1em" }}>포메이션</div>
                 <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
                   {Object.keys(FORMATION_LAYOUTS).map(f => (
