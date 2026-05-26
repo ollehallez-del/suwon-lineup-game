@@ -239,7 +239,7 @@ function PitchView({ slots, formation, onSlotClick, selectedSlot, interactive, a
   );
 }
 
-function OtherPredictions({ preds, myNickname, scores, officialPlayers, scorePreds }) {
+function OtherPredictions({ preds, myNickname, scores, officialPlayers, scorePreds, isHome }) {
   const [expanded, setExpanded] = useState(null);
   return (
     <div style={{ marginTop:16 }}>
@@ -259,7 +259,7 @@ function OtherPredictions({ preds, myNickname, scores, officialPlayers, scorePre
                 style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"10px 12px", cursor:"pointer" }}>
                 <span style={{ fontSize:13, fontWeight:700, color:isMe?"#60a5fa":"white" }}>
                   {p.nickname}{isMe&&<span style={{fontSize:10,marginLeft:4,color:"#60a5fa"}}>나</span>}
-                  {(() => { const sp = (scorePreds||[]).find(s=>s.nickname===p.nickname); return sp ? <span style={{fontSize:11,marginLeft:6,fontWeight:700,color:sp.homeScore>sp.awayScore?"#4ade80":sp.homeScore<sp.awayScore?"#f87171":"#fbbf24"}}>{sp.homeScore}:{sp.awayScore}</span> : null; })()}
+                  {(() => { const sp = (scorePreds||[]).find(s=>s.nickname===p.nickname); return sp ? <span style={{fontSize:11,marginLeft:6,fontWeight:700,color:(isHome?sp.homeScore>sp.awayScore:sp.awayScore>sp.homeScore)?"#4ade80":sp.homeScore===sp.awayScore?"#fbbf24":"#f87171"}}>{sp.homeScore}:{sp.awayScore}</span> : null; })()}
                 </span>
                 <div style={{ display:"flex", alignItems:"center", gap:8 }}>
                   {scores?.[p.nickname] !== undefined && (
@@ -275,12 +275,11 @@ function OtherPredictions({ preds, myNickname, scores, officialPlayers, scorePre
                   {(() => { const sp = (scorePreds||[]).find(s=>s.nickname===p.nickname); return sp ? (
                     <div style={{ display:"flex", justifyContent:"center", alignItems:"center", gap:16, padding:"8px 0 10px", marginBottom:8, borderBottom:"1px solid rgba(255,255,255,0.06)" }}>
                       <span style={{ fontSize:11, color:"rgba(255,255,255,0.4)" }}>승부 예측</span>
-                      <span style={{ fontSize:20, fontWeight:900, color:sp.homeScore>sp.awayScore?"#4ade80":sp.homeScore<sp.awayScore?"#f87171":"#fbbf24" }}>
+                      <span style={{ fontSize:20, fontWeight:900, color:(isHome?sp.homeScore>sp.awayScore:sp.awayScore>sp.homeScore)?"#4ade80":sp.homeScore===sp.awayScore?"#fbbf24":"#f87171" }}>
                         {sp.homeScore} : {sp.awayScore}
                       </span>
-                      <span style={{ fontSize:11, color:sp.homeScore>sp.awayScore?"#4ade80":sp.homeScore<sp.awayScore?"#f87171":"#fbbf24" }}>
-                        {sp.homeScore>sp.awayScore?"수원 승":"수원 패"}
-                        {sp.homeScore===sp.awayScore?"무승부":""}
+                      <span style={{ fontSize:11, color:(isHome?sp.homeScore>sp.awayScore:sp.awayScore>sp.homeScore)?"#4ade80":sp.homeScore===sp.awayScore?"#fbbf24":"#f87171" }}>
+                        {(isHome?sp.homeScore>sp.awayScore:sp.awayScore>sp.homeScore)?"수원 승":sp.homeScore===sp.awayScore?"무승부":"수원 패"}
                       </span>
                     </div>
                   ) : null; })()}
@@ -1001,17 +1000,17 @@ export default function App() {
                   })}
                 </div>
               )}
-              <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+              {!scoreData.detail?.[selectedMatch?.id] && <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
                 <button onClick={handleSave} disabled={saveStatus==="저장 중..."} style={{ width:"100%", padding:14, background:countFilled()===11?"linear-gradient(135deg,#1d4ed8,#2563eb)":"rgba(255,255,255,0.05)", border:"none", borderRadius:10, color:"white", fontSize:14, fontWeight:700, cursor:saveStatus==="저장 중..."?"not-allowed":"pointer", boxShadow:countFilled()===11?"0 4px 16px rgba(37,99,235,0.4)":"none", opacity:saveStatus==="저장 중..."?0.6:1 }}>
                   {saveStatus==="저장 중..."?"저장 중...":(mySubmission?"🔄 예측 수정하기":"✅ 예측 제출하기")} ({countFilled()}/11)
                 </button>
                 {saveStatus && <div style={{ textAlign:"center", fontSize:12, padding:8, color:saveStatus.includes("✅")?"#22c55e":"#fbbf24" }}>{saveStatus}</div>}
-              </div>
+              </div>}
               {mySubmission && (
                 <div style={{ marginTop:10, padding:"10px 14px", background:"rgba(34,197,94,0.08)", border:"1px solid rgba(34,197,94,0.2)", borderRadius:8, fontSize:11, color:"#4ade80" }}>
                   <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
                     <span>✅ 예측 완료!</span>
-{selectedMatch && new Date(selectedMatch.date) > new Date() && (
+{selectedMatch && new Date(selectedMatch.date) > new Date() && !scoreData.detail?.[selectedMatch.id] && (
                       <button onClick={handleDeletePred} style={{ background:"rgba(239,68,68,0.2)", border:"1px solid rgba(239,68,68,0.4)", borderRadius:6, padding:"2px 8px", color:"#fc8181", fontSize:10, cursor:"pointer" }}>삭제</button>
                     )}
                   </div>
@@ -1025,20 +1024,27 @@ export default function App() {
                   <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginBottom:10, fontWeight:700 }}>🎯 승부 예측</div>
                   {myScorePred ? (
                     // 저장된 스코어 표시
+                    {(() => {
+                      const suwonWin = selectedMatch.home ? scoreHome > scoreAway : scoreAway > scoreHome;
+                      const draw = scoreHome === scoreAway;
+                      const resultColor = suwonWin ? "#4ade80" : draw ? "#fbbf24" : "#f87171";
+                      return (
                     <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8 }}>
                       <div style={{ display:"flex", alignItems:"center", gap:12, flex:1, justifyContent:"center" }}>
                         <div style={{ textAlign:"center" }}>
                           <div style={{ fontSize:11, color:"#60a5fa", marginBottom:4 }}>{selectedMatch.home ? "수원" : selectedMatch.opponent}</div>
-                          <div style={{ fontSize:28, fontWeight:900, color:"#4ade80" }}>{scoreHome}</div>
+                          <div style={{ fontSize:28, fontWeight:900, color:resultColor }}>{scoreHome}</div>
                         </div>
                         <div style={{ fontSize:20, color:"rgba(255,255,255,0.3)", fontWeight:700 }}>:</div>
                         <div style={{ textAlign:"center" }}>
                           <div style={{ fontSize:11, color:"#f87171", marginBottom:4 }}>{selectedMatch.home ? selectedMatch.opponent : "수원"}</div>
-                          <div style={{ fontSize:28, fontWeight:900, color:"#4ade80" }}>{scoreAway}</div>
+                          <div style={{ fontSize:28, fontWeight:900, color:resultColor }}>{scoreAway}</div>
                         </div>
                       </div>
-                      <button onClick={() => setMyScorePred(null)} style={{ background:"rgba(255,255,255,0.08)", border:"1px solid rgba(255,255,255,0.15)", borderRadius:6, padding:"4px 10px", color:"#aaa", fontSize:11, cursor:"pointer" }}>수정</button>
+                      {!scoreData.detail?.[selectedMatch?.id] && <button onClick={() => setMyScorePred(null)} style={{ background:"rgba(255,255,255,0.08)", border:"1px solid rgba(255,255,255,0.15)", borderRadius:6, padding:"4px 10px", color:"#aaa", fontSize:11, cursor:"pointer" }}>수정</button>}
                     </div>
+                      );
+                    })()}
                   ) : (
                     // 입력 모드
                     <div>
@@ -1116,7 +1122,7 @@ export default function App() {
               )}
 
               {otherPredictions.length > 0 && (
-                <OtherPredictions preds={otherPredictions} myNickname={nickname} scores={selectedMatch ? scoreData.detail?.[selectedMatch.id] : undefined} officialPlayers={currentLineup?.players} scorePreds={scorePreds} />
+                <OtherPredictions preds={otherPredictions} myNickname={nickname} scores={selectedMatch ? scoreData.detail?.[selectedMatch.id] : undefined} officialPlayers={currentLineup?.players} scorePreds={scorePreds} isHome={selectedMatch?.home} />
               )}
             </>}
           </div>
@@ -1229,7 +1235,7 @@ export default function App() {
                   </div>
                 </div>
                 {matchPredictions.length > 0 && (
-                  <OtherPredictions preds={matchPredictions} myNickname={nickname} scores={viewingMatch ? scoreData.detail?.[viewingMatch.id] : undefined} officialPlayers={officialLineup?.players} scorePreds={scorePreds} />
+                  <OtherPredictions preds={matchPredictions} myNickname={nickname} scores={viewingMatch ? scoreData.detail?.[viewingMatch.id] : undefined} officialPlayers={officialLineup?.players} scorePreds={scorePreds} isHome={viewingMatch?.home} />
                 )}
                 {officialLineup && matchPredictions.length > 0 && (
                   <button onClick={async () => {
