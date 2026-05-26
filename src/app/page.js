@@ -1023,17 +1023,17 @@ export default function App() {
                 <div style={{ marginBottom:12, padding:"12px 14px", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:10 }}>
                   <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginBottom:10, fontWeight:700 }}>🎯 승부 예측</div>
                   {myScorePred ? (
-                    // 저장된 스코어 표시
+                    // 저장된 스코어 표시 (홈:원정 순서)
                     <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8 }}>
                       <div style={{ display:"flex", alignItems:"center", gap:12, flex:1, justifyContent:"center" }}>
                         <div style={{ textAlign:"center" }}>
-                          <div style={{ fontSize:11, color:"#60a5fa", marginBottom:4 }}>수원</div>
-                          <div style={{ fontSize:28, fontWeight:900, color:(selectedMatch.home?scoreHome>scoreAway:scoreAway>scoreHome)?"#4ade80":scoreHome===scoreAway?"#fbbf24":"#f87171" }}>{selectedMatch.home?scoreHome:scoreAway}</div>
+                          <div style={{ fontSize:11, color:selectedMatch.home?"#60a5fa":"#f87171", marginBottom:4 }}>{selectedMatch.home?"수원":selectedMatch.opponent}</div>
+                          <div style={{ fontSize:28, fontWeight:900, color:(selectedMatch.home?scoreHome>scoreAway:scoreAway>scoreHome)?"#4ade80":scoreHome===scoreAway?"#fbbf24":"#f87171" }}>{scoreHome}</div>
                         </div>
                         <div style={{ fontSize:20, color:"rgba(255,255,255,0.3)", fontWeight:700 }}>:</div>
                         <div style={{ textAlign:"center" }}>
-                          <div style={{ fontSize:11, color:"#f87171", marginBottom:4 }}>{selectedMatch.opponent}</div>
-                          <div style={{ fontSize:28, fontWeight:900, color:(selectedMatch.home?scoreHome>scoreAway:scoreAway>scoreHome)?"#4ade80":scoreHome===scoreAway?"#fbbf24":"#f87171" }}>{selectedMatch.home?scoreAway:scoreHome}</div>
+                          <div style={{ fontSize:11, color:selectedMatch.home?"#f87171":"#60a5fa", marginBottom:4 }}>{selectedMatch.home?selectedMatch.opponent:"수원"}</div>
+                          <div style={{ fontSize:28, fontWeight:900, color:(selectedMatch.home?scoreHome>scoreAway:scoreAway>scoreHome)?"#4ade80":scoreHome===scoreAway?"#fbbf24":"#f87171" }}>{scoreAway}</div>
                         </div>
                       </div>
                       {!scoreData.detail?.[selectedMatch?.id] && <button onClick={() => setMyScorePred(null)} style={{ background:"rgba(255,255,255,0.08)", border:"1px solid rgba(255,255,255,0.15)", borderRadius:6, padding:"4px 10px", color:"#aaa", fontSize:11, cursor:"pointer" }}>수정</button>}
@@ -1043,20 +1043,20 @@ export default function App() {
                     <div>
                       <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:12, marginBottom:10 }}>
                         <div style={{ textAlign:"center", flex:1 }}>
-                          <div style={{ fontSize:11, color:"#60a5fa", marginBottom:6, fontWeight:700 }}>수원</div>
+                          <div style={{ fontSize:11, color:selectedMatch.home?"#60a5fa":"#f87171", marginBottom:6, fontWeight:700 }}>{selectedMatch.home?"수원":selectedMatch.opponent}</div>
                           <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}>
-                            <button onClick={()=>selectedMatch.home?setScoreHome(Math.max(0,scoreHome-1)):setScoreAway(Math.max(0,scoreAway-1))} style={{ width:26,height:26,borderRadius:6,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"white",fontSize:14,cursor:"pointer" }}>−</button>
-                            <span style={{ fontSize:26,fontWeight:900,minWidth:28,textAlign:"center" }}>{selectedMatch.home?scoreHome:scoreAway}</span>
-                            <button onClick={()=>selectedMatch.home?setScoreHome(scoreHome+1):setScoreAway(scoreAway+1)} style={{ width:26,height:26,borderRadius:6,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"white",fontSize:14,cursor:"pointer" }}>+</button>
+                            <button onClick={()=>setScoreHome(Math.max(0,scoreHome-1))} style={{ width:26,height:26,borderRadius:6,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"white",fontSize:14,cursor:"pointer" }}>−</button>
+                            <span style={{ fontSize:26,fontWeight:900,minWidth:28,textAlign:"center" }}>{scoreHome}</span>
+                            <button onClick={()=>setScoreHome(scoreHome+1)} style={{ width:26,height:26,borderRadius:6,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"white",fontSize:14,cursor:"pointer" }}>+</button>
                           </div>
                         </div>
                         <div style={{ fontSize:18,color:"rgba(255,255,255,0.3)",fontWeight:700 }}>:</div>
                         <div style={{ textAlign:"center", flex:1 }}>
-                          <div style={{ fontSize:11, color:"#f87171", marginBottom:6, fontWeight:700 }}>{selectedMatch.opponent}</div>
+                          <div style={{ fontSize:11, color:selectedMatch.home?"#f87171":"#60a5fa", marginBottom:6, fontWeight:700 }}>{selectedMatch.home?selectedMatch.opponent:"수원"}</div>
                           <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}>
-                            <button onClick={()=>selectedMatch.home?setScoreAway(Math.max(0,scoreAway-1)):setScoreHome(Math.max(0,scoreHome-1))} style={{ width:26,height:26,borderRadius:6,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"white",fontSize:14,cursor:"pointer" }}>−</button>
-                            <span style={{ fontSize:26,fontWeight:900,minWidth:28,textAlign:"center" }}>{selectedMatch.home?scoreAway:scoreHome}</span>
-                            <button onClick={()=>selectedMatch.home?setScoreAway(scoreAway+1):setScoreHome(scoreHome+1)} style={{ width:26,height:26,borderRadius:6,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"white",fontSize:14,cursor:"pointer" }}>+</button>
+                            <button onClick={()=>setScoreAway(Math.max(0,scoreAway-1))} style={{ width:26,height:26,borderRadius:6,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"white",fontSize:14,cursor:"pointer" }}>−</button>
+                            <span style={{ fontSize:26,fontWeight:900,minWidth:28,textAlign:"center" }}>{scoreAway}</span>
+                            <button onClick={()=>setScoreAway(scoreAway+1)} style={{ width:26,height:26,borderRadius:6,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"white",fontSize:14,cursor:"pointer" }}>+</button>
                           </div>
                         </div>
                       </div>
