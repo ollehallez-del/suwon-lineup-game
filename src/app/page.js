@@ -1022,13 +1022,12 @@ export default function App() {
               {selectedMatch && new Date(selectedMatch.date) > new Date() && (
                 <div style={{ marginBottom:12, padding:"12px 14px", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:10 }}>
                   <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginBottom:10, fontWeight:700 }}>🎯 승부 예측</div>
-                  {myScorePred ? (
+                  {(() => {
+                    const suwonWin = selectedMatch.home ? scoreHome > scoreAway : scoreAway > scoreHome;
+                    const draw = scoreHome === scoreAway;
+                    const resultColor = suwonWin ? "#4ade80" : draw ? "#fbbf24" : "#f87171";
+                    return myScorePred ? (
                     // 저장된 스코어 표시
-                    {(() => {
-                      const suwonWin = selectedMatch.home ? scoreHome > scoreAway : scoreAway > scoreHome;
-                      const draw = scoreHome === scoreAway;
-                      const resultColor = suwonWin ? "#4ade80" : draw ? "#fbbf24" : "#f87171";
-                      return (
                     <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8 }}>
                       <div style={{ display:"flex", alignItems:"center", gap:12, flex:1, justifyContent:"center" }}>
                         <div style={{ textAlign:"center" }}>
@@ -1043,8 +1042,6 @@ export default function App() {
                       </div>
                       {!scoreData.detail?.[selectedMatch?.id] && <button onClick={() => setMyScorePred(null)} style={{ background:"rgba(255,255,255,0.08)", border:"1px solid rgba(255,255,255,0.15)", borderRadius:6, padding:"4px 10px", color:"#aaa", fontSize:11, cursor:"pointer" }}>수정</button>}
                     </div>
-                      );
-                    })()}
                   ) : (
                     // 입력 모드
                     <div>
