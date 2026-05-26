@@ -1068,7 +1068,7 @@ export default function App() {
                         {scoreHome > scoreAway ? "🔵 수원 승리" : scoreHome < scoreAway ? "🔴 상대팀 승리" : "⚪ 무승부"}
                       </div>
                     </div>
-                  )}
+                  ) : null; })()}
                   {!myScorePred && <button onClick={async () => {
                     if (!nickname) return;
                     const r = await fetch(`${PROXY}?path=${encodeURIComponent(`/api/score-pred?matchId=${selectedMatch.id}`)}`, {
