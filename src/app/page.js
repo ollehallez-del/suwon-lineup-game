@@ -1022,22 +1022,18 @@ export default function App() {
               {selectedMatch && new Date(selectedMatch.date) > new Date() && (
                 <div style={{ marginBottom:12, padding:"12px 14px", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:10 }}>
                   <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginBottom:10, fontWeight:700 }}>🎯 승부 예측</div>
-                  {(() => {
-                    const suwonWin = selectedMatch.home ? scoreHome > scoreAway : scoreAway > scoreHome;
-                    const draw = scoreHome === scoreAway;
-                    const resultColor = suwonWin ? "#4ade80" : draw ? "#fbbf24" : "#f87171";
-                    return myScorePred ? (
+                  {myScorePred ? (
                     // 저장된 스코어 표시
                     <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8 }}>
                       <div style={{ display:"flex", alignItems:"center", gap:12, flex:1, justifyContent:"center" }}>
                         <div style={{ textAlign:"center" }}>
                           <div style={{ fontSize:11, color:"#60a5fa", marginBottom:4 }}>{selectedMatch.home ? "수원" : selectedMatch.opponent}</div>
-                          <div style={{ fontSize:28, fontWeight:900, color:resultColor }}>{scoreHome}</div>
+                          <div style={{ fontSize:28, fontWeight:900, color:(selectedMatch.home ? scoreHome > scoreAway : scoreAway > scoreHome) ? "#4ade80" : scoreHome === scoreAway ? "#fbbf24" : "#f87171" }}>{scoreHome}</div>
                         </div>
                         <div style={{ fontSize:20, color:"rgba(255,255,255,0.3)", fontWeight:700 }}>:</div>
                         <div style={{ textAlign:"center" }}>
                           <div style={{ fontSize:11, color:"#f87171", marginBottom:4 }}>{selectedMatch.home ? selectedMatch.opponent : "수원"}</div>
-                          <div style={{ fontSize:28, fontWeight:900, color:resultColor }}>{scoreAway}</div>
+                          <div style={{ fontSize:28, fontWeight:900, color:(selectedMatch.home ? scoreHome > scoreAway : scoreAway > scoreHome) ? "#4ade80" : scoreHome === scoreAway ? "#fbbf24" : "#f87171" }}>{scoreAway}</div>
                         </div>
                       </div>
                       {!scoreData.detail?.[selectedMatch?.id] && <button onClick={() => setMyScorePred(null)} style={{ background:"rgba(255,255,255,0.08)", border:"1px solid rgba(255,255,255,0.15)", borderRadius:6, padding:"4px 10px", color:"#aaa", fontSize:11, cursor:"pointer" }}>수정</button>}
@@ -1064,11 +1060,11 @@ export default function App() {
                           </div>
                         </div>
                       </div>
-                      <div style={{ textAlign:"center", fontSize:11, marginBottom:8, color: scoreHome > scoreAway ? "#4ade80" : scoreHome < scoreAway ? "#f87171" : "#fbbf24" }}>
-                        {scoreHome > scoreAway ? "🔵 수원 승리" : scoreHome < scoreAway ? "🔴 상대팀 승리" : "⚪ 무승부"}
+                      <div style={{ textAlign:"center", fontSize:11, marginBottom:8, color: (selectedMatch.home ? scoreHome > scoreAway : scoreAway > scoreHome) ? "#4ade80" : scoreHome === scoreAway ? "#fbbf24" : "#f87171" }}>
+                        {(selectedMatch.home ? scoreHome > scoreAway : scoreAway > scoreHome) ? "🔵 수원 승리" : scoreHome === scoreAway ? "⚪ 무승부" : "🔴 상대팀 승리"}
                       </div>
                     </div>
-                  ) : null; })()}
+                  )}
                   {!myScorePred && <button onClick={async () => {
                     if (!nickname) return;
                     const r = await fetch(`${PROXY}?path=${encodeURIComponent(`/api/score-pred?matchId=${selectedMatch.id}`)}`, {
