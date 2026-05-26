@@ -1090,7 +1090,7 @@ export default function App() {
                       {(scorePreds||[]).map((p, i) => (
                         <div key={i} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:4, fontSize:12 }}>
                           <span style={{ color: p.nickname===nickname?"#60a5fa":"white", fontWeight: p.nickname===nickname?700:400 }}>{p.nickname}</span>
-                          <span style={{ fontWeight:700, color: p.homeScore > p.awayScore ? "#4ade80" : p.homeScore < p.awayScore ? "#f87171" : "#fbbf24" }}>
+                          <span style={{ fontWeight:700, color: (selectedMatch?.home ? p.homeScore > p.awayScore : p.awayScore > p.homeScore) ? "#4ade80" : p.homeScore === p.awayScore ? "#fbbf24" : "#f87171" }}>
                             {p.homeScore} : {p.awayScore}
                           </span>
                         </div>
