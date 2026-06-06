@@ -465,18 +465,24 @@ export default function App() {
       } catch {}
     }
 
-    // 킥오프 90분 전 ~ 30분 후 사이에만 폴링
+    // 폴링 구간 설정
     const now = new Date();
     const diffMin = (matchDate - now) / 60000; // 양수면 경기 전, 음수면 경기 후
-    const inPollingWindow = diffMin <= 90 && diffMin >= -30;
+    const inPreWindow = diffMin <= 90 && diffMin >= 0;   // 킥오프 90분 전 ~ 킥오프
+    const inPostWindow = diffMin < -120;                  // 킥오프 2시간 후부터 재채점
 
-    if (inPollingWindow) {
-      // 폴링 구간 내 → 즉시 확인 후 5분마다 반복
+    if (inPreWindow) {
+      // 경기 전 → 선발 발표 확인 (5분마다)
+      checkAndScore();
+      const interval = setInterval(checkAndScore, 300000);
+      setPollingInterval(interval);
+    } else if (inPostWindow) {
+      // 경기 종료 후 → 재채점 (5분마다, 성공하면 중단)
       checkAndScore();
       const interval = setInterval(checkAndScore, 300000);
       setPollingInterval(interval);
     } else {
-      // 폴링 구간 밖 → 한 번만 확인 (이미 채점된 경우 대비)
+      // 그 외 → 한 번만 확인
       checkAndScore();
     }
 
@@ -999,7 +1005,7 @@ export default function App() {
                   })}
                 </div>
               )}
-              {!scoreData.detail?.[selectedMatch?.id] && <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+              {!scoreData.detail?.[selectedMatch?.id] && (new Date(selectedMatch?.date) - new Date() > 60*60*1000) && <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
                 <button onClick={handleSave} disabled={saveStatus==="저장 중..."} style={{ width:"100%", padding:14, background:countFilled()===11?"linear-gradient(135deg,#1d4ed8,#2563eb)":"rgba(255,255,255,0.05)", border:"none", borderRadius:10, color:"white", fontSize:14, fontWeight:700, cursor:saveStatus==="저장 중..."?"not-allowed":"pointer", boxShadow:countFilled()===11?"0 4px 16px rgba(37,99,235,0.4)":"none", opacity:saveStatus==="저장 중..."?0.6:1 }}>
                   {saveStatus==="저장 중..."?"저장 중...":(mySubmission?"🔄 예측 수정하기":"✅ 예측 제출하기")} ({countFilled()}/11)
                 </button>
@@ -1009,7 +1015,7 @@ export default function App() {
                 <div style={{ marginTop:10, padding:"10px 14px", background:"rgba(34,197,94,0.08)", border:"1px solid rgba(34,197,94,0.2)", borderRadius:8, fontSize:11, color:"#4ade80" }}>
                   <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
                     <span>✅ 예측 완료!</span>
-{selectedMatch && new Date(selectedMatch.date) > new Date() && !scoreData.detail?.[selectedMatch.id] && (
+{selectedMatch && new Date(selectedMatch.date) > new Date() && !scoreData.detail?.[selectedMatch.id] && (new Date(selectedMatch.date) - new Date() > 60*60*1000) && (
                       <button onClick={handleDeletePred} style={{ background:"rgba(239,68,68,0.2)", border:"1px solid rgba(239,68,68,0.4)", borderRadius:6, padding:"2px 8px", color:"#fc8181", fontSize:10, cursor:"pointer" }}>삭제</button>
                     )}
                   </div>
@@ -1018,7 +1024,7 @@ export default function App() {
               )}
 
               {/* 승부 예측 섹션 */}
-              {selectedMatch && new Date(selectedMatch.date) > new Date() && (
+              {selectedMatch && (new Date(selectedMatch.date) - new Date() > 60*60*1000) && (
                 <div style={{ marginBottom:12, padding:"12px 14px", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:10 }}>
                   <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginBottom:10, fontWeight:700 }}>🎯 승부 예측</div>
                   {myScorePred ? (
@@ -1035,7 +1041,7 @@ export default function App() {
                           <div style={{ fontSize:28, fontWeight:900, color:(selectedMatch.home?scoreHome>scoreAway:scoreAway>scoreHome)?"#4ade80":scoreHome===scoreAway?"#fbbf24":"#f87171" }}>{scoreAway}</div>
                         </div>
                       </div>
-                      {!scoreData.detail?.[selectedMatch?.id] && <button onClick={() => setMyScorePred(null)} style={{ background:"rgba(255,255,255,0.08)", border:"1px solid rgba(255,255,255,0.15)", borderRadius:6, padding:"4px 10px", color:"#aaa", fontSize:11, cursor:"pointer" }}>수정</button>}
+                      {!scoreData.detail?.[selectedMatch?.id] && (new Date(selectedMatch?.date) - new Date() > 60*60*1000) && <button onClick={() => setMyScorePred(null)} style={{ background:"rgba(255,255,255,0.08)", border:"1px solid rgba(255,255,255,0.15)", borderRadius:6, padding:"4px 10px", color:"#aaa", fontSize:11, cursor:"pointer" }}>수정</button>}
                     </div>
                   ) : (
                     // 입력 모드
