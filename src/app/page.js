@@ -446,20 +446,19 @@ export default function App() {
           const scoreData = await scoreRes.json();
           setScoreData(scoreData);
           // 아직 채점 안 됐으면 자동 채점
-          const alreadyScored = scoreData.detail?.[matchId];
-          if (!alreadyScored) {
-            const sr = await fetch(`${PROXY}?path=/api/score`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ matchId, eventId: matchId }),
-            });
-            const sd = await sr.json();
-            const scoreRes2 = await fetch(`${PROXY}?path=/api/score`);
-            const scoreData2 = await scoreRes2.json();
-            setScoreData(scoreData2);
-            setScoringStatus("✅ 자동 채점 완료!");
-            setTimeout(() => setScoringStatus(""), 5000);
-          }
+          // 경기 종료 여부 확인 후 재채점
+          const isFinished = d.lineup?.players?.length > 0;
+          const sr = await fetch(`${PROXY}?path=/api/score`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ matchId, eventId: matchId }),
+          });
+          const sd = await sr.json();
+          const scoreRes2 = await fetch(`${PROXY}?path=/api/score`);
+          const scoreData2 = await scoreRes2.json();
+          setScoreData(scoreData2);
+          setScoringStatus("✅ 자동 채점 완료!");
+          setTimeout(() => setScoringStatus(""), 5000);
           // 폴링 중지
           setPollingInterval(prev => { if (prev) clearInterval(prev); return null; });
         }
