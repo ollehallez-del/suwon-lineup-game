@@ -820,22 +820,30 @@ export default function App() {
       setScoreData(sd);
       // 닉네임별 예측 수 집계
       const nickMap = {};
-      Object.values(preds).forEach(matchPreds => {
+      const scoredMap = {}; // 채점된 경기만 카운트
+      const detail = sd.detail || {};
+      Object.entries(preds).forEach(([matchId, matchPreds]) => {
+        const isScored = !!detail[matchId];
         matchPreds.forEach(p => {
           if (!nickMap[p.nickname]) nickMap[p.nickname] = 0;
           nickMap[p.nickname]++;
+          if (isScored) {
+            if (!scoredMap[p.nickname]) scoredMap[p.nickname] = 0;
+            scoredMap[p.nickname]++;
+          }
         });
       });
       const totals = sd.totals || {};
       const entries = Object.entries(nickMap).map(([nick, count]) => ({
         nickname: nick,
         count,
+        scoredCount: scoredMap[nick] || 0,
         score: totals[nick] || 0,
-        avg: count > 0 ? Math.round((totals[nick] || 0) / count * 10) / 10 : 0,
+        avg: (scoredMap[nick] || 0) > 0 ? Math.round((totals[nick] || 0) / (scoredMap[nick] || 1) * 10) / 10 : 0,
       }));
       entries.sort((a, b) => {
-        const aQual = a.count >= 5;
-        const bQual = b.count >= 5;
+        const aQual = a.scoredCount >= 5;
+        const bQual = b.scoredCount >= 5;
         if (aQual && !bQual) return -1;
         if (!aQual && bQual) return 1;
         return b.avg - a.avg || b.score - a.score;
@@ -1037,18 +1045,23 @@ export default function App() {
                   })}
                 </div>
               )}
-              {!scoreData.detail?.[selectedMatch?.id] && (new Date(selectedMatch?.date) - new Date() > 60*60*1000) && <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+              {!scoreData.detail?.[selectedMatch?.id] && <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
                 <button onClick={handleSave} disabled={saveStatus==="저장 중..."} style={{ width:"100%", padding:14, background:countFilled()===11?"linear-gradient(135deg,#1d4ed8,#2563eb)":"rgba(255,255,255,0.05)", border:"none", borderRadius:10, color:"white", fontSize:14, fontWeight:700, cursor:saveStatus==="저장 중..."?"not-allowed":"pointer", boxShadow:countFilled()===11?"0 4px 16px rgba(37,99,235,0.4)":"none", opacity:saveStatus==="저장 중..."?0.6:1 }}>
                   {saveStatus==="저장 중..."?"저장 중...":(mySubmission?"🔄 예측 수정하기":"✅ 예측 제출하기")} ({countFilled()}/11)
                 </button>
+                {mySubmission && (new Date(selectedMatch?.date) - new Date() <= 90*60*1000) && new Date(selectedMatch?.date) > new Date() && (
+                  <div style={{ textAlign:"center", fontSize:11, color:"rgba(255,255,255,0.3)", marginTop:4 }}>🔒 킥오프 90분 전부터 예측 수정이 불가합니다</div>
+                )}
                 {saveStatus && <div style={{ textAlign:"center", fontSize:12, padding:8, color:saveStatus.includes("✅")?"#22c55e":"#fbbf24" }}>{saveStatus}</div>}
               </div>}
               {mySubmission && (
                 <div style={{ marginTop:10, padding:"10px 14px", background:"rgba(34,197,94,0.08)", border:"1px solid rgba(34,197,94,0.2)", borderRadius:8, fontSize:11, color:"#4ade80" }}>
                   <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
                     <span>✅ 예측 완료!</span>
-{selectedMatch && new Date(selectedMatch.date) > new Date() && !scoreData.detail?.[selectedMatch.id] && (new Date(selectedMatch.date) - new Date() > 60*60*1000) && (
-                      <button onClick={handleDeletePred} style={{ background:"rgba(239,68,68,0.2)", border:"1px solid rgba(239,68,68,0.4)", borderRadius:6, padding:"2px 8px", color:"#fc8181", fontSize:10, cursor:"pointer" }}>삭제</button>
+{selectedMatch && new Date(selectedMatch.date) > new Date() && !scoreData.detail?.[selectedMatch.id] && (
+                      (new Date(selectedMatch.date) - new Date() > 90*60*1000)
+                        ? <button onClick={handleDeletePred} style={{ background:"rgba(239,68,68,0.2)", border:"1px solid rgba(239,68,68,0.4)", borderRadius:6, padding:"2px 8px", color:"#fc8181", fontSize:10, cursor:"pointer" }}>삭제</button>
+                        : <span style={{ fontSize:10, color:"rgba(255,255,255,0.3)" }}>🔒 잠김</span>
                     )}
                   </div>
                   <div style={{ color:"rgba(255,255,255,0.4)", marginTop:3 }}>{mySubmission.formation} · {new Date(mySubmission.savedAt).toLocaleString("ko-KR",{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"})}</div>
@@ -1056,7 +1069,7 @@ export default function App() {
               )}
 
               {/* 승부 예측 섹션 */}
-              {selectedMatch && (new Date(selectedMatch.date) - new Date() > 60*60*1000) && (
+              {selectedMatch && (new Date(selectedMatch.date) - new Date() > 90*60*1000) && (
                 <div style={{ marginBottom:12, padding:"12px 14px", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:10 }}>
                   <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginBottom:10, fontWeight:700 }}>🎯 승부 예측</div>
                   {myScorePred ? (
@@ -1073,7 +1086,7 @@ export default function App() {
                           <div style={{ fontSize:28, fontWeight:900, color:(selectedMatch.home?scoreHome>scoreAway:scoreAway>scoreHome)?"#4ade80":scoreHome===scoreAway?"#fbbf24":"#f87171" }}>{scoreAway}</div>
                         </div>
                       </div>
-                      {!scoreData.detail?.[selectedMatch?.id] && (new Date(selectedMatch?.date) - new Date() > 60*60*1000) && <button onClick={() => setMyScorePred(null)} style={{ background:"rgba(255,255,255,0.08)", border:"1px solid rgba(255,255,255,0.15)", borderRadius:6, padding:"4px 10px", color:"#aaa", fontSize:11, cursor:"pointer" }}>수정</button>}
+                      {!scoreData.detail?.[selectedMatch?.id] && ((new Date(selectedMatch?.date) - new Date() > 90*60*1000) ? <button onClick={() => setMyScorePred(null)} style={{ background:"rgba(255,255,255,0.08)", border:"1px solid rgba(255,255,255,0.15)", borderRadius:6, padding:"4px 10px", color:"#aaa", fontSize:11, cursor:"pointer" }}>수정</button> : <span style={{ fontSize:10, color:"rgba(255,255,255,0.3)" }}>🔒 잠김</span>)}
                     </div>
                   ) : (
                     // 입력 모드
@@ -1444,10 +1457,10 @@ export default function App() {
                       return (
                         <div key={idx} onClick={() => { setRankingView({ nickname: entry.nickname, preds: myPreds }); setRankingPredDetail(null); }}
                           style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 14px", background:entry.nickname===nickname?"rgba(59,130,246,0.1)":"rgba(255,255,255,0.03)", border:entry.nickname===nickname?"1.5px solid rgba(59,130,246,0.4)":"1.5px solid rgba(255,255,255,0.06)", borderRadius:10, cursor:"pointer" }}>
-                          <div style={{ width:28, height:28, borderRadius:"50%", background:idx===0?"#fbbf24":idx===1?"#94a3b8":idx===2?"#cd7c3f":"rgba(255,255,255,0.1)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:900, color:idx<3?"#0a0e1a":"rgba(255,255,255,0.4)", flexShrink:0 }}>{entry.count >= 5 ? idx+1 : "-"}</div>
+                          <div style={{ width:28, height:28, borderRadius:"50%", background:idx===0?"#fbbf24":idx===1?"#94a3b8":idx===2?"#cd7c3f":"rgba(255,255,255,0.1)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:900, color:idx<3?"#0a0e1a":"rgba(255,255,255,0.4)", flexShrink:0 }}>{entry.scoredCount >= 5 ? idx+1 : "-"}</div>
                           <div style={{ flex:1 }}>
                             <div style={{ fontSize:13, fontWeight:700 }}>{entry.nickname}{entry.nickname===nickname&&<span style={{ fontSize:10, color:"#60a5fa", marginLeft:6 }}>나</span>}</div>
-                            <div style={{ fontSize:10, color: entry.count >= 5 ? "rgba(255,255,255,0.3)" : "#f87171" }}>예측 {entry.count}경기{entry.count < 5 ? ` (${5-entry.count}경기 더 필요)` : ""}</div>
+                            <div style={{ fontSize:10, color: entry.scoredCount >= 5 ? "rgba(255,255,255,0.3)" : "#f87171" }}>예측 {entry.scoredCount}경기{entry.scoredCount < 5 ? ` (${5-entry.scoredCount}경기 더 필요)` : ""}</div>
                           </div>
                           <div style={{ textAlign:"right" }}>
                             <div style={{ fontSize:18, fontWeight:900, color:"#fbbf24", fontFamily:"monospace" }}>{entry.avg}pt</div>
