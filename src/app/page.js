@@ -278,7 +278,7 @@ function OtherPredictions({ preds, myNickname, scores, officialPlayers, scorePre
                     const exact = sp.homeScore===rh && sp.awayScore===ra;
                     const result = !exact && (sp.homeScore>sp.awayScore)===(rh>ra) && (sp.homeScore===sp.awayScore)===(rh===ra);
                     resultBadge = exact
-                      ? <span style={{fontSize:10,marginLeft:3,color:"#4ade80"}}>🎯+10</span>
+                      ? <span style={{fontSize:10,marginLeft:3,color:"#4ade80"}}>🎯+15</span>
                       : result
                         ? <span style={{fontSize:10,marginLeft:3,color:"#fbbf24"}}>✅+5</span>
                         : <span style={{fontSize:10,marginLeft:3,color:"rgba(255,255,255,0.3)"}}>❌</span>;
@@ -1383,9 +1383,21 @@ export default function App() {
                     {rankingScorePred && (
                       <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:10, padding:"8px 12px", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:8 }}>
                         <span style={{ fontSize:11, color:"rgba(255,255,255,0.4)" }}>🎯 승부 예측</span>
-                        <span style={{ fontSize:18, fontWeight:900, color: rankingScorePred.homeScore>rankingScorePred.awayScore?"#4ade80":rankingScorePred.homeScore<rankingScorePred.awayScore?"#f87171":"#fbbf24" }}>
+                        <span style={{ fontSize:18, fontWeight:900, color:(rankingPredDetail?.isHome ? rankingScorePred.homeScore>rankingScorePred.awayScore : rankingScorePred.awayScore>rankingScorePred.homeScore)?"#4ade80":rankingScorePred.homeScore===rankingScorePred.awayScore?"#fbbf24":"#f87171" }}>
                           {rankingScorePred.homeScore} : {rankingScorePred.awayScore}
                         </span>
+                        {rankingPredDetail?.score && (() => {
+                          const [sw, ow] = rankingPredDetail.score.split(':').map(Number);
+                          const rh = rankingPredDetail.isHome ? sw : ow;
+                          const ra = rankingPredDetail.isHome ? ow : sw;
+                          const exact = rankingScorePred.homeScore===rh && rankingScorePred.awayScore===ra;
+                          const result = !exact && (rankingScorePred.homeScore>rankingScorePred.awayScore)===(rh>ra) && (rankingScorePred.homeScore===rankingScorePred.awayScore)===(rh===ra);
+                          return exact
+                            ? <span style={{fontSize:11,color:"#4ade80",fontWeight:700}}>🎯 +15pt</span>
+                            : result
+                              ? <span style={{fontSize:11,color:"#fbbf24",fontWeight:700}}>✅ +5pt</span>
+                              : <span style={{fontSize:11,color:"rgba(255,255,255,0.3)"}}>❌</span>;
+                        })()}
                       </div>
                     )}
                     <PitchView formation={rankingPredDetail.formation} slots={rankingPredDetail.slots} interactive={false} actualPlayers={rankingLineup?.players} />
@@ -1452,7 +1464,10 @@ export default function App() {
                     {rankingData.map((entry,idx) => {
                       // 이 닉네임의 전체 예측 수집
                       const myPreds = Object.entries(allPredData).flatMap(([matchId, preds]) =>
-                        preds.filter(p => p.nickname === entry.nickname)
+                        preds.filter(p => p.nickname === entry.nickname).map(p => {
+                          const matchInfo = [...(pastMatches||[]), ...(upcomingMatches||[])].find(m => m.id === matchId);
+                          return { ...p, isHome: matchInfo?.home, score: matchInfo?.score };
+                        })
                       );
                       return (
                         <div key={idx} onClick={() => { setRankingView({ nickname: entry.nickname, preds: myPreds }); setRankingPredDetail(null); }}
