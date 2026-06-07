@@ -271,7 +271,10 @@ function OtherPredictions({ preds, myNickname, scores, officialPlayers, scorePre
                   // 채점 완료 시 +10/+5/❌ 표시
                   let resultBadge = null;
                   if (actualScore) {
-                    const [rh, ra] = actualScore.split(':').map(Number);
+                    const [suwonScore, oppScore] = actualScore.split(':').map(Number);
+                    // score는 수원:상대 기준, 예측은 실제 홈:원정 기준
+                    const rh = isHome ? suwonScore : oppScore;
+                    const ra = isHome ? oppScore : suwonScore;
                     const exact = sp.homeScore===rh && sp.awayScore===ra;
                     const result = !exact && (sp.homeScore>sp.awayScore)===(rh>ra) && (sp.homeScore===sp.awayScore)===(rh===ra);
                     resultBadge = exact
