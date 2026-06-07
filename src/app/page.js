@@ -239,13 +239,17 @@ function PitchView({ slots, formation, onSlotClick, selectedSlot, interactive, a
   );
 }
 
-function OtherPredictions({ preds, myNickname, scores, officialPlayers, scorePreds, isHome }) {
+function OtherPredictions({ preds, myNickname, scores, officialPlayers, scorePreds, isHome, actualScore }) {
   const [expanded, setExpanded] = useState(null);
+  // 채점 완료 시 점수 높은 순 정렬
+  const sortedPreds = scores
+    ? [...preds].sort((a, b) => (scores[b.nickname] || 0) - (scores[a.nickname] || 0))
+    : preds;
   return (
     <div style={{ marginTop:16 }}>
       <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginBottom:8, textTransform:"uppercase", letterSpacing:"0.1em" }}>친구들 예측 ({preds.length}명)</div>
       <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
-        {preds.map((p, i) => {
+        {sortedPreds.map((p, i) => {
           const isMe = p.nickname === myNickname;
           const isOpen = expanded === p.nickname;
           const fm = FORMATION_LAYOUTS[p.formation] || FORMATION_LAYOUTS["4-3-3"];
@@ -259,7 +263,25 @@ function OtherPredictions({ preds, myNickname, scores, officialPlayers, scorePre
                 style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"10px 12px", cursor:"pointer" }}>
                 <span style={{ fontSize:13, fontWeight:700, color:isMe?"#60a5fa":"white" }}>
                   {p.nickname}{isMe&&<span style={{fontSize:10,marginLeft:4,color:"#60a5fa"}}>나</span>}
-                  {(() => { const sp = (scorePreds||[]).find(s=>s.nickname===p.nickname); return sp ? <span style={{fontSize:11,marginLeft:6,fontWeight:700,color:(isHome?sp.homeScore>sp.awayScore:sp.awayScore>sp.homeScore)?"#4ade80":sp.homeScore===sp.awayScore?"#fbbf24":"#f87171"}}>{sp.homeScore}:{sp.awayScore}</span> : null; })()}
+                  {(() => {
+                  const sp = (scorePreds||[]).find(s=>s.nickname===p.nickname);
+                  if (!sp) return null;
+                  const suwonWin = isHome ? sp.homeScore > sp.awayScore : sp.awayScore > sp.homeScore;
+                  const scoreColor = suwonWin ? "#4ade80" : sp.homeScore===sp.awayScore ? "#fbbf24" : "#f87171";
+                  // 채점 완료 시 +10/+5/❌ 표시
+                  let resultBadge = null;
+                  if (actualScore) {
+                    const [rh, ra] = actualScore.split(':').map(Number);
+                    const exact = sp.homeScore===rh && sp.awayScore===ra;
+                    const result = !exact && (sp.homeScore>sp.awayScore)===(rh>ra) && (sp.homeScore===sp.awayScore)===(rh===ra);
+                    resultBadge = exact
+                      ? <span style={{fontSize:10,marginLeft:3,color:"#4ade80"}}>🎯+10</span>
+                      : result
+                        ? <span style={{fontSize:10,marginLeft:3,color:"#fbbf24"}}>✅+5</span>
+                        : <span style={{fontSize:10,marginLeft:3,color:"rgba(255,255,255,0.3)"}}>❌</span>;
+                  }
+                  return <span style={{fontSize:11,marginLeft:6,fontWeight:700,color:scoreColor,display:"inline-flex",alignItems:"center"}}>{sp.homeScore}:{sp.awayScore}{resultBadge}</span>;
+                })()}
                 </span>
                 <div style={{ display:"flex", alignItems:"center", gap:8 }}>
                   {scores?.[p.nickname] !== undefined && (
@@ -806,8 +828,15 @@ export default function App() {
         nickname: nick,
         count,
         score: totals[nick] || 0,
+        avg: count > 0 ? Math.round((totals[nick] || 0) / count * 10) / 10 : 0,
       }));
-      entries.sort((a, b) => b.score - a.score || b.count - a.count);
+      entries.sort((a, b) => {
+        const aQual = a.count >= 5;
+        const bQual = b.count >= 5;
+        if (aQual && !bQual) return -1;
+        if (!aQual && bQual) return 1;
+        return b.avg - a.avg || b.score - a.score;
+      });
       setRankingData(entries);
     } catch(e) {
       setRankingData([]);
@@ -1120,7 +1149,7 @@ export default function App() {
               )}
 
               {otherPredictions.length > 0 && (
-                <OtherPredictions preds={otherPredictions} myNickname={nickname} scores={selectedMatch ? scoreData.detail?.[selectedMatch.id] : undefined} officialPlayers={currentLineup?.players} scorePreds={scorePreds} isHome={selectedMatch?.home} />
+                <OtherPredictions preds={otherPredictions} myNickname={nickname} scores={selectedMatch ? scoreData.detail?.[selectedMatch.id] : undefined} officialPlayers={currentLineup?.players} scorePreds={scorePreds} isHome={selectedMatch?.home} actualScore={selectedMatch?.score} />
               )}
             </>}
           </div>
@@ -1233,7 +1262,7 @@ export default function App() {
                   </div>
                 </div>
                 {matchPredictions.length > 0 && (
-                  <OtherPredictions preds={matchPredictions} myNickname={nickname} scores={viewingMatch ? scoreData.detail?.[viewingMatch.id] : undefined} officialPlayers={officialLineup?.players} scorePreds={scorePreds} isHome={viewingMatch?.home} />
+                  <OtherPredictions preds={matchPredictions} myNickname={nickname} scores={viewingMatch ? scoreData.detail?.[viewingMatch.id] : undefined} officialPlayers={officialLineup?.players} scorePreds={scorePreds} isHome={viewingMatch?.home} actualScore={viewingMatch?.score} />
                 )}
                 {officialLineup && matchPredictions.length > 0 && (
                   <button onClick={async () => {
@@ -1412,14 +1441,14 @@ export default function App() {
                       return (
                         <div key={idx} onClick={() => { setRankingView({ nickname: entry.nickname, preds: myPreds }); setRankingPredDetail(null); }}
                           style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 14px", background:entry.nickname===nickname?"rgba(59,130,246,0.1)":"rgba(255,255,255,0.03)", border:entry.nickname===nickname?"1.5px solid rgba(59,130,246,0.4)":"1.5px solid rgba(255,255,255,0.06)", borderRadius:10, cursor:"pointer" }}>
-                          <div style={{ width:28, height:28, borderRadius:"50%", background:idx===0?"#fbbf24":idx===1?"#94a3b8":idx===2?"#cd7c3f":"rgba(255,255,255,0.1)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:900, color:idx<3?"#0a0e1a":"rgba(255,255,255,0.4)", flexShrink:0 }}>{idx+1}</div>
+                          <div style={{ width:28, height:28, borderRadius:"50%", background:idx===0?"#fbbf24":idx===1?"#94a3b8":idx===2?"#cd7c3f":"rgba(255,255,255,0.1)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:900, color:idx<3?"#0a0e1a":"rgba(255,255,255,0.4)", flexShrink:0 }}>{entry.count >= 5 ? idx+1 : "-"}</div>
                           <div style={{ flex:1 }}>
                             <div style={{ fontSize:13, fontWeight:700 }}>{entry.nickname}{entry.nickname===nickname&&<span style={{ fontSize:10, color:"#60a5fa", marginLeft:6 }}>나</span>}</div>
-                            <div style={{ fontSize:10, color:"rgba(255,255,255,0.3)" }}>예측 {entry.count}경기</div>
+                            <div style={{ fontSize:10, color: entry.count >= 5 ? "rgba(255,255,255,0.3)" : "#f87171" }}>예측 {entry.count}경기{entry.count < 5 ? ` (${5-entry.count}경기 더 필요)` : ""}</div>
                           </div>
                           <div style={{ textAlign:"right" }}>
-                            <div style={{ fontSize:18, fontWeight:900, color:"#fbbf24", fontFamily:"monospace" }}>{entry.score}pt</div>
-                            <div style={{ fontSize:10, color:"#60a5fa" }}>›</div>
+                            <div style={{ fontSize:18, fontWeight:900, color:"#fbbf24", fontFamily:"monospace" }}>{entry.avg}pt</div>
+                            <div style={{ fontSize:10, color:"rgba(255,255,255,0.3)" }}>총 {entry.score}pt · ›</div>
                           </div>
                         </div>
                       );
