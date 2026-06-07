@@ -1473,7 +1473,7 @@ export default function App() {
                 )}
                 <div style={{ marginTop:16, padding:"12px 14px", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:10, fontSize:11, color:"rgba(255,255,255,0.35)", lineHeight:1.8 }}>
                   <div style={{ fontWeight:700, color:"rgba(255,255,255,0.5)", marginBottom:4 }}>📌 채점 기준</div>
-                  선발 선수 1명 적중 = +5pt<br/>11명 전원 적중 = 보너스 +30pt<br/>경기당 최대 85pt
+                  선발 선수 1명 적중 = +5pt<br/>11명 전원 적중 = 보너스 +30pt<br/>승부예측 정확한 스코어 = +15pt<br/>승부예측 승무패만 맞춤 = +5pt<br/>경기당 최대 100pt
                 </div>
               </div>
             )}
