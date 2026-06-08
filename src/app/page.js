@@ -2923,23 +2923,12 @@ export default function App() {
                       <button onClick={()=>setRankingLineupToggle("pred")} style={{ flex:1, padding:"6px 0", borderRadius:8, border:"none", fontSize:11, fontWeight:700, cursor:"pointer", background:rankingLineupToggle==="pred"?"#1d4ed8":"rgba(255,255,255,0.08)", color:"white" }}>내 예측</button>
                       <button onClick={()=>setRankingLineupToggle("actual")} disabled={!rankingLineup} style={{ flex:1, padding:"6px 0", borderRadius:8, border:"none", fontSize:11, fontWeight:700, cursor:"pointer", background:rankingLineupToggle==="actual"?"#1d4ed8":"rgba(255,255,255,0.08)", color:rankingLineup?"white":"rgba(255,255,255,0.3)" }}>실제 선발</button>
                     </div>
-                    {rankingLineupToggle === "pred" ? (
-                      {/* 토글 버튼 */}
-                   <div style={{ display:"flex", gap:6, marginBottom:8 }}>
-                     <button onClick={()=>setRankingLineupToggle("pred")} style={{ flex:1, padding:"6px 0", borderRadius:8, border:"none", fontSize:11, fontWeight:700, cursor:"pointer", background:rankingLineupToggle==="pred"?"#1d4ed8":"rgba(255,255,255,0.08)", color:"white" }}>내 예측</button>
-                     <button onClick={()=>setRankingLineupToggle("actual")} disabled={!rankingLineup} style={{ flex:1, padding:"6px 0", borderRadius:8, border:"none", fontSize:11, fontWeight:700, cursor:"pointer", background:rankingLineupToggle==="actual"?"#1d4ed8":"rgba(255,255,255,0.08)", color:rankingLineup?"white":"rgba(255,255,255,0.3)" }}>실제 선발</button>
-                   </div>
                    {rankingLineupToggle === "pred"
                      ? <PitchView formation={rankingPredDetail.formation} slots={rankingPredDetail.slots} interactive={false} actualPlayers={rankingLineup?.players} />
                      : rankingLineup
                        ? <PitchView formation={rankingLineup.formation} slots={rankingLineup.players.map((p,i)=>({ pos:["GK","CB","CB","LB","RB","CM","CM","LM","RM","ST","ST"][i]||"CM", player:{...p, nameKo:p.nameKo||p.name} }))} interactive={false} />
                        : <div style={{textAlign:"center",padding:20,fontSize:12,color:"rgba(255,255,255,0.3)"}}>선발 데이터 없음</div>
                    }
-                    ) : (
-                      rankingLineup
-                        ? <PitchView formation={rankingLineup.formation} slots={rankingLineup.players.map((p,i)=>({pos:["GK","CB","CB","LB","RB","CM","CM","LM","RM","ST","ST"][i]||"CM", player:{...p, nameKo:p.nameKo||p.name}}))} interactive={false} />
-                        : <div style={{textAlign:"center",padding:20,fontSize:12,color:"rgba(255,255,255,0.3)"}}>선발 데이터 없음</div>
-                    )}
                     <div style={{ marginTop:8, display:"flex", flexWrap:"wrap", gap:4 }}>
                       {(rankingPredDetail.slots||[]).filter(s=>s.player).map((s,j) => (
                         <div key={j} style={{ fontSize:10, background:"rgba(29,78,216,0.3)", border:"1px solid rgba(59,130,246,0.3)", borderRadius:6, padding:"2px 6px" }}>
