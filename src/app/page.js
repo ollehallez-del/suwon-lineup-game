@@ -582,12 +582,7 @@ export default function App() {
     setLeagueLoading(false);
   }
 
-  useEffect(() => {
-    if (tab === "league") loadLeague();
-  }, [tab]);
-
-
-  // 폴링 정리 (컴포넌트 언마운트 시)
+// 폴링 정리 (컴포넌트 언마운트 시)
   useEffect(() => {
     return () => {
       setPollingInterval(prev => { if (prev) clearInterval(prev); return null; });
@@ -1495,7 +1490,6 @@ export default function App() {
                           fetch;
 
 
-const posGroupLabel = { G: "골키퍼", D: "수비수", M: "미드필더", F: "공격수" };
 const posOrder = ["G", "D", "M", "F"];
 const PROXY = '/api/proxy';
 
@@ -1919,9 +1913,6 @@ export default function App() {
 
 
 
-  useEffect(() => {
-    if (tab === "league") loadLeague();
-  }, [tab]);
 
 
   // 폴링 정리 (컴포넌트 언마운트 시)
