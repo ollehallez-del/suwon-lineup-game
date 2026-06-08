@@ -399,7 +399,6 @@ export default function App() {
   const [rankingPredDetail, setRankingPredDetail] = useState(null);
   const [rankingScorePred, setRankingScorePred] = useState(null);
   const [rankingLineupToggle, setRankingLineupToggle] = useState("pred");
-  const [rankingLineupToggle, setRankingLineupToggle] = useState("pred"); // "pred" | "actual"
   const [rankingLineup, setRankingLineup] = useState(null);
   const [leagueStandings, setLeagueStandings] = useState([]);
   const [leagueLoading, setLeagueLoading] = useState(false);
@@ -554,20 +553,7 @@ export default function App() {
     }
   }, [tab, selectedMatch]);
 
-  useEffect(() => {
-    if (tab === "predict" && selectedMatch) {
-      fetch(`${PROXY}?path=${encodeURIComponent(`/api/score-pred?matchId=${selectedMatch.id}`)}`)
-        .then(r => r.json())
-        .then(sd => {
-          const preds = sd.predictions || [];
-          setScorePreds(preds);
-          const mine = preds.find(p => p.nickname === nickname);
-          if (mine) { setMyScorePred(mine); setScoreHome(mine.homeScore); setScoreAway(mine.awayScore); }
-          else { setMyScorePred(null); }
-        })
-        .catch(() => {});
-    }
-  }, [tab, selectedMatch]);
+
 
   useEffect(() => {
     if (tab === "predict" && selectedMatch) {
@@ -600,15 +586,6 @@ export default function App() {
     if (tab === "league") loadLeague();
   }, [tab]);
 
-  async function loadLeague() {
-    setLeagueLoading(true);
-    try {
-      const r = await fetch(`${PROXY}?path=/api/standings`);
-      const d = await r.json();
-      setLeagueStandings(d.standings || []);
-    } catch {}
-    setLeagueLoading(false);
-  }
 
   // 폴링 정리 (컴포넌트 언마운트 시)
   useEffect(() => {
@@ -1517,164 +1494,6 @@ export default function App() {
                           setRankingLineupToggle("pred");
                           fetch;
 
-const FORMATION_LAYOUTS = {
-  "4-3-3": [
-    { pos:"GK", top:87, left:50 },
-    { pos:"RB", top:68, left:80 },
-    { pos:"CB", top:68, left:60 },
-    { pos:"CB", top:68, left:40 },
-    { pos:"LB", top:68, left:20 },
-    { pos:"CM", top:48, left:70 },
-    { pos:"CM", top:48, left:50 },
-    { pos:"CM", top:48, left:30 },
-    { pos:"RW", top:25, left:78 },
-    { pos:"ST", top:18, left:50 },
-    { pos:"LW", top:25, left:22 },
-  ],
-  "4-4-2": [
-    { pos:"GK", top:87, left:50 },
-    { pos:"RB", top:68, left:80 },
-    { pos:"CB", top:68, left:60 },
-    { pos:"CB", top:68, left:40 },
-    { pos:"LB", top:68, left:20 },
-    { pos:"RM", top:48, left:80 },
-    { pos:"CM", top:48, left:60 },
-    { pos:"CM", top:48, left:40 },
-    { pos:"LM", top:48, left:20 },
-    { pos:"ST", top:20, left:62 },
-    { pos:"ST", top:20, left:38 },
-  ],
-  "4-2-3-1": [
-    { pos:"GK",  top:87, left:50 },
-    { pos:"RB",  top:70, left:82 },
-    { pos:"CB",  top:70, left:62 },
-    { pos:"CB",  top:70, left:38 },
-    { pos:"LB",  top:70, left:18 },
-    { pos:"DM",  top:55, left:62 },
-    { pos:"DM",  top:55, left:38 },
-    { pos:"RAM", top:35, left:78 },
-    { pos:"CAM", top:35, left:50 },
-    { pos:"LAM", top:35, left:22 },
-    { pos:"ST",  top:16, left:50 },
-  ],
-  "4-1-4-1": [
-    { pos:"GK",  top:87, left:50 },
-    { pos:"RB",  top:72, left:82 },
-    { pos:"CB",  top:72, left:62 },
-    { pos:"CB",  top:72, left:38 },
-    { pos:"LB",  top:72, left:18 },
-    { pos:"DM",  top:58, left:50 },
-    { pos:"RM",  top:42, left:82 },
-    { pos:"CM",  top:42, left:62 },
-    { pos:"CM",  top:42, left:38 },
-    { pos:"LM",  top:42, left:18 },
-    { pos:"ST",  top:16, left:50 },
-  ],
-  "4-5-1": [
-    { pos:"GK",  top:87, left:50 },
-    { pos:"RB",  top:70, left:82 },
-    { pos:"CB",  top:70, left:62 },
-    { pos:"CB",  top:70, left:38 },
-    { pos:"LB",  top:70, left:18 },
-    { pos:"RM",  top:48, left:82 },
-    { pos:"CM",  top:48, left:67 },
-    { pos:"CM",  top:48, left:50 },
-    { pos:"CM",  top:48, left:33 },
-    { pos:"LM",  top:48, left:18 },
-    { pos:"ST",  top:16, left:50 },
-  ],
-  "4-3-2-1": [
-    { pos:"GK",  top:87, left:50 },
-    { pos:"RB",  top:72, left:82 },
-    { pos:"CB",  top:72, left:62 },
-    { pos:"CB",  top:72, left:38 },
-    { pos:"LB",  top:72, left:18 },
-    { pos:"CM",  top:55, left:67 },
-    { pos:"CM",  top:55, left:50 },
-    { pos:"CM",  top:55, left:33 },
-    { pos:"SS",  top:35, left:62 },
-    { pos:"SS",  top:35, left:38 },
-    { pos:"ST",  top:16, left:50 },
-  ],
-  "3-4-3": [
-    { pos:"GK",  top:87, left:50 },
-    { pos:"CB",  top:68, left:67 },
-    { pos:"CB",  top:68, left:50 },
-    { pos:"CB",  top:68, left:33 },
-    { pos:"RM",  top:50, left:82 },
-    { pos:"CM",  top:50, left:62 },
-    { pos:"CM",  top:50, left:38 },
-    { pos:"LM",  top:50, left:18 },
-    { pos:"RW",  top:22, left:75 },
-    { pos:"ST",  top:16, left:50 },
-    { pos:"LW",  top:22, left:25 },
-  ],
-  "3-4-2-1": [
-    { pos:"GK",  top:87, left:50 },
-    { pos:"CB",  top:70, left:67 },
-    { pos:"CB",  top:70, left:50 },
-    { pos:"CB",  top:70, left:33 },
-    { pos:"RM",  top:52, left:82 },
-    { pos:"CM",  top:52, left:62 },
-    { pos:"CM",  top:52, left:38 },
-    { pos:"LM",  top:52, left:18 },
-    { pos:"SS",  top:32, left:62 },
-    { pos:"SS",  top:32, left:38 },
-    { pos:"ST",  top:16, left:50 },
-  ],
-  "3-5-2": [
-    { pos:"GK",  top:87, left:50 },
-    { pos:"CB",  top:70, left:67 },
-    { pos:"CB",  top:70, left:50 },
-    { pos:"CB",  top:70, left:33 },
-    { pos:"RWB", top:52, left:88 },
-    { pos:"CM",  top:52, left:67 },
-    { pos:"CM",  top:52, left:50 },
-    { pos:"CM",  top:52, left:33 },
-    { pos:"LWB", top:52, left:12 },
-    { pos:"ST",  top:20, left:62 },
-    { pos:"ST",  top:20, left:38 },
-  ],
-  "5-3-2": [
-    { pos:"GK",  top:87, left:50 },
-    { pos:"RWB", top:68, left:88 },
-    { pos:"CB",  top:70, left:72 },
-    { pos:"CB",  top:70, left:50 },
-    { pos:"CB",  top:70, left:28 },
-    { pos:"LWB", top:68, left:12 },
-    { pos:"CM",  top:48, left:67 },
-    { pos:"CM",  top:48, left:50 },
-    { pos:"CM",  top:48, left:33 },
-    { pos:"ST",  top:20, left:62 },
-    { pos:"ST",  top:20, left:38 },
-  ],
-  "5-4-1": [
-    { pos:"GK",  top:87, left:50 },
-    { pos:"RWB", top:68, left:88 },
-    { pos:"CB",  top:70, left:72 },
-    { pos:"CB",  top:70, left:50 },
-    { pos:"CB",  top:70, left:28 },
-    { pos:"LWB", top:68, left:12 },
-    { pos:"RM",  top:46, left:80 },
-    { pos:"CM",  top:46, left:60 },
-    { pos:"CM",  top:46, left:40 },
-    { pos:"LM",  top:46, left:20 },
-    { pos:"ST",  top:16, left:50 },
-  ],
-  "5-2-3": [
-    { pos:"GK",  top:87, left:50 },
-    { pos:"RWB", top:68, left:88 },
-    { pos:"CB",  top:70, left:72 },
-    { pos:"CB",  top:70, left:50 },
-    { pos:"CB",  top:70, left:28 },
-    { pos:"LWB", top:68, left:12 },
-    { pos:"CM",  top:50, left:62 },
-    { pos:"CM",  top:50, left:38 },
-    { pos:"RW",  top:22, left:78 },
-    { pos:"ST",  top:18, left:50 },
-    { pos:"LW",  top:22, left:22 },
-  ],
-};
 
 const posGroupLabel = { G: "골키퍼", D: "수비수", M: "미드필더", F: "공격수" };
 const posOrder = ["G", "D", "M", "F"];
@@ -1914,8 +1733,6 @@ export default function App() {
   const [rankingView, setRankingView] = useState(null);
   const [rankingPredDetail, setRankingPredDetail] = useState(null);
   const [rankingScorePred, setRankingScorePred] = useState(null);
-  const [rankingLineupToggle, setRankingLineupToggle] = useState("pred");
-  const [rankingLineupToggle, setRankingLineupToggle] = useState("pred"); // "pred" | "actual"
   const [rankingLineup, setRankingLineup] = useState(null);
   const [leagueStandings, setLeagueStandings] = useState([]);
   const [leagueLoading, setLeagueLoading] = useState(false);
@@ -2100,31 +1917,12 @@ export default function App() {
     }
   }, [tab]);
 
-  useEffect(() => { if (tab === "league") loadLeague(); }, [tab]);
 
-  async function loadLeague() {
-    setLeagueLoading(true);
-    try {
-      const r = await fetch(`${PROXY}?path=/api/standings`);
-      const d = await r.json();
-      setLeagueStandings(d.standings || []);
-    } catch {}
-    setLeagueLoading(false);
-  }
 
   useEffect(() => {
     if (tab === "league") loadLeague();
   }, [tab]);
 
-  async function loadLeague() {
-    setLeagueLoading(true);
-    try {
-      const r = await fetch(`${PROXY}?path=/api/standings`);
-      const d = await r.json();
-      setLeagueStandings(d.standings || []);
-    } catch {}
-    setLeagueLoading(false);
-  }
 
   // 폴링 정리 (컴포넌트 언마운트 시)
   useEffect(() => {
