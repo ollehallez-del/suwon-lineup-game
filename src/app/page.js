@@ -404,6 +404,14 @@ export default function App() {
   const [leagueLoading, setLeagueLoading] = useState(false);
   const [allPredData, setAllPredData] = useState({});
   const [scoreData, setScoreData] = useState({ totals: {}, detail: {} });
+  const [adminPassword, setAdminPassword] = useState("");
+  const [adminAuthed, setAdminAuthed] = useState(false);
+  const [adminMatch, setAdminMatch] = useState(null);
+  const [adminFormation, setAdminFormation] = useState("4-3-3");
+  const [adminPlayers, setAdminPlayers] = useState([]);
+  const [adminHomeScore, setAdminHomeScore] = useState(0);
+  const [adminAwayScore, setAdminAwayScore] = useState(0);
+  const [adminStatus, setAdminStatus] = useState("");
 
   useEffect(() => {
     const nn = store.get('sw:nickname');
@@ -889,7 +897,7 @@ export default function App() {
           </div>
         </div>
         <div style={{ display:"flex" }}>
-          {[{id:"predict",label:"📋 선발 예측"},{id:"history",label:"📅 이전 라인업"},{id:"ranking",label:"🏆 순위표"},{id:"league",label:"📊 리그순위"}].map(t => (
+          {[{id:"predict",label:"📋 선발 예측"},{id:"history",label:"📅 이전 라인업"},{id:"ranking",label:"🏆 순위표"},{id:"league",label:"📊 리그순위"},{id:"admin",label:"🔧 관리자"}].map(t => (
             <button key={t.id} onClick={()=>{ setTab(t.id); if(t.id==="ranking"){ setRankingView(null); setRankingPredDetail(null); } if(t.id==="history"){ setViewingMatch(null); setMatchIncidents([]); setMatchComments([]); setCommentInput(''); setCommentStatus(''); setScorePreds([]); setMyScorePred(null); setScoreHome(0); setScoreAway(0); } }} style={{ flex:1, padding:"10px 0", background:"none", border:"none", borderBottom:tab===t.id?"3px solid #fbbf24":"3px solid transparent", color:tab===t.id?"#fbbf24":"rgba(255,255,255,0.55)", fontSize:12, fontWeight:tab===t.id?700:500, cursor:"pointer", fontFamily:"'Noto Sans KR',sans-serif" }}>{t.label}</button>
           ))}
         </div>
@@ -1335,6 +1343,162 @@ export default function App() {
                     </div>
                   );
                 })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {tab === "admin" && (
+          <div>
+            {!adminAuthed ? (
+              <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:"50vh", gap:12 }}>
+                <div style={{ fontSize:15, fontWeight:700, color:"rgba(255,255,255,0.7)" }}>🔧 관리자 로그인</div>
+                <input type="password" value={adminPassword} onChange={e=>setAdminPassword(e.target.value)}
+                  placeholder="비밀번호" onKeyDown={e=>e.key==="Enter"&&(adminPassword==="3579"?setAdminAuthed(true):alert("비밀번호 오류"))}
+                  style={{ background:"rgba(255,255,255,0.08)", border:"1px solid rgba(255,255,255,0.15)", borderRadius:8, padding:"10px 14px", color:"white", fontSize:14, outline:"none", width:200 }} />
+                <button onClick={()=>adminPassword==="3579"?setAdminAuthed(true):alert("비밀번호 오류")}
+                  style={{ padding:"10px 24px", background:"#1d4ed8", border:"none", borderRadius:8, color:"white", fontSize:14, fontWeight:700, cursor:"pointer" }}>로그인</button>
+              </div>
+            ) : (
+              <div>
+                <div style={{ fontSize:13, fontWeight:700, marginBottom:12 }}>🔧 선발 라인업 입력</div>
+
+                {/* 경기 선택 */}
+                <div style={{ marginBottom:12 }}>
+                  <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginBottom:6 }}>경기 선택</div>
+                  <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+                    {[...pastMatches, ...upcomingMatches].map(m => (
+                      <div key={m.id} onClick={()=>{
+                        setAdminMatch(m);
+                        setAdminFormation("4-3-3");
+                        setAdminPlayers([]);
+                        setAdminHomeScore(m.homeScore ?? 0);
+                        setAdminAwayScore(m.awayScore ?? 0);
+                        setAdminStatus("");
+                      }} style={{ padding:"10px 12px", borderRadius:8, border:adminMatch?.id===m.id?"2px solid #3b82f6":"1px solid rgba(255,255,255,0.1)", background:adminMatch?.id===m.id?"rgba(59,130,246,0.15)":"rgba(255,255,255,0.03)", cursor:"pointer" }}>
+                        <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)" }}>{m.round ? `${m.round}R` : ''} · {new Date(m.date).toLocaleDateString('ko-KR',{month:'short',day:'numeric'})} · {m.home?"홈":"원정"}</div>
+                        <div style={{ fontSize:13, fontWeight:700 }}>vs {m.opponent} {m.score ? `(${m.score})` : ""}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {adminMatch && (
+                  <div>
+                    {/* 실제 스코어 입력 */}
+                    <div style={{ marginBottom:12, padding:"10px 12px", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:10 }}>
+                      <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginBottom:8 }}>실제 스코어 (홈:원정)</div>
+                      <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                        <div style={{ textAlign:"center" }}>
+                          <div style={{ fontSize:10, color:"rgba(255,255,255,0.4)", marginBottom:4 }}>홈팀</div>
+                          <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+                            <button onClick={()=>setAdminHomeScore(Math.max(0,adminHomeScore-1))} style={{ width:26,height:26,borderRadius:6,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"white",fontSize:14,cursor:"pointer" }}>−</button>
+                            <span style={{ fontSize:22,fontWeight:900,minWidth:24,textAlign:"center" }}>{adminHomeScore}</span>
+                            <button onClick={()=>setAdminHomeScore(adminHomeScore+1)} style={{ width:26,height:26,borderRadius:6,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"white",fontSize:14,cursor:"pointer" }}>+</button>
+                          </div>
+                        </div>
+                        <span style={{ fontSize:18, color:"rgba(255,255,255,0.3)", fontWeight:700 }}>:</span>
+                        <div style={{ textAlign:"center" }}>
+                          <div style={{ fontSize:10, color:"rgba(255,255,255,0.4)", marginBottom:4 }}>원정팀</div>
+                          <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+                            <button onClick={()=>setAdminAwayScore(Math.max(0,adminAwayScore-1))} style={{ width:26,height:26,borderRadius:6,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"white",fontSize:14,cursor:"pointer" }}>−</button>
+                            <span style={{ fontSize:22,fontWeight:900,minWidth:24,textAlign:"center" }}>{adminAwayScore}</span>
+                            <button onClick={()=>setAdminAwayScore(adminAwayScore+1)} style={{ width:26,height:26,borderRadius:6,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"white",fontSize:14,cursor:"pointer" }}>+</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 포메이션 */}
+                    <div style={{ marginBottom:10 }}>
+                      <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginBottom:6 }}>포메이션</div>
+                      <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+                        {["4-3-3","4-4-2","4-2-3-1","4-1-4-1","3-4-3","3-5-2","5-3-2","5-4-1"].map(f => (
+                          <button key={f} onClick={()=>setAdminFormation(f)} style={{ padding:"6px 10px", background:adminFormation===f?"#1d4ed8":"rgba(255,255,255,0.05)", border:adminFormation===f?"1.5px solid #3b82f6":"1.5px solid rgba(255,255,255,0.1)", borderRadius:8, color:"white", fontSize:11, fontWeight:700, cursor:"pointer" }}>{f}</button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* 선수 선택 */}
+                    <div style={{ marginBottom:10 }}>
+                      <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginBottom:6 }}>선발 선수 선택 ({adminPlayers.length}/11)</div>
+                      {["G","D","M","F"].map(pos => {
+                        const posPlayers = squad.filter(p => p.position === pos);
+                        const posLabel = {G:"골키퍼",D:"수비수",M:"미드필더",F:"공격수"}[pos];
+                        return (
+                          <div key={pos} style={{ marginBottom:8 }}>
+                            <div style={{ fontSize:10, color:"rgba(255,255,255,0.35)", marginBottom:4 }}>{posLabel}</div>
+                            <div style={{ display:"flex", flexWrap:"wrap", gap:5 }}>
+                              {posPlayers.map(p => {
+                                const selected = adminPlayers.some(ap => ap.number === p.number);
+                                return (
+                                  <button key={p.number} onClick={()=>{
+                                    if (selected) {
+                                      setAdminPlayers(prev => prev.filter(ap => ap.number !== p.number));
+                                    } else if (adminPlayers.length < 11) {
+                                      setAdminPlayers(prev => [...prev, { number: p.number, nameKo: p.nameKo, name: p.name }]);
+                                    }
+                                  }} style={{ padding:"5px 8px", background:selected?"#16a34a":"rgba(29,78,216,0.3)", border:selected?"1px solid #4ade80":"1px solid rgba(59,130,246,0.4)", borderRadius:6, color:"white", fontSize:11, cursor:"pointer", fontWeight:selected?700:400 }}>
+                                    {p.number} {p.nameKo}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* 선택된 선수 목록 */}
+                    {adminPlayers.length > 0 && (
+                      <div style={{ marginBottom:10, padding:"8px 10px", background:"rgba(22,163,74,0.1)", border:"1px solid rgba(74,222,128,0.2)", borderRadius:8 }}>
+                        <div style={{ fontSize:11, color:"#4ade80", marginBottom:6, fontWeight:700 }}>선택된 선발 ({adminPlayers.length}/11)</div>
+                        <div style={{ display:"flex", flexWrap:"wrap", gap:4 }}>
+                          {adminPlayers.map(p => (
+                            <span key={p.number} onClick={()=>setAdminPlayers(prev=>prev.filter(ap=>ap.number!==p.number))}
+                              style={{ fontSize:11, background:"rgba(22,163,74,0.3)", border:"1px solid rgba(74,222,128,0.4)", borderRadius:6, padding:"2px 8px", cursor:"pointer", color:"white" }}>
+                              {p.number} {p.nameKo} ✕
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 저장 버튼 */}
+                    <button onClick={async () => {
+                      if (adminPlayers.length !== 11) { setAdminStatus("❌ 선수 11명을 선택해주세요"); return; }
+                      setAdminStatus("저장 중...");
+                      try {
+                        const r = await fetch(`${PROXY}?path=/api/lineup/set`, {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            password: "3579",
+                            matchId: adminMatch.id,
+                            formation: adminFormation,
+                            players: adminPlayers,
+                            homeScore: adminHomeScore,
+                            awayScore: adminAwayScore,
+                          }),
+                        });
+                        const d = await r.json();
+                        if (d.ok) {
+                          setAdminStatus("✅ 저장 완료! 채점 완료!");
+                          // 점수 새로고침
+                          fetch(`${PROXY}?path=/api/score`).then(r=>r.json()).then(d=>setScoreData(d)).catch(()=>{});
+                        } else {
+                          setAdminStatus("❌ " + (d.error || "저장 실패"));
+                        }
+                      } catch(e) {
+                        setAdminStatus("❌ 오류: " + e.message);
+                      }
+                    }} style={{ width:"100%", padding:12, background:adminPlayers.length===11?"#16a34a":"rgba(255,255,255,0.05)", border:"none", borderRadius:10, color:"white", fontSize:14, fontWeight:700, cursor:"pointer", marginBottom:8 }}>
+                      💾 선발 저장 & 채점
+                    </button>
+
+                    {adminStatus && <div style={{ textAlign:"center", fontSize:12, padding:8, color:adminStatus.includes("✅")?"#4ade80":"#f87171" }}>{adminStatus}</div>}
+                  </div>
+                )}
               </div>
             )}
           </div>
