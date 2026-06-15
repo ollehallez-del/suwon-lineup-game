@@ -655,11 +655,17 @@ export default function App() {
     const data = { nickname, matchId: selectedMatch.id, round: selectedMatch.round, opponent: selectedMatch.opponent, formation, slots, savedAt: Date.now() };
     setSaveStatus("저장 중...");
     try {
-      await fetch(`${PROXY}?path=/api/predictions`, {
+      const predRes = await fetch(`${PROXY}?path=/api/predictions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
+      const predJson = await predRes.json();
+      if (predJson.locked) {
+        setSaveStatus("🔒 킥오프 2시간 전부터 예측을 변경할 수 없어요");
+        setTimeout(() => setSaveStatus(""), 3000);
+        return;
+      }
       store.set(`sw:pred_${selectedMatch.id}_${nickname}`, data);
       setMySubmission(data);
       setSaveStatus("✅ 예측 저장 완료!");
@@ -897,7 +903,7 @@ export default function App() {
           </div>
         </div>
         <div style={{ display:"flex" }}>
-          {[{id:"predict",label:"📋 선발 예측"},{id:"history",label:"📅 이전 라인업"},{id:"ranking",label:"🏆 순위표"},{id:"league",label:"📊 리그순위"},{id:"admin",label:"🔧 관리자"}].map(t => (
+          {[{id:"predict",label:"📋 선발 예측"},{id:"history",label:"📅 이전 라인업"},{id:"ranking",label:"🏆 순위표"},{id:"league",label:"📊 리그순위"}].map(t => (
             <button key={t.id} onClick={()=>{ setTab(t.id); if(t.id==="ranking"){ setRankingView(null); setRankingPredDetail(null); } if(t.id==="history"){ setViewingMatch(null); setMatchIncidents([]); setMatchComments([]); setCommentInput(''); setCommentStatus(''); setScorePreds([]); setMyScorePred(null); setScoreHome(0); setScoreAway(0); } }} style={{ flex:1, padding:"10px 0", background:"none", border:"none", borderBottom:tab===t.id?"3px solid #fbbf24":"3px solid transparent", color:tab===t.id?"#fbbf24":"rgba(255,255,255,0.55)", fontSize:12, fontWeight:tab===t.id?700:500, cursor:"pointer", fontFamily:"'Noto Sans KR',sans-serif" }}>{t.label}</button>
           ))}
         </div>
@@ -1104,6 +1110,10 @@ export default function App() {
                       body: JSON.stringify({ nickname, homeScore: scoreHome, awayScore: scoreAway }),
                     });
                     const d = await r.json();
+                    if (d.locked) {
+                      alert('🔒 킥오프 2시간 전부터 승부예측을 변경할 수 없어요');
+                      return;
+                    }
                     if (d.ok) {
                       setMyScorePred({ nickname, homeScore: scoreHome, awayScore: scoreAway });
                       setScorePreds(prev => {
