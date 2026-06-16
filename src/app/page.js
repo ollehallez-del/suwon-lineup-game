@@ -301,7 +301,7 @@ function OtherPredictions({ preds, myNickname, scores, officialPlayers, scorePre
                     <div style={{ display:"flex", justifyContent:"center", alignItems:"center", gap:16, padding:"8px 0 10px", marginBottom:8, borderBottom:"1px solid rgba(255,255,255,0.06)" }}>
                       <span style={{ fontSize:11, color:"rgba(255,255,255,0.4)" }}>승부 예측</span>
                       <span style={{ fontSize:20, fontWeight:900, color:(isHome?sp.homeScore>sp.awayScore:sp.awayScore>sp.homeScore)?"#4ade80":sp.homeScore===sp.awayScore?"#fbbf24":"#f87171" }}>
-                        {sp.homeScore} : {sp.awayScore}
+                        {isHome ? sp.homeScore : sp.awayScore} : {isHome ? sp.awayScore : sp.homeScore}
                       </span>
                       <span style={{ fontSize:11, color:(isHome?sp.homeScore>sp.awayScore:sp.awayScore>sp.homeScore)?"#4ade80":sp.homeScore===sp.awayScore?"#fbbf24":"#f87171" }}>
                         {(isHome?sp.homeScore>sp.awayScore:sp.awayScore>sp.homeScore)?"수원 승":sp.homeScore===sp.awayScore?"무승부":"수원 패"}
@@ -309,12 +309,29 @@ function OtherPredictions({ preds, myNickname, scores, officialPlayers, scorePre
                     </div>
                   ) : null; })()}
                   <PitchView formation={p.formation} slots={readonlySlots} interactive={false} actualPlayers={officialPlayers} />
-                  <div style={{ marginTop:8, display:"flex", flexWrap:"wrap", gap:4 }}>
-                    {readonlySlots.filter(s=>s.player).map((s,j) => (
-                      <div key={j} style={{ fontSize:10, background:"rgba(29,78,216,0.3)", border:"1px solid rgba(59,130,246,0.3)", borderRadius:6, padding:"2px 6px" }}>
-                        {s.pos} {(s.player.nameKo||s.player.name).trim()}
-                      </div>
-                    ))}
+                  <div style={{ marginTop:8, display:"flex", flexWrap:"wrap", gap:5 }}>
+                    {readonlySlots.filter(s=>s.player).map((s,j) => {
+                      const matched = officialPlayers
+                        ? officialPlayers.some(ap =>
+                            (s.player.number && String(s.player.number) === String(ap.number)) ||
+                            (s.player.nameKo && s.player.nameKo === ap.nameKo)
+                          )
+                        : null;
+                      const bg = matched === true  ? "rgba(34,197,94,0.1)"
+                        : matched === false ? "rgba(239,68,68,0.1)"
+                        : "rgba(255,255,255,0.05)";
+                      const border = matched === true  ? "1px solid rgba(34,197,94,0.3)"
+                        : matched === false ? "1px solid rgba(239,68,68,0.3)"
+                        : "1px solid rgba(255,255,255,0.1)";
+                      const color = matched === true ? "#4ade80" : matched === false ? "#f87171" : "white";
+                      const numColor = matched === true ? "#4ade80" : matched === false ? "#f87171" : "#888";
+                      return (
+                        <div key={j} style={{ display:"flex", alignItems:"center", gap:4, background:bg, border, borderRadius:8, padding:"4px 8px" }}>
+                          <span style={{ fontSize:9, color:numColor }}>#{s.player.number}</span>
+                          <span style={{ fontSize:11, fontWeight:600, color }}>{(s.player.nameKo||s.player.name).trim()}</span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -326,7 +343,7 @@ function OtherPredictions({ preds, myNickname, scores, officialPlayers, scorePre
   );
 }
 
-function MatchCard({ match, active, onClick }) {
+function MatchCard({ match, active, onClick, lineupAvailable, selectedMatch }) {
   const isPast = match.status === 'finished';
   const resultLabel = match.result === 'W' ? '승' : match.result === 'D' ? '무' : match.result === 'L' ? '패' : null;
   const resultColor = match.result === 'W' ? '#22c55e' : match.result === 'D' ? '#eab308' : '#ef4444';
@@ -345,7 +362,7 @@ function MatchCard({ match, active, onClick }) {
             <div style={{ fontSize:16, fontWeight:900, color:resultColor, fontFamily:"monospace" }}>{match.score}</div>
             <div style={{ fontSize:10, color:resultColor, fontWeight:700 }}>{resultLabel}</div>
           </>}
-          {!isPast && <div style={{ fontSize:10, color:"#60a5fa", fontWeight:700 }}>예측 가능</div>}
+          {!isPast && <div style={{ fontSize:10, color: lineupAvailable && selectedMatch?.id === match.id ? "#4ade80" : "#60a5fa", fontWeight:700 }}>{lineupAvailable && selectedMatch?.id === match.id ? "라인업 발표" : "예측 가능"}</div>}
         </div>
       </div>
     </div>
@@ -980,7 +997,7 @@ export default function App() {
               <div style={{ marginBottom:14 }}>
                 <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginBottom:8, textTransform:"uppercase", letterSpacing:"0.1em" }}>예측할 경기 선택</div>
                 <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
-                  {upcomingMatches.slice(0,5).map(m => <MatchCard key={m.id} match={m} active={selectedMatch?.id===m.id} onClick={async ()=>{
+                  {upcomingMatches.slice(0,5).map(m => <MatchCard key={m.id} match={m} active={selectedMatch?.id===m.id} lineupAvailable={lineupAvailable} selectedMatch={selectedMatch} onClick={async ()=>{
                     setSelectedMatch(m);
                     setScorePreds([]); setMyScorePred(null); setScoreHome(0); setScoreAway(0);
                     try {
@@ -1081,20 +1098,20 @@ export default function App() {
                     <div>
                       <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:12, marginBottom:10 }}>
                         <div style={{ textAlign:"center", flex:1 }}>
-                          <div style={{ fontSize:11, color:selectedMatch.home?"#60a5fa":"#f87171", marginBottom:6, fontWeight:700 }}>{selectedMatch.home?"수원":selectedMatch.opponent}</div>
+                          <div style={{ fontSize:11, color:"#60a5fa", marginBottom:6, fontWeight:700 }}>수원</div>
                           <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}>
-                            <button onClick={()=>setScoreHome(Math.max(0,scoreHome-1))} style={{ width:26,height:26,borderRadius:6,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"white",fontSize:14,cursor:"pointer" }}>−</button>
-                            <span style={{ fontSize:26,fontWeight:900,minWidth:28,textAlign:"center" }}>{scoreHome}</span>
-                            <button onClick={()=>setScoreHome(scoreHome+1)} style={{ width:26,height:26,borderRadius:6,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"white",fontSize:14,cursor:"pointer" }}>+</button>
+                            <button onClick={()=>selectedMatch.home?setScoreHome(Math.max(0,scoreHome-1)):setScoreAway(Math.max(0,scoreAway-1))} style={{ width:26,height:26,borderRadius:6,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"white",fontSize:14,cursor:"pointer" }}>−</button>
+                            <span style={{ fontSize:26,fontWeight:900,minWidth:28,textAlign:"center" }}>{selectedMatch.home?scoreHome:scoreAway}</span>
+                            <button onClick={()=>selectedMatch.home?setScoreHome(scoreHome+1):setScoreAway(scoreAway+1)} style={{ width:26,height:26,borderRadius:6,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"white",fontSize:14,cursor:"pointer" }}>+</button>
                           </div>
                         </div>
                         <div style={{ fontSize:18,color:"rgba(255,255,255,0.3)",fontWeight:700 }}>:</div>
                         <div style={{ textAlign:"center", flex:1 }}>
-                          <div style={{ fontSize:11, color:selectedMatch.home?"#f87171":"#60a5fa", marginBottom:6, fontWeight:700 }}>{selectedMatch.home?selectedMatch.opponent:"수원"}</div>
+                          <div style={{ fontSize:11, color:"#f87171", marginBottom:6, fontWeight:700 }}>{selectedMatch.opponent}</div>
                           <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}>
-                            <button onClick={()=>setScoreAway(Math.max(0,scoreAway-1))} style={{ width:26,height:26,borderRadius:6,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"white",fontSize:14,cursor:"pointer" }}>−</button>
-                            <span style={{ fontSize:26,fontWeight:900,minWidth:28,textAlign:"center" }}>{scoreAway}</span>
-                            <button onClick={()=>setScoreAway(scoreAway+1)} style={{ width:26,height:26,borderRadius:6,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"white",fontSize:14,cursor:"pointer" }}>+</button>
+                            <button onClick={()=>selectedMatch.home?setScoreAway(Math.max(0,scoreAway-1)):setScoreHome(Math.max(0,scoreHome-1))} style={{ width:26,height:26,borderRadius:6,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"white",fontSize:14,cursor:"pointer" }}>−</button>
+                            <span style={{ fontSize:26,fontWeight:900,minWidth:28,textAlign:"center" }}>{selectedMatch.home?scoreAway:scoreHome}</span>
+                            <button onClick={()=>selectedMatch.home?setScoreAway(scoreAway+1):setScoreHome(scoreHome+1)} style={{ width:26,height:26,borderRadius:6,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"white",fontSize:14,cursor:"pointer" }}>+</button>
                           </div>
                         </div>
                       </div>
@@ -1133,7 +1150,7 @@ export default function App() {
                         <div key={i} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:4, fontSize:12 }}>
                           <span style={{ color: p.nickname===nickname?"#60a5fa":"white", fontWeight: p.nickname===nickname?700:400 }}>{p.nickname}</span>
                           <span style={{ fontWeight:700, color: (selectedMatch?.home ? p.homeScore > p.awayScore : p.awayScore > p.homeScore) ? "#4ade80" : p.homeScore === p.awayScore ? "#fbbf24" : "#f87171" }}>
-                            {p.homeScore} : {p.awayScore}
+                            {selectedMatch?.home ? p.homeScore : p.awayScore} : {selectedMatch?.home ? p.awayScore : p.homeScore}
                           </span>
                         </div>
                       ))}
@@ -1142,9 +1159,21 @@ export default function App() {
                 </div>
               )}
 
-              {lineupAvailable && (
-                <div style={{ marginTop:8, padding:"8px 12px", background:"rgba(34,197,94,0.08)", border:"1px solid rgba(34,197,94,0.2)", borderRadius:8, fontSize:11, color:"#4ade80", textAlign:"center" }}>
-                  ✅ 선발 발표됨! {scoringStatus || "자동 채점 완료"}
+              {lineupAvailable && currentLineup && (
+                <div style={{ marginTop:8 }}>
+                  <div style={{ padding:"8px 12px", background:"rgba(34,197,94,0.08)", border:"1px solid rgba(34,197,94,0.2)", borderRadius:8, fontSize:11, color:"#4ade80", textAlign:"center", marginBottom:10 }}>
+                    ✅ 선발 발표됨! {scoringStatus || "자동 채점 완료"}
+                  </div>
+                  <div style={{ background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:10, padding:"10px 12px", marginBottom:10 }}>
+                    <div style={{ fontSize:11, color:"rgba(255,255,255,0.5)", marginBottom:6, fontWeight:700 }}>🏟️ 실제 선발 ({currentLineup.formation})</div>
+                    <div style={{ display:"flex", flexWrap:"wrap", gap:4 }}>
+                      {(currentLineup.players||[]).map((p,i) => (
+                        <div key={i} style={{ fontSize:11, background:"rgba(34,197,94,0.2)", border:"1px solid rgba(34,197,94,0.4)", borderRadius:6, padding:"3px 8px", color:"#4ade80", fontWeight:700 }}>
+                          {p.number} {p.nameKo}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               )}
               {!lineupAvailable && selectedMatch && (
@@ -1527,12 +1556,15 @@ export default function App() {
                 {rankingPredDetail ? (
                   <div>
                     <button onClick={() => { setRankingPredDetail(null); setRankingLineup(null); setRankingScorePred(null); }} style={{ background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:8, padding:"5px 10px", color:"#aaa", fontSize:12, cursor:"pointer", marginBottom:12 }}>← 경기 목록</button>
-                    <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginBottom:8 }}>{rankingPredDetail.formation}</div>
                     {rankingScorePred && (
                       <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:10, padding:"8px 12px", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:8 }}>
                         <span style={{ fontSize:11, color:"rgba(255,255,255,0.4)" }}>🎯 승부 예측</span>
                         <span style={{ fontSize:18, fontWeight:900, color:(rankingPredDetail?.isHome ? rankingScorePred.homeScore>rankingScorePred.awayScore : rankingScorePred.awayScore>rankingScorePred.homeScore)?"#4ade80":rankingScorePred.homeScore===rankingScorePred.awayScore?"#fbbf24":"#f87171" }}>
-                          {rankingScorePred.homeScore} : {rankingScorePred.awayScore}
+                          {(() => {
+                            const m = pastMatches.find(m => String(m.id) === String(rankingPredDetail?.matchId));
+                            const ih = m?.home;
+                            return ih ? `${rankingScorePred.homeScore} : ${rankingScorePred.awayScore}` : `${rankingScorePred.awayScore} : ${rankingScorePred.homeScore}`;
+                          })()}
                         </span>
                         {rankingPredDetail?.score && (() => {
                           const [sw, ow] = rankingPredDetail.score.split(':').map(Number);
@@ -1550,9 +1582,12 @@ export default function App() {
                     )}
                     {/* 토글 버튼 */}
                    {/* 토글 버튼 */}
-                   <div style={{ display:"flex", gap:6, marginBottom:8 }}>
-                     <button onClick={()=>setRankingLineupToggle("pred")} style={{ flex:1, padding:"6px 0", borderRadius:8, border:"none", fontSize:11, fontWeight:700, cursor:"pointer", background:rankingLineupToggle==="pred"?"#1d4ed8":"rgba(255,255,255,0.08)", color:"white" }}>내 예측</button>
-                     <button onClick={()=>setRankingLineupToggle("actual")} disabled={!rankingLineup} style={{ flex:1, padding:"6px 0", borderRadius:8, border:"none", fontSize:11, fontWeight:700, cursor:"pointer", background:rankingLineupToggle==="actual"?"#1d4ed8":"rgba(255,255,255,0.08)", color:rankingLineup?"white":"rgba(255,255,255,0.3)" }}>실제 선발</button>
+                   <div style={{ display:"flex", gap:6, marginBottom:10, background:"rgba(255,255,255,0.05)", borderRadius:10, padding:4 }}>
+                     <button onClick={()=>setRankingLineupToggle("pred")} style={{ flex:1, padding:"8px 0", borderRadius:8, border:"none", fontSize:12, fontWeight:700, cursor:"pointer", background:rankingLineupToggle==="pred"?"#1d4ed8":"transparent", color:"white" }}>{rankingView?.nickname}의 예측</button>
+                     <button onClick={()=>setRankingLineupToggle("actual")} disabled={!rankingLineup} style={{ flex:1, padding:"8px 0", borderRadius:8, border:"none", fontSize:12, fontWeight:700, cursor:"pointer", background:rankingLineupToggle==="actual"?"#1d4ed8":"transparent", color:rankingLineup?"white":"rgba(255,255,255,0.3)" }}>실제 선발</button>
+                   </div>
+                   <div style={{ fontSize:10, color:"rgba(255,255,255,0.35)", marginBottom:8 }}>
+                     {rankingLineupToggle==="pred" ? rankingPredDetail.formation : (rankingLineup?.formation||rankingPredDetail.formation)} 포메이션
                    </div>
                    {rankingLineupToggle === "pred"
                      ? <PitchView formation={rankingPredDetail.formation} slots={rankingPredDetail.slots} interactive={false} actualPlayers={rankingLineup?.players} />
@@ -1560,12 +1595,33 @@ export default function App() {
                        ? <PitchView formation={rankingLineup.formation} slots={rankingLineup.players.map((p,i)=>({ pos:["GK","CB","CB","LB","RB","CM","CM","LM","RM","ST","ST"][i]||"CM", player:{...p, nameKo:p.nameKo||p.name} }))} interactive={false} />
                        : <div style={{textAlign:"center",padding:20,fontSize:12,color:"rgba(255,255,255,0.3)"}}>선발 데이터 없음</div>
                    }
-                    <div style={{ marginTop:8, display:"flex", flexWrap:"wrap", gap:4 }}>
-                      {(rankingPredDetail.slots||[]).filter(s=>s.player).map((s,j) => (
-                        <div key={j} style={{ fontSize:10, background:"rgba(29,78,216,0.3)", border:"1px solid rgba(59,130,246,0.3)", borderRadius:6, padding:"2px 6px" }}>
-                          {s.pos} {(s.player.nameKo||s.player.name).trim()}
-                        </div>
-                      ))}
+                    <div style={{ marginTop:10, display:"flex", flexWrap:"wrap", gap:5 }}>
+                      {rankingLineupToggle === "pred"
+                        ? (rankingPredDetail.slots||[]).filter(s=>s.player).map((s,j) => {
+                            const matched = rankingLineup?.players
+                              ? rankingLineup.players.some(ap =>
+                                  (s.player.number && String(s.player.number) === String(ap.number)) ||
+                                  (s.player.nameKo && s.player.nameKo === ap.nameKo)
+                                )
+                              : null;
+                            const bg = matched === true ? "rgba(34,197,94,0.1)" : matched === false ? "rgba(239,68,68,0.1)" : "rgba(255,255,255,0.05)";
+                            const border = matched === true ? "1px solid rgba(34,197,94,0.3)" : matched === false ? "1px solid rgba(239,68,68,0.3)" : "1px solid rgba(255,255,255,0.1)";
+                            const color = matched === true ? "#4ade80" : matched === false ? "#f87171" : "white";
+                            const numColor = matched === true ? "#4ade80" : matched === false ? "#f87171" : "#888";
+                            return (
+                              <div key={j} style={{ display:"flex", alignItems:"center", gap:4, background:bg, border, borderRadius:8, padding:"4px 8px" }}>
+                                <span style={{ fontSize:9, color:numColor }}>#{s.player.number}</span>
+                                <span style={{ fontSize:11, fontWeight:600, color }}>{(s.player.nameKo||s.player.name).trim()}</span>
+                              </div>
+                            );
+                          })
+                        : (rankingLineup?.players||[]).map((p,j) => (
+                            <div key={j} style={{ display:"flex", alignItems:"center", gap:4, background:"rgba(34,197,94,0.1)", border:"1px solid rgba(34,197,94,0.3)", borderRadius:8, padding:"4px 8px" }}>
+                              <span style={{ fontSize:9, color:"#4ade80" }}>#{p.number}</span>
+                              <span style={{ fontSize:11, fontWeight:600, color:"#4ade80" }}>{p.nameKo||p.name}</span>
+                            </div>
+                          ))
+                      }
                     </div>
                   </div>
                 ) : (
