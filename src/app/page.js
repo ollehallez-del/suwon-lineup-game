@@ -239,9 +239,8 @@ function PitchView({ slots, formation, onSlotClick, selectedSlot, interactive, a
   );
 }
 
-function OtherPredictions({ preds, myNickname, scores, officialPlayers, scorePreds, isHome, actualScore }) {
+function OtherPredictions({ preds, myNickname, scores, officialPlayers, scorePreds, isHome, actualScore, match }) {
   const [expanded, setExpanded] = useState(null);
-  // 채점 완료 시 점수 높은 순 정렬
   const sortedPreds = scores
     ? [...preds].sort((a, b) => (scores[b.nickname] || 0) - (scores[a.nickname] || 0))
     : preds;
@@ -257,74 +256,76 @@ function OtherPredictions({ preds, myNickname, scores, officialPlayers, scorePre
             pos: pos.pos,
             player: (p.slots||[])[idx]?.player || null,
           }));
+          const sp = (scorePreds||[]).find(s => s.nickname === p.nickname);
+          const matchScore = scores?.[p.nickname] || 0;
+          const hitCount = officialPlayers
+            ? readonlySlots.filter(s => s.player && officialPlayers.some(ap =>
+                (s.player.number && String(s.player.number)===String(ap.number)) ||
+                (s.player.nameKo && s.player.nameKo===ap.nameKo)
+              )).length
+            : null;
+          const spDisplay = sp
+            ? (isHome ? sp.homeScore : sp.awayScore) + ':' + (isHome ? sp.awayScore : sp.homeScore)
+            : null;
           return (
             <div key={i} style={{ background:isMe?"rgba(59,130,246,0.1)":"rgba(255,255,255,0.04)", border:isMe?"1px solid rgba(59,130,246,0.3)":"1px solid rgba(255,255,255,0.08)", borderRadius:10, overflow:"hidden" }}>
+              {/* 헤더 */}
               <div onClick={() => setExpanded(isOpen ? null : p.nickname)}
                 style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"10px 12px", cursor:"pointer" }}>
                 <span style={{ fontSize:13, fontWeight:700, color:isMe?"#60a5fa":"white" }}>
-                  {p.nickname}{isMe&&<span style={{fontSize:10,marginLeft:4,color:"#60a5fa"}}>나</span>}
-                  {(() => {
-                  const sp = (scorePreds||[]).find(s=>s.nickname===p.nickname);
-                  if (!sp) return null;
-                  const suwonWin = isHome ? sp.homeScore > sp.awayScore : sp.awayScore > sp.homeScore;
-                  const scoreColor = suwonWin ? "#4ade80" : sp.homeScore===sp.awayScore ? "#fbbf24" : "#f87171";
-                  // 채점 완료 시 +10/+5/❌ 표시
-                  let resultBadge = null;
-                  if (actualScore) {
-                    const [suwonScore, oppScore] = actualScore.split(':').map(Number);
-                    // score는 수원:상대 기준, 예측은 실제 홈:원정 기준
-                    const rh = isHome ? suwonScore : oppScore;
-                    const ra = isHome ? oppScore : suwonScore;
-                    const exact = sp.homeScore===rh && sp.awayScore===ra;
-                    const result = !exact && (sp.homeScore>sp.awayScore)===(rh>ra) && (sp.homeScore===sp.awayScore)===(rh===ra);
-                    resultBadge = exact
-                      ? <span style={{fontSize:10,marginLeft:3,color:"#4ade80"}}>🎯+15</span>
-                      : result
-                        ? <span style={{fontSize:10,marginLeft:3,color:"#fbbf24"}}>✅+5</span>
-                        : <span style={{fontSize:10,marginLeft:3,color:"rgba(255,255,255,0.3)"}}>❌</span>;
-                  }
-                  return <span style={{fontSize:11,marginLeft:6,fontWeight:700,color:scoreColor,display:"inline-flex",alignItems:"center"}}>{sp.homeScore}:{sp.awayScore}{resultBadge}</span>;
-                })()}
+                  {p.nickname}{isMe && <span style={{ fontSize:10, marginLeft:4, color:"#60a5fa" }}>나</span>}
                 </span>
                 <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                  {scores?.[p.nickname] !== undefined && (
-                    <span style={{ fontSize:13, fontWeight:900, color:"#fbbf24", fontFamily:"monospace" }}>{scores[p.nickname]}pt</span>
-                  )}
-                  <span style={{ fontSize:11, color:"#aaa" }}>{p.formation}</span>
+                  {scores && <span style={{ fontSize:13, fontWeight:900, color:"#fbbf24", fontFamily:"monospace" }}>{matchScore}pt</span>}
                   <span style={{ fontSize:12, color:"rgba(255,255,255,0.4)" }}>{isOpen?"▲":"▼"}</span>
                 </div>
               </div>
+
+              {/* 펼쳤을 때 */}
               {isOpen && (
                 <div style={{ padding:"0 12px 12px" }}>
-                  {/* 승부 예측 스코어 */}
-                  {(() => { const sp = (scorePreds||[]).find(s=>s.nickname===p.nickname); return sp ? (
-                    <div style={{ display:"flex", justifyContent:"center", alignItems:"center", gap:16, padding:"8px 0 10px", marginBottom:8, borderBottom:"1px solid rgba(255,255,255,0.06)" }}>
-                      <span style={{ fontSize:11, color:"rgba(255,255,255,0.4)" }}>승부 예측</span>
-                      <span style={{ fontSize:20, fontWeight:900, color:(isHome?sp.homeScore>sp.awayScore:sp.awayScore>sp.homeScore)?"#4ade80":sp.homeScore===sp.awayScore?"#fbbf24":"#f87171" }}>
-                        {isHome ? sp.homeScore : sp.awayScore} : {isHome ? sp.awayScore : sp.homeScore}
-                      </span>
-                      <span style={{ fontSize:11, color:(isHome?sp.homeScore>sp.awayScore:sp.awayScore>sp.homeScore)?"#4ade80":sp.homeScore===sp.awayScore?"#fbbf24":"#f87171" }}>
-                        {(isHome?sp.homeScore>sp.awayScore:sp.awayScore>sp.homeScore)?"수원 승":sp.homeScore===sp.awayScore?"무승부":"수원 패"}
-                      </span>
+
+                  {/* 선발적중 / 승부예측 / 총점 */}
+                  {(hitCount !== null || sp || scores) && (
+                    <div style={{ display:"flex", gap:8, marginBottom:12 }}>
+                      {hitCount !== null && (
+                        <div style={{ flex:1, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:10, padding:"8px 10px", textAlign:"center" }}>
+                          <div style={{ fontSize:9, color:"rgba(255,255,255,0.4)", marginBottom:3 }}>선발 적중</div>
+                          <div style={{ fontSize:16, fontWeight:900, color:"#fbbf24" }}>{hitCount}/11</div>
+                        </div>
+                      )}
+                      {sp && (
+                        <div style={{ flex:1, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:10, padding:"8px 10px", textAlign:"center" }}>
+                          <div style={{ fontSize:9, color:"rgba(255,255,255,0.4)", marginBottom:3 }}>승부예측</div>
+                          <div style={{ fontSize:16, fontWeight:900, color:"#60a5fa" }}>{spDisplay}</div>
+                        </div>
+                      )}
+                      {scores && (
+                        <div style={{ flex:1, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:10, padding:"8px 10px", textAlign:"center" }}>
+                          <div style={{ fontSize:9, color:"rgba(255,255,255,0.4)", marginBottom:3 }}>총점</div>
+                          <div style={{ fontSize:16, fontWeight:900, color:"#fbbf24" }}>{matchScore}pt</div>
+                        </div>
+                      )}
                     </div>
-                  ) : null; })()}
+                  )}
+
+                  {/* 포메이션 + 작전판 */}
+                  <div style={{ fontSize:10, color:"rgba(255,255,255,0.35)", marginBottom:8 }}>{p.formation} 포메이션</div>
                   <PitchView formation={p.formation} slots={readonlySlots} interactive={false} actualPlayers={officialPlayers} />
-                  <div style={{ marginTop:8, display:"flex", flexWrap:"wrap", gap:5 }}>
+
+                  {/* 하단 배지 */}
+                  <div style={{ marginTop:10, display:"flex", flexWrap:"wrap", gap:5 }}>
                     {readonlySlots.filter(s=>s.player).map((s,j) => {
                       const matched = officialPlayers
                         ? officialPlayers.some(ap =>
-                            (s.player.number && String(s.player.number) === String(ap.number)) ||
-                            (s.player.nameKo && s.player.nameKo === ap.nameKo)
+                            (s.player.number && String(s.player.number)===String(ap.number)) ||
+                            (s.player.nameKo && s.player.nameKo===ap.nameKo)
                           )
                         : null;
-                      const bg = matched === true  ? "rgba(34,197,94,0.1)"
-                        : matched === false ? "rgba(239,68,68,0.1)"
-                        : "rgba(255,255,255,0.05)";
-                      const border = matched === true  ? "1px solid rgba(34,197,94,0.3)"
-                        : matched === false ? "1px solid rgba(239,68,68,0.3)"
-                        : "1px solid rgba(255,255,255,0.1)";
-                      const color = matched === true ? "#4ade80" : matched === false ? "#f87171" : "white";
-                      const numColor = matched === true ? "#4ade80" : matched === false ? "#f87171" : "#888";
+                      const bg = matched===true ? "rgba(34,197,94,0.1)" : matched===false ? "rgba(239,68,68,0.1)" : "rgba(255,255,255,0.05)";
+                      const border = matched===true ? "1px solid rgba(34,197,94,0.3)" : matched===false ? "1px solid rgba(239,68,68,0.3)" : "1px solid rgba(255,255,255,0.1)";
+                      const color = matched===true ? "#4ade80" : matched===false ? "#f87171" : "white";
+                      const numColor = matched===true ? "#4ade80" : matched===false ? "#f87171" : "#888";
                       return (
                         <div key={j} style={{ display:"flex", alignItems:"center", gap:4, background:bg, border, borderRadius:8, padding:"4px 8px" }}>
                           <span style={{ fontSize:9, color:numColor }}>#{s.player.number}</span>
@@ -342,6 +343,7 @@ function OtherPredictions({ preds, myNickname, scores, officialPlayers, scorePre
     </div>
   );
 }
+
 
 function MatchCard({ match, active, onClick, lineupAvailable, selectedMatch }) {
   const isPast = match.status === 'finished';
@@ -1556,6 +1558,56 @@ export default function App() {
                 {rankingPredDetail ? (
                   <div>
                     <button onClick={() => { setRankingPredDetail(null); setRankingLineup(null); setRankingScorePred(null); }} style={{ background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:8, padding:"5px 10px", color:"#aaa", fontSize:12, cursor:"pointer", marginBottom:12 }}>← 경기 목록</button>
+
+                    {/* 경기 정보 카드 */}
+                    {(() => {
+                      const m = pastMatches.find(m => String(m.id) === String(rankingPredDetail?.matchId));
+                      if (!m) return null;
+                      const rc = m.result==='W'?'#22c55e':m.result==='D'?'#eab308':'#ef4444';
+                      const d = new Date(m.kickoffISO||m.date);
+                      const dateStr = `${d.getMonth()+1}/${d.getDate()}`;
+                      return (
+                        <div style={{ background:"rgba(59,130,246,0.08)", border:"1px solid rgba(59,130,246,0.2)", borderRadius:10, padding:"10px 14px", marginBottom:12, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                          <div>
+                            <div style={{ fontSize:10, color:"rgba(255,255,255,0.4)", marginBottom:2 }}>{m.round}R · {dateStr} · {m.home?"홈":"원정"}</div>
+                            <div style={{ fontSize:13, fontWeight:700 }}>vs {m.opponent}</div>
+                          </div>
+                          <div style={{ textAlign:"right" }}>
+                            <div style={{ fontSize:16, fontWeight:900, color:rc, fontFamily:"monospace" }}>{m.score}</div>
+                            <div style={{ fontSize:10, color:rc, fontWeight:700 }}>{m.result==='W'?'승':m.result==='D'?'무':'패'}</div>
+                          </div>
+                        </div>
+                      );
+                    })()}
+
+                    {/* 선발적중 / 승부예측 / 총점 */}
+                    {(() => {
+                      const m = pastMatches.find(m => String(m.id) === String(rankingPredDetail?.matchId));
+                      const ih = m?.home;
+                      const hitCount = (rankingPredDetail.slots||[]).filter(s => s.player && rankingLineup?.players?.some(ap =>
+                        (s.player.number && String(s.player.number)===String(ap.number)) ||
+                        (s.player.nameKo && s.player.nameKo===ap.nameKo)
+                      )).length;
+                      const matchScore = scoreData.detail?.[rankingPredDetail.matchId]?.[rankingView.nickname] || 0;
+                      const spScore = rankingScorePred ? (ih?rankingScorePred.homeScore:rankingScorePred.awayScore)+':'+(ih?rankingScorePred.awayScore:rankingScorePred.homeScore) : '-';
+                      return rankingLineup ? (
+                        <div style={{ display:"flex", gap:8, marginBottom:12 }}>
+                          <div style={{ flex:1, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:10, padding:"10px 12px", textAlign:"center" }}>
+                            <div style={{ fontSize:10, color:"rgba(255,255,255,0.4)", marginBottom:4 }}>선발 적중</div>
+                            <div style={{ fontSize:18, fontWeight:900, color:"#fbbf24" }}>{hitCount}/11</div>
+                          </div>
+                          <div style={{ flex:1, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:10, padding:"10px 12px", textAlign:"center" }}>
+                            <div style={{ fontSize:10, color:"rgba(255,255,255,0.4)", marginBottom:4 }}>승부예측</div>
+                            <div style={{ fontSize:18, fontWeight:900, color:"#60a5fa" }}>{spScore}</div>
+                          </div>
+                          <div style={{ flex:1, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:10, padding:"10px 12px", textAlign:"center" }}>
+                            <div style={{ fontSize:10, color:"rgba(255,255,255,0.4)", marginBottom:4 }}>총점</div>
+                            <div style={{ fontSize:18, fontWeight:900, color:"#fbbf24" }}>{matchScore}pt</div>
+                          </div>
+                        </div>
+                      ) : null;
+                    })()}
+
                     {rankingScorePred && (
                       <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:10, padding:"8px 12px", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:8 }}>
                         <span style={{ fontSize:11, color:"rgba(255,255,255,0.4)" }}>🎯 승부 예측</span>
