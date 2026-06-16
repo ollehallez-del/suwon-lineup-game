@@ -285,27 +285,33 @@ function OtherPredictions({ preds, myNickname, scores, officialPlayers, scorePre
               {isOpen && (
                 <div style={{ padding:"0 12px 12px" }}>
 
-                  {/* 선발적중 / 승부예측 / 총점 */}
-                  {(hitCount !== null || sp || scores) && (
-                    <div style={{ display:"flex", gap:8, marginBottom:12 }}>
-                      {hitCount !== null && (
-                        <div style={{ flex:1, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:10, padding:"8px 10px", textAlign:"center" }}>
-                          <div style={{ fontSize:9, color:"rgba(255,255,255,0.4)", marginBottom:3 }}>선발 적중</div>
-                          <div style={{ fontSize:16, fontWeight:900, color:"#fbbf24" }}>{hitCount}/11</div>
-                        </div>
-                      )}
-                      {sp && (
-                        <div style={{ flex:1, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:10, padding:"8px 10px", textAlign:"center" }}>
-                          <div style={{ fontSize:9, color:"rgba(255,255,255,0.4)", marginBottom:3 }}>승부예측</div>
-                          <div style={{ fontSize:16, fontWeight:900, color:"#60a5fa" }}>{spDisplay}</div>
-                        </div>
-                      )}
-                      {scores && (
-                        <div style={{ flex:1, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:10, padding:"8px 10px", textAlign:"center" }}>
-                          <div style={{ fontSize:9, color:"rgba(255,255,255,0.4)", marginBottom:3 }}>총점</div>
-                          <div style={{ fontSize:16, fontWeight:900, color:"#fbbf24" }}>{matchScore}pt</div>
-                        </div>
-                      )}
+                  {/* 채점 내역 */}
+                  {scores && (
+                    <div style={{ marginBottom:12, padding:"10px 12px", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:10 }}>
+                      <div style={{ display:"flex", flexWrap:"wrap", gap:6, alignItems:"center" }}>
+                        {hitCount !== null && (
+                          <span style={{ fontSize:11, background:"rgba(251,191,36,0.15)", border:"1px solid rgba(251,191,36,0.3)", borderRadius:6, padding:"3px 8px", color:"#fbbf24", fontWeight:700 }}>
+                            ⚽ {hitCount}명 적중 +{hitCount*5}pt
+                          </span>
+                        )}
+                        {hitCount === 11 && (
+                          <span style={{ fontSize:11, background:"rgba(251,191,36,0.15)", border:"1px solid rgba(251,191,36,0.3)", borderRadius:6, padding:"3px 8px", color:"#fbbf24", fontWeight:700 }}>
+                            🌟 전원 보너스 +30pt
+                          </span>
+                        )}
+                        {(() => {
+                          if (!sp || !actualScore) return null;
+                          const [as, ao] = actualScore.split(':').map(Number);
+                          const exact = (isHome ? sp.homeScore : sp.awayScore) === as && (isHome ? sp.awayScore : sp.homeScore) === ao;
+                          const actualWin = as > ao; const spWin = (isHome ? sp.homeScore : sp.awayScore) > (isHome ? sp.awayScore : sp.homeScore);
+                          const actualDraw = as === ao; const spDraw = sp.homeScore === sp.awayScore;
+                          const resultMatch = !exact && spWin === actualWin && spDraw === actualDraw;
+                          if (exact) return <span style={{ fontSize:11, background:"rgba(34,197,94,0.15)", border:"1px solid rgba(34,197,94,0.3)", borderRadius:6, padding:"3px 8px", color:"#4ade80", fontWeight:700 }}>🎯 정확한 스코어 +15pt</span>;
+                          if (resultMatch) return <span style={{ fontSize:11, background:"rgba(96,165,250,0.15)", border:"1px solid rgba(96,165,250,0.3)", borderRadius:6, padding:"3px 8px", color:"#60a5fa", fontWeight:700 }}>✅ 승무패 적중 +5pt</span>;
+                          return <span style={{ fontSize:11, background:"rgba(239,68,68,0.1)", border:"1px solid rgba(239,68,68,0.2)", borderRadius:6, padding:"3px 8px", color:"#f87171", fontWeight:700 }}>❌ 승부예측 미적중</span>;
+                        })()}
+                        <span style={{ fontSize:13, fontWeight:900, color:"#fbbf24", marginLeft:"auto", fontFamily:"monospace" }}>= {matchScore}pt</span>
+                      </div>
                     </div>
                   )}
 
@@ -1580,32 +1586,48 @@ export default function App() {
                       );
                     })()}
 
-                    {/* 선발적중 / 승부예측 / 총점 */}
+                    {/* 채점 내역 */}
                     {(() => {
                       const m = pastMatches.find(m => String(m.id) === String(rankingPredDetail?.matchId));
                       const ih = m?.home;
-                      const hitCount = (rankingPredDetail.slots||[]).filter(s => s.player && rankingLineup?.players?.some(ap =>
+                      if (!rankingLineup) return null;
+                      const hitCount = (rankingPredDetail.slots||[]).filter(s => s.player && rankingLineup.players?.some(ap =>
                         (s.player.number && String(s.player.number)===String(ap.number)) ||
                         (s.player.nameKo && s.player.nameKo===ap.nameKo)
                       )).length;
                       const matchScore = scoreData.detail?.[rankingPredDetail.matchId]?.[rankingView.nickname] || 0;
-                      const spScore = rankingScorePred ? (ih?rankingScorePred.homeScore:rankingScorePred.awayScore)+':'+(ih?rankingScorePred.awayScore:rankingScorePred.homeScore) : '-';
-                      return rankingLineup ? (
-                        <div style={{ display:"flex", gap:8, marginBottom:12 }}>
-                          <div style={{ flex:1, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:10, padding:"10px 12px", textAlign:"center" }}>
-                            <div style={{ fontSize:10, color:"rgba(255,255,255,0.4)", marginBottom:4 }}>선발 적중</div>
-                            <div style={{ fontSize:18, fontWeight:900, color:"#fbbf24" }}>{hitCount}/11</div>
-                          </div>
-                          <div style={{ flex:1, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:10, padding:"10px 12px", textAlign:"center" }}>
-                            <div style={{ fontSize:10, color:"rgba(255,255,255,0.4)", marginBottom:4 }}>승부예측</div>
-                            <div style={{ fontSize:18, fontWeight:900, color:"#60a5fa" }}>{spScore}</div>
-                          </div>
-                          <div style={{ flex:1, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:10, padding:"10px 12px", textAlign:"center" }}>
-                            <div style={{ fontSize:10, color:"rgba(255,255,255,0.4)", marginBottom:4 }}>총점</div>
-                            <div style={{ fontSize:18, fontWeight:900, color:"#fbbf24" }}>{matchScore}pt</div>
+                      const actualSc = m?.score;
+                      const exact = rankingScorePred && actualSc ? (() => {
+                        const [as, ao] = actualSc.split(':').map(Number);
+                        return (ih?rankingScorePred.homeScore:rankingScorePred.awayScore)===as && (ih?rankingScorePred.awayScore:rankingScorePred.homeScore)===ao;
+                      })() : false;
+                      const resultMatch = rankingScorePred && actualSc && !exact ? (() => {
+                        const [as, ao] = actualSc.split(':').map(Number);
+                        const spSu = ih?rankingScorePred.homeScore:rankingScorePred.awayScore;
+                        const spOp = ih?rankingScorePred.awayScore:rankingScorePred.homeScore;
+                        return (spSu>spOp)===(as>ao) && (spSu===spOp)===(as===ao);
+                      })() : false;
+                      return (
+                        <div style={{ marginBottom:12, padding:"10px 12px", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:10 }}>
+                          <div style={{ display:"flex", flexWrap:"wrap", gap:6, alignItems:"center" }}>
+                            <span style={{ fontSize:11, background:"rgba(251,191,36,0.15)", border:"1px solid rgba(251,191,36,0.3)", borderRadius:6, padding:"3px 8px", color:"#fbbf24", fontWeight:700 }}>
+                              ⚽ {hitCount}명 적중 +{hitCount*5}pt
+                            </span>
+                            {hitCount === 11 && (
+                              <span style={{ fontSize:11, background:"rgba(251,191,36,0.15)", border:"1px solid rgba(251,191,36,0.3)", borderRadius:6, padding:"3px 8px", color:"#fbbf24", fontWeight:700 }}>
+                                🌟 전원 보너스 +30pt
+                              </span>
+                            )}
+                            {rankingScorePred && (exact
+                              ? <span style={{ fontSize:11, background:"rgba(34,197,94,0.15)", border:"1px solid rgba(34,197,94,0.3)", borderRadius:6, padding:"3px 8px", color:"#4ade80", fontWeight:700 }}>🎯 정확한 스코어 +15pt</span>
+                              : resultMatch
+                                ? <span style={{ fontSize:11, background:"rgba(96,165,250,0.15)", border:"1px solid rgba(96,165,250,0.3)", borderRadius:6, padding:"3px 8px", color:"#60a5fa", fontWeight:700 }}>✅ 승무패 적중 +5pt</span>
+                                : <span style={{ fontSize:11, background:"rgba(239,68,68,0.1)", border:"1px solid rgba(239,68,68,0.2)", borderRadius:6, padding:"3px 8px", color:"#f87171", fontWeight:700 }}>❌ 승부예측 미적중</span>
+                            )}
+                            <span style={{ fontSize:13, fontWeight:900, color:"#fbbf24", marginLeft:"auto", fontFamily:"monospace" }}>= {matchScore}pt</span>
                           </div>
                         </div>
-                      ) : null;
+                      );
                     })()}
 
                     {rankingScorePred && (
