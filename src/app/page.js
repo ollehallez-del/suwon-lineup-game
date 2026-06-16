@@ -1682,31 +1682,7 @@ export default function App() {
                       );
                     })()}
 
-                    {rankingScorePred && (
-                      <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:10, padding:"8px 12px", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:8 }}>
-                        <span style={{ fontSize:11, color:"rgba(255,255,255,0.4)" }}>🎯 승부 예측</span>
-                        <span style={{ fontSize:18, fontWeight:900, color:(rankingPredDetail?.isHome ? rankingScorePred.homeScore>rankingScorePred.awayScore : rankingScorePred.awayScore>rankingScorePred.homeScore)?"#4ade80":rankingScorePred.homeScore===rankingScorePred.awayScore?"#fbbf24":"#f87171" }}>
-                          {(() => {
-                            const m = pastMatches.find(m => String(m.id) === String(rankingPredDetail?.matchId));
-                            const ih = m?.home;
-                            return ih ? `${rankingScorePred.homeScore} : ${rankingScorePred.awayScore}` : `${rankingScorePred.awayScore} : ${rankingScorePred.homeScore}`;
-                          })()}
-                        </span>
-                        {rankingPredDetail?.score && (() => {
-                          const [sw, ow] = rankingPredDetail.score.split(':').map(Number);
-                          const rh = rankingPredDetail.isHome ? sw : ow;
-                          const ra = rankingPredDetail.isHome ? ow : sw;
-                          const exact = rankingScorePred.homeScore===rh && rankingScorePred.awayScore===ra;
-                          const result = !exact && (rankingScorePred.homeScore>rankingScorePred.awayScore)===(rh>ra) && (rankingScorePred.homeScore===rankingScorePred.awayScore)===(rh===ra);
-                          return exact
-                            ? <span style={{fontSize:11,color:"#4ade80",fontWeight:700}}>🎯 +15pt</span>
-                            : result
-                              ? <span style={{fontSize:11,color:"#fbbf24",fontWeight:700}}>✅ +5pt</span>
-                              : <span style={{fontSize:11,color:"rgba(255,255,255,0.3)"}}>❌</span>;
-                        })()}
-                      </div>
-                    )}
-                    {/* 토글 버튼 */}
+                                      {/* 토글 버튼 */}
                    {/* 토글 버튼 */}
                    <div style={{ display:"flex", gap:6, marginBottom:10, background:"rgba(255,255,255,0.05)", borderRadius:10, padding:4 }}>
                      <button onClick={()=>setRankingLineupToggle("pred")} style={{ flex:1, padding:"8px 0", borderRadius:8, border:"none", fontSize:12, fontWeight:700, cursor:"pointer", background:rankingLineupToggle==="pred"?"#1d4ed8":"transparent", color:"white" }}>{rankingView?.nickname}의 예측</button>
