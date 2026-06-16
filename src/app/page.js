@@ -285,6 +285,28 @@ function OtherPredictions({ preds, myNickname, scores, officialPlayers, scorePre
               {isOpen && (
                 <div style={{ padding:"0 12px 12px" }}>
 
+                  {/* 선발적중 / 승부예측 / 총점 3칸 */}
+                  {scores && (
+                    <div style={{ display:"flex", gap:8, marginBottom:10 }}>
+                      {hitCount !== null && (
+                        <div style={{ flex:1, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:10, padding:"8px 10px", textAlign:"center" }}>
+                          <div style={{ fontSize:9, color:"rgba(255,255,255,0.4)", marginBottom:3 }}>선발 적중</div>
+                          <div style={{ fontSize:16, fontWeight:900, color:"#fbbf24" }}>{hitCount}/11</div>
+                        </div>
+                      )}
+                      {sp && (
+                        <div style={{ flex:1, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:10, padding:"8px 10px", textAlign:"center" }}>
+                          <div style={{ fontSize:9, color:"rgba(255,255,255,0.4)", marginBottom:3 }}>승부예측</div>
+                          <div style={{ fontSize:16, fontWeight:900, color:"#60a5fa" }}>{spDisplay}</div>
+                        </div>
+                      )}
+                      <div style={{ flex:1, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:10, padding:"8px 10px", textAlign:"center" }}>
+                        <div style={{ fontSize:9, color:"rgba(255,255,255,0.4)", marginBottom:3 }}>총점</div>
+                        <div style={{ fontSize:16, fontWeight:900, color:"#fbbf24" }}>{matchScore}pt</div>
+                      </div>
+                    </div>
+                  )}
+
                   {/* 채점 내역 */}
                   {scores && (
                     <div style={{ marginBottom:12, padding:"10px 12px", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:10 }}>
@@ -1581,6 +1603,36 @@ export default function App() {
                           <div style={{ textAlign:"right" }}>
                             <div style={{ fontSize:16, fontWeight:900, color:rc, fontFamily:"monospace" }}>{m.score}</div>
                             <div style={{ fontSize:10, color:rc, fontWeight:700 }}>{m.result==='W'?'승':m.result==='D'?'무':'패'}</div>
+                          </div>
+                        </div>
+                      );
+                    })()}
+
+                    {/* 선발적중 / 승부예측 / 총점 3칸 */}
+                    {rankingLineup && (() => {
+                      const m = pastMatches.find(m => String(m.id) === String(rankingPredDetail?.matchId));
+                      const ih = m?.home;
+                      const hitCount = (rankingPredDetail.slots||[]).filter(s => s.player && rankingLineup.players?.some(ap =>
+                        (s.player.number && String(s.player.number)===String(ap.number)) ||
+                        (s.player.nameKo && s.player.nameKo===ap.nameKo)
+                      )).length;
+                      const matchScore = scoreData.detail?.[rankingPredDetail.matchId]?.[rankingView.nickname] || 0;
+                      const spScore = rankingScorePred ? (ih?rankingScorePred.homeScore:rankingScorePred.awayScore)+':'+(ih?rankingScorePred.awayScore:rankingScorePred.homeScore) : null;
+                      return (
+                        <div style={{ display:"flex", gap:8, marginBottom:10 }}>
+                          <div style={{ flex:1, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:10, padding:"10px 12px", textAlign:"center" }}>
+                            <div style={{ fontSize:10, color:"rgba(255,255,255,0.4)", marginBottom:4 }}>선발 적중</div>
+                            <div style={{ fontSize:18, fontWeight:900, color:"#fbbf24" }}>{hitCount}/11</div>
+                          </div>
+                          {spScore && (
+                            <div style={{ flex:1, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:10, padding:"10px 12px", textAlign:"center" }}>
+                              <div style={{ fontSize:10, color:"rgba(255,255,255,0.4)", marginBottom:4 }}>승부예측</div>
+                              <div style={{ fontSize:18, fontWeight:900, color:"#60a5fa" }}>{spScore}</div>
+                            </div>
+                          )}
+                          <div style={{ flex:1, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:10, padding:"10px 12px", textAlign:"center" }}>
+                            <div style={{ fontSize:10, color:"rgba(255,255,255,0.4)", marginBottom:4 }}>총점</div>
+                            <div style={{ fontSize:18, fontWeight:900, color:"#fbbf24" }}>{matchScore}pt</div>
                           </div>
                         </div>
                       );
