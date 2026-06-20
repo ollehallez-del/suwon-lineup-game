@@ -261,7 +261,7 @@ function PitchView({ slots, formation, onSlotClick, selectedSlot, interactive, a
   );
 }
 
-function OtherPredictions({ preds, myNickname, scores, officialPlayers, scorePreds, isHome, actualScore, match }) {
+function OtherPredictions({ preds, myNickname, scores, officialPlayers, scorePreds, isHome, actualScore, match, squadMap }) {
   const [expanded, setExpanded] = useState(null);
   const sortedPreds = scores
     ? [...preds].sort((a, b) => (scores[b.nickname] || 0) - (scores[a.nickname] || 0))
@@ -1239,7 +1239,7 @@ export default function App() {
               )}
 
               {otherPredictions.length > 0 && (
-                <OtherPredictions preds={otherPredictions} myNickname={nickname} scores={selectedMatch ? scoreData.detail?.[selectedMatch.id] : undefined} officialPlayers={currentLineup?.players} scorePreds={scorePreds} isHome={selectedMatch?.home} actualScore={selectedMatch?.score} />
+                <OtherPredictions squadMap={squadMap} preds={otherPredictions} myNickname={nickname} scores={selectedMatch ? scoreData.detail?.[selectedMatch.id] : undefined} officialPlayers={currentLineup?.players} scorePreds={scorePreds} isHome={selectedMatch?.home} actualScore={selectedMatch?.score} />
               )}
             </>}
           </div>
@@ -1352,7 +1352,7 @@ export default function App() {
                   </div>
                 </div>
                 {matchPredictions.length > 0 && (
-                  <OtherPredictions preds={matchPredictions} myNickname={nickname} scores={viewingMatch ? scoreData.detail?.[viewingMatch.id] : undefined} officialPlayers={officialLineup?.players} scorePreds={scorePreds} isHome={viewingMatch?.home} actualScore={viewingMatch?.score} />
+                  <OtherPredictions squadMap={squadMap} preds={matchPredictions} myNickname={nickname} scores={viewingMatch ? scoreData.detail?.[viewingMatch.id] : undefined} officialPlayers={officialLineup?.players} scorePreds={scorePreds} isHome={viewingMatch?.home} actualScore={viewingMatch?.score} />
                 )}
                 {officialLineup && matchPredictions.length > 0 && (
                   <button onClick={async () => {
