@@ -220,8 +220,19 @@ function PitchView({ slots, formation, onSlotClick, selectedSlot, interactive, a
                 : player ? "2px solid rgba(255,255,255,0.6)"
                 : "2px dashed rgba(255,255,255,0.25)";
               return (
-            <div style={{ width:44, height:44, borderRadius:"50%", background:bg, border, display:"flex", alignItems:"center", justifyContent:"center", boxShadow:player?"0 2px 12px rgba(0,0,0,0.4)":"none", flexShrink:0 }}>
-              {player ? (
+            <div style={{ width:44, height:44, borderRadius:"50%", background:bg, border, display:"flex", alignItems:"center", justifyContent:"center", boxShadow:player?"0 2px 12px rgba(0,0,0,0.4)":"none", flexShrink:0, overflow:"hidden", position:"relative" }}>
+              {player?.playerId ? (
+                <>
+                  <img
+                    src={`${PROXY}?path=/api/player-image?id=${player.playerId}`}
+                    style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"top" }}
+                    onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }}
+                  />
+                  <span style={{ display:"none", fontSize:8, textAlign:"center", lineHeight:1.1, padding:"0 2px", color:"white", fontWeight:700, position:"absolute", alignItems:"center", justifyContent:"center", width:"100%", height:"100%", flexDirection:"column" }}>
+                    {player.number}<br/>{(player.nameKo||player.name).trim().slice(0,3)}
+                  </span>
+                </>
+              ) : player ? (
                 <span style={{ fontSize:8, textAlign:"center", lineHeight:1.1, padding:"0 2px", color:"white", fontWeight:700 }}>
                   {player.number}<br/>{(player.nameKo||player.name).trim().slice(0,3)}
                 </span>
