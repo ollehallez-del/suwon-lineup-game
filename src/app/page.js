@@ -169,7 +169,7 @@ const store = {
   set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
 };
 
-function PitchView({ slots, formation, onSlotClick, selectedSlot, interactive, actualPlayers }) {
+function PitchView({ slots, formation, onSlotClick, selectedSlot, interactive, actualPlayers, squadMap }) {
   const layout = FORMATION_LAYOUTS[formation] || FORMATION_LAYOUTS["4-3-3"];
   // actualPlayers: 실제 선발 선수 이름 배열 (비교용)
   function isHit(player) {
@@ -205,44 +205,55 @@ function PitchView({ slots, formation, onSlotClick, selectedSlot, interactive, a
         const isSelected = selectedSlot === i;
         return (
           <div key={i} onClick={() => interactive && onSlotClick && onSlotClick(i)}
-            style={{ position:"absolute", left:`${slot.left}%`, top:`${slot.top}%`, transform:"translate(-50%,-50%)", display:"flex", flexDirection:"column", alignItems:"center", cursor:interactive?"pointer":"default", zIndex:10 }}>
+            style={{ position:"absolute", left:`${slot.left}%`, top:`${slot.top}%`, transform:"translate(-50%,-50%)", display:"flex", flexDirection:"column", alignItems:"center", cursor:interactive?"pointer":"default", zIndex:10, gap:2 }}>
             {(() => {
               const hit = player ? isHit(player) : null;
-              const bg = player
-                ? (isSelected ? "linear-gradient(135deg,#fbbf24,#f59e0b)"
-                  : hit === true ? "linear-gradient(135deg,#16a34a,#22c55e)"
-                  : hit === false ? "linear-gradient(135deg,#dc2626,#ef4444)"
-                  : "linear-gradient(135deg,#1d4ed8,#2563eb)")
-                : (isSelected ? "rgba(251,191,36,0.4)" : "rgba(255,255,255,0.08)");
-              const border = isSelected ? "2.5px solid #fbbf24"
-                : hit === true ? "2px solid #4ade80"
-                : hit === false ? "2px solid #f87171"
+              const border = isSelected ? "3px solid #fbbf24"
+                : hit === true ? "4px solid #4ade80"
+                : hit === false ? "4px solid #f87171"
                 : player ? "2px solid rgba(255,255,255,0.6)"
                 : "2px dashed rgba(255,255,255,0.25)";
-              return (
-            <div style={{ width:44, height:44, borderRadius:"50%", background:bg, border, display:"flex", alignItems:"center", justifyContent:"center", boxShadow:player?"0 2px 12px rgba(0,0,0,0.4)":"none", flexShrink:0, overflow:"hidden", position:"relative" }}>
-              {player?.playerId ? (
-                <>
-                  <img
-                    src={`${PROXY}?path=/api/player-image?id=${player.playerId}`}
-                    style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"top" }}
-                    onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }}
-                  />
-                  <span style={{ display:"none", fontSize:8, textAlign:"center", lineHeight:1.1, padding:"0 2px", color:"white", fontWeight:700, position:"absolute", alignItems:"center", justifyContent:"center", width:"100%", height:"100%", flexDirection:"column" }}>
-                    {player.number}<br/>{(player.nameKo||player.name).trim().slice(0,3)}
-                  </span>
-                </>
-              ) : player ? (
-                <span style={{ fontSize:8, textAlign:"center", lineHeight:1.1, padding:"0 2px", color:"white", fontWeight:700 }}>
-                  {player.number}<br/>{(player.nameKo||player.name).trim().slice(0,3)}
-                </span>
-              ) : (
-                <span style={{ opacity:0.4, fontSize:14, color:"white" }}>+</span>
-              )}
-            </div>
-              );
+              const shadow = hit === true ? "0 0 10px rgba(34,197,94,0.8)"
+                : hit === false ? "0 0 10px rgba(239,68,68,0.8)"
+                : player ? "0 2px 12px rgba(0,0,0,0.4)"
+                : "none";
+              const bg = player
+                ? (isSelected ? "rgba(251,191,36,0.3)" : "rgba(29,78,216,0.3)")
+                : (isSelected ? "rgba(251,191,36,0.2)" : "rgba(255,255,255,0.08)");
+              return (<>
+                {/* 포지션 */}
+                <div style={{ fontSize:7, fontWeight:700, color:"rgba(255,255,255,0.7)", background:"rgba(0,0,0,0.5)", padding:"1px 4px", borderRadius:3, letterSpacing:"0.05em" }}>
+                  {slot.pos}
+                </div>
+                {/* 사진 */}
+                <div style={{ width:44, height:44, borderRadius:"50%", border, background:bg, overflow:"hidden", boxShadow:shadow, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  {(() => { const pid = player?.playerId || (squadMap && (squadMap[String(player?.number)] || squadMap[player?.nameKo])); return pid; })() ? (
+                    <>
+                      <img
+                        src={`${PROXY}?path=/api/player-image?id=${(() => { const pid = player?.playerId || (squadMap && (squadMap[String(player?.number)] || squadMap[player?.nameKo])); return pid; })()}`}
+                        style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"top" }}
+                        onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }}
+                      />
+                      <span style={{ display:"none", fontSize:8, textAlign:"center", lineHeight:1.1, color:"white", fontWeight:700, flexDirection:"column", alignItems:"center", justifyContent:"center", width:"100%", height:"100%", position:"absolute" }}>
+                        {player.number}<br/>{(player.nameKo||player.name||'').trim().slice(0,3)}
+                      </span>
+                    </>
+                  ) : player ? (
+                    <span style={{ fontSize:8, textAlign:"center", lineHeight:1.1, color:"white", fontWeight:700 }}>
+                      {player.number}<br/>{(player.nameKo||player.name||'').trim().slice(0,3)}
+                    </span>
+                  ) : (
+                    <span style={{ opacity:0.4, fontSize:14, color:"white" }}>+</span>
+                  )}
+                </div>
+                {/* 이름 */}
+                {player && (
+                  <div style={{ fontSize:8, fontWeight:700, color: hit===true?"#4ade80":hit===false?"#f87171":"white", textShadow:"0 1px 3px rgba(0,0,0,0.9)", background:"rgba(0,0,0,0.55)", padding:"1px 5px", borderRadius:4, textAlign:"center", maxWidth:52 }}>
+                    {(player.nameKo||player.name||'').trim().slice(0,3)}
+                  </div>
+                )}
+              </>);
             })()}
-            <div style={{ marginTop:2, fontSize:7, color:"rgba(255,255,255,0.55)", background:"rgba(0,0,0,0.35)", padding:"1px 3px", borderRadius:3 }}>{slot.pos}</div>
           </div>
         );
       })}
@@ -350,7 +361,7 @@ function OtherPredictions({ preds, myNickname, scores, officialPlayers, scorePre
 
                   {/* 포메이션 + 작전판 */}
                   <div style={{ fontSize:10, color:"rgba(255,255,255,0.35)", marginBottom:8 }}>{p.formation} 포메이션</div>
-                  <PitchView formation={p.formation} slots={readonlySlots} interactive={false} actualPlayers={officialPlayers} />
+                  <PitchView formation={p.formation} slots={readonlySlots} interactive={false} actualPlayers={officialPlayers} squadMap={squadMap} />
 
                   {/* 하단 배지 */}
                   <div style={{ marginTop:10, display:"flex", flexWrap:"wrap", gap:5 }}>
@@ -427,6 +438,7 @@ export default function App() {
   const [upcomingMatches, setUpcomingMatches] = useState([]);
   const [scheduleLoading, setScheduleLoading] = useState(true);
   const [squad, setSquad] = useState([]);
+  const [squadMap, setSquadMap] = useState({}); // number/nameKo → playerId
   const [selectedMatch, setSelectedMatch] = useState(null);
   const [formation, setFormation] = useState("4-3-3");
   const [slots, setSlots] = useState([]);
@@ -1064,7 +1076,7 @@ export default function App() {
               </div>}
               <div style={{ marginBottom:12 }}>
                 <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginBottom:8, textTransform:"uppercase", letterSpacing:"0.1em" }}>작전판 ({countFilled()}/11) · 포지션 클릭 후 선수 선택 · 선수끼리 클릭하면 위치 교체</div>
-                <PitchView slots={slots} formation={formation} onSlotClick={handleSlotClick} selectedSlot={selectedSlot} interactive={true} actualPlayers={currentLineup?.players} />
+                <PitchView slots={slots} formation={formation} onSlotClick={handleSlotClick} squadMap={squadMap} selectedSlot={selectedSlot} interactive={true} actualPlayers={currentLineup?.players} squadMap={squadMap} />
               </div>
               {selectedSlot !== null && (
                 <div style={{ marginBottom:12, background:"rgba(255,255,255,0.04)", border:"1.5px solid rgba(59,130,246,0.3)", borderRadius:12, padding:12 }}>
@@ -1326,7 +1338,7 @@ export default function App() {
                           </div>
                         )}
                         <div style={{ fontSize:10, color:"rgba(255,255,255,0.35)", marginBottom:8 }}>{officialLineup.formation} 포메이션</div>
-                        <PitchView formation={fmKey} slots={readonlySlots} interactive={false} />
+                        <PitchView formation={fmKey} slots={readonlySlots} interactive={false} squadMap={squadMap} />
                         <div style={{ marginTop:10, display:"flex", flexWrap:"wrap", gap:5 }}>
                           {officialLineup.players.map((p,i) => (
                             <div key={i} style={{ display:"flex", alignItems:"center", gap:4, background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:8, padding:"4px 8px" }}>
@@ -1703,9 +1715,9 @@ export default function App() {
                      {rankingLineupToggle==="pred" ? rankingPredDetail.formation : (rankingLineup?.formation||rankingPredDetail.formation)} 포메이션
                    </div>
                    {rankingLineupToggle === "pred"
-                     ? <PitchView formation={rankingPredDetail.formation} slots={rankingPredDetail.slots} interactive={false} actualPlayers={rankingLineup?.players} />
+                     ? <PitchView formation={rankingPredDetail.formation} slots={rankingPredDetail.slots} squadMap={squadMap} interactive={false} actualPlayers={rankingLineup?.players} squadMap={squadMap} />
                      : rankingLineup
-                       ? <PitchView formation={rankingLineup.formation} slots={rankingLineup.players.map((p,i)=>({ pos:["GK","CB","CB","LB","RB","CM","CM","LM","RM","ST","ST"][i]||"CM", player:{...p, nameKo:p.nameKo||p.name} }))} interactive={false} />
+                       ? <PitchView formation={rankingLineup.formation} squadMap={squadMap} slots={rankingLineup.players.map((p,i)=>({ pos:["GK","CB","CB","LB","RB","CM","CM","LM","RM","ST","ST"][i]||"CM", player:{...p, nameKo:p.nameKo||p.name} }))} interactive={false} />
                        : <div style={{textAlign:"center",padding:20,fontSize:12,color:"rgba(255,255,255,0.3)"}}>선발 데이터 없음</div>
                    }
                     <div style={{ marginTop:10, display:"flex", flexWrap:"wrap", gap:5 }}>
