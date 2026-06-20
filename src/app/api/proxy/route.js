@@ -24,6 +24,27 @@ function httpsRequest(url, method, body) {
   });
 }
 
+function httpsRequestBuffer(url, method) {
+  return new Promise((resolve, reject) => {
+    const u = new URL(url);
+    const options = {
+      hostname: u.hostname,
+      port: u.port || 443,
+      path: u.pathname + u.search,
+      method: method || 'GET',
+      rejectUnauthorized: false,
+      headers: { 'User-Agent': 'Mozilla/5.0' },
+    };
+    const req = https.request(options, (res) => {
+      const chunks = [];
+      res.on('data', c => chunks.push(c));
+      res.on('end', () => resolve({ buffer: Buffer.concat(chunks), contentType: res.headers['content-type'] || 'application/octet-stream' }));
+    });
+    req.on('error', reject);
+    req.end();
+  });
+}
+
 async function getServeoUrl() {
   const data = await httpsRequest(`https://api.github.com/gists/${GIST_ID}`, 'GET', null);
   const json = JSON.parse(data);
@@ -47,9 +68,21 @@ async function handler(request, method) {
   const rawPath = searchParams.get('path') || '/api/schedule';
   const path = decodeURIComponent(rawPath);
 
+  // 이미지 요청 처리
+  const isImage = path.startsWith('/api/player-image');
+
   try {
     const base = await getServeoUrl();
     const targetUrl = base.replace(/\/$/, '') + path;
+
+    if (isImage) {
+      const { buffer, contentType } = await httpsRequestBuffer(targetUrl, 'GET');
+      return new Response(buffer, {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': contentType, 'Cache-Control': 'public, max-age=86400' },
+      });
+    }
+
     let body = null;
     if (method !== 'GET' && method !== 'DELETE') {
       body = await request.text();
