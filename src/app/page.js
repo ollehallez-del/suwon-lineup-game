@@ -754,7 +754,29 @@ export default function App() {
       }
       store.set(`sw:pred_${selectedMatch.id}_${nickname}`, data);
       setMySubmission(data);
-      setSaveStatus("✅ 예측 저장 완료!");
+
+      // 승부예측도 함께 저장
+      try {
+        const spRes = await fetch(`${PROXY}?path=${encodeURIComponent(`/api/score-pred?matchId=${selectedMatch.id}`)}`, {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ nickname, homeScore: scoreHome, awayScore: scoreAway }),
+        });
+        const spJson = await spRes.json();
+        if (spJson.locked) {
+          setSaveStatus("✅ 선발 저장 완료! (승부예측은 잠금됨)");
+        } else if (spJson.ok) {
+          setMyScorePred({ nickname, homeScore: scoreHome, awayScore: scoreAway });
+          setScorePreds(prev => {
+            const idx = prev.findIndex(p => p.nickname === nickname);
+            const entry = { nickname, homeScore: scoreHome, awayScore: scoreAway };
+            if (idx !== -1) { const n=[...prev]; n[idx]=entry; return n; }
+            return [...prev, entry];
+          });
+          setSaveStatus("✅ 선발 예측 + 승부예측 저장 완료!");
+        }
+      } catch(e) {
+        setSaveStatus("✅ 선발 저장 완료!");
+      }
       setTimeout(() => setSaveStatus(""), 3000);
       // 다른 사람 예측도 새로고침
       fetch(`${PROXY}?path=/api/predictions?matchId=${selectedMatch.id}`)
@@ -1120,13 +1142,19 @@ export default function App() {
                 </div>
               )}
               {!scoreData.detail?.[selectedMatch?.id] && <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
-                <button onClick={handleSave} disabled={saveStatus==="저장 중..."} style={{ width:"100%", padding:14, background:countFilled()===11?"linear-gradient(135deg,#1d4ed8,#2563eb)":"rgba(255,255,255,0.05)", border:"none", borderRadius:10, color:"white", fontSize:14, fontWeight:700, cursor:saveStatus==="저장 중..."?"not-allowed":"pointer", boxShadow:countFilled()===11?"0 4px 16px rgba(37,99,235,0.4)":"none", opacity:saveStatus==="저장 중..."?0.6:1 }}>
-                  {saveStatus==="저장 중..."?"저장 중...":(mySubmission?"🔄 예측 수정하기":"✅ 예측 제출하기")} ({countFilled()}/11)
+                <button onClick={handleSave} disabled={saveStatus==="저장 중..." || countFilled() < 11} style={{ width:"100%", padding:14, background:countFilled()===11?"linear-gradient(135deg,#1d4ed8,#2563eb)":"rgba(255,255,255,0.05)", border:"none", borderRadius:10, color:"white", fontSize:14, fontWeight:700, cursor:(saveStatus==="저장 중..."||countFilled()<11)?"not-allowed":"pointer", boxShadow:countFilled()===11?"0 4px 16px rgba(37,99,235,0.4)":"none", opacity:(saveStatus==="저장 중..."||countFilled()<11)?0.6:1 }}>
+                  {saveStatus==="저장 중..." ? "저장 중..." : `✅ 선발 예측 + 승부예측 저장 (${countFilled()}/11)`}
                 </button>
                 {mySubmission && (new Date(selectedMatch?.kickoffISO || selectedMatch?.date) - new Date() <= 90*60*1000) && new Date(selectedMatch?.kickoffISO || selectedMatch?.date) > new Date() && (
                   <div style={{ textAlign:"center", fontSize:11, color:"rgba(255,255,255,0.3)", marginTop:4 }}>🔒 킥오프 90분 전부터 예측 수정이 불가합니다</div>
                 )}
                 {saveStatus && <div style={{ textAlign:"center", fontSize:12, padding:8, color:saveStatus.includes("✅")?"#22c55e":"#fbbf24" }}>{saveStatus}</div>}
+                {mySubmission && myScorePred && !saveStatus && (
+                  <div style={{ display:"flex", gap:8, marginTop:4 }}>
+                    <button onClick={() => setMySubmission(null)} style={{ flex:1, padding:"8px 0", background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:10, color:"#aaa", fontSize:12, fontWeight:700, cursor:"pointer" }}>✏️ 선발 수정</button>
+                    <button onClick={() => setMyScorePred(null)} style={{ flex:1, padding:"8px 0", background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:10, color:"#aaa", fontSize:12, fontWeight:700, cursor:"pointer" }}>✏️ 승부 수정</button>
+                  </div>
+                )}
               </div>}
               {mySubmission && (
                 <div style={{ marginTop:10, padding:"10px 14px", background:"rgba(34,197,94,0.08)", border:"1px solid rgba(34,197,94,0.2)", borderRadius:8, fontSize:11, color:"#4ade80" }}>
@@ -1189,29 +1217,7 @@ export default function App() {
                       </div>
                     </div>
                   )}
-                  {!myScorePred && <button onClick={async () => {
-                    if (!nickname) return;
-                    const r = await fetch(`${PROXY}?path=${encodeURIComponent(`/api/score-pred?matchId=${selectedMatch.id}`)}`, {
-                      method:'POST', headers:{'Content-Type':'application/json'},
-                      body: JSON.stringify({ nickname, homeScore: scoreHome, awayScore: scoreAway }),
-                    });
-                    const d = await r.json();
-                    if (d.locked) {
-                      alert('🔒 킥오프 2시간 전부터 승부예측을 변경할 수 없어요');
-                      return;
-                    }
-                    if (d.ok) {
-                      setMyScorePred({ nickname, homeScore: scoreHome, awayScore: scoreAway });
-                      setScorePreds(prev => {
-                        const idx = prev.findIndex(p => p.nickname === nickname);
-                        const entry = { nickname, homeScore: scoreHome, awayScore: scoreAway };
-                        if (idx !== -1) { const n=[...prev]; n[idx]=entry; return n; }
-                        return [...prev, entry];
-                      });
-                    }
-                  }} style={{ width:"100%", padding:8, background:"linear-gradient(135deg,#1d4ed8,#2563eb)", border:"none", borderRadius:8, color:"white", fontSize:12, fontWeight:700, cursor:"pointer" }}>
-                    {"✅ 승부 예측 저장"}
-                  </button>}
+                  {
                   {/* 친구들 승부 예측 */}
                   {scorePreds.length > 0 && (
                     <div style={{ marginTop:10, borderTop:"1px solid rgba(255,255,255,0.06)", paddingTop:8 }}>
