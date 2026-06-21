@@ -171,95 +171,98 @@ const store = {
 
 function PitchView({ slots, formation, onSlotClick, selectedSlot, interactive, actualPlayers, squadMap }) {
   const layout = FORMATION_LAYOUTS[formation] || FORMATION_LAYOUTS["4-3-3"];
-  // actualPlayers: 실제 선발 선수 이름 배열 (비교용)
+
   function isHit(player) {
     if (!actualPlayers || !player) return null;
-    return actualPlayers.some(a => {
-      // 1순위: 등번호 일치
-      if (player.number && a.number && String(player.number) === String(a.number)) return true;
-      // 2순위: 영문 이름 전체 일치
-      const pName = (player.name || '').toLowerCase();
-      const aName = (a.name || '').toLowerCase();
-      if (pName && aName && pName === aName) return true;
-      // 3순위: 한글 이름 전체 일치 (slice 금지 - 오탐 방지)
-      const pKo = (player.nameKo || '');
-      const aKo = (a.nameKo || '');
-      if (pKo && aKo && pKo === aKo) return true;
-      return false;
-    });
+    return actualPlayers.some(ap =>
+      (player.number && ap.number && String(player.number) === String(ap.number)) ||
+      (player.nameKo && ap.nameKo && player.nameKo === ap.nameKo)
+    );
   }
+
+  function getPlayerId(player) {
+    if (!player) return null;
+    if (player.playerId) return player.playerId;
+    if (!squadMap) return null;
+    if (player.number && squadMap[String(player.number)]) return squadMap[String(player.number)];
+    if (player.nameKo && squadMap[player.nameKo]) return squadMap[player.nameKo];
+    return null;
+  }
+
   return (
-    <div style={{ position:"relative", width:"100%", paddingBottom:"140%", background:"linear-gradient(180deg,#1a4d2e 0%,#1e5c35 20%,#16a34a 40%,#1e5c35 60%,#1a4d2e 100%)", borderRadius:12, overflow:"hidden", border:"2px solid #22c55e", boxShadow:"0 0 40px rgba(34,197,94,0.15)" }}>
-      <svg style={{ position:"absolute", inset:0, width:"100%", height:"100%" }} viewBox="0 0 100 140">
-        <rect x="5" y="5" width="90" height="130" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="0.5" />
-        <line x1="5" y1="70" x2="95" y2="70" stroke="rgba(255,255,255,0.15)" strokeWidth="0.5" />
-        <circle cx="50" cy="70" r="10" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="0.5" />
-        <rect x="20" y="5" width="60" height="20" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="0.5" />
-        <rect x="32" y="5" width="36" height="8" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="0.5" />
-        <rect x="20" y="115" width="60" height="20" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="0.5" />
-        <rect x="32" y="127" width="36" height="8" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="0.5" />
+    <div style={{ position:"relative", width:"100%", paddingBottom:"155%", background:"linear-gradient(180deg,#1a4d2e 0%,#1e5c35 20%,#16a34a 40%,#1e5c35 60%,#1a4d2e 100%)", borderRadius:12, overflow:"hidden", border:"1.5px solid rgba(255,255,255,0.1)" }}>
+      <svg style={{ position:"absolute", inset:0, width:"100%", height:"100%" }} viewBox="0 0 100 155">
+        <rect x="5" y="5" width="90" height="145" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="0.5"/>
+        <line x1="5" y1="77" x2="95" y2="77" stroke="rgba(255,255,255,0.15)" strokeWidth="0.5"/>
+        <circle cx="50" cy="77" r="10" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="0.5"/>
+        <rect x="20" y="5" width="60" height="20" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="0.5"/>
+        <rect x="32" y="5" width="36" height="8" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="0.5"/>
+        <rect x="20" y="128" width="60" height="20" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="0.5"/>
+        <rect x="32" y="141" width="36" height="8" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="0.5"/>
       </svg>
       {layout.map((slot, i) => {
-        const slotData = slots[i] || {};
-        const player = slotData.player || null;
+        const s = slots[i];
+        const player = s?.player || (s?.nameKo ? s : null);
         const isSelected = selectedSlot === i;
+        const hit = isHit(player);
+        const pid = getPlayerId(player);
+
+        const border = isSelected ? "3px solid #fbbf24"
+          : hit === true  ? "4px solid #4ade80"
+          : hit === false ? "4px solid #f87171"
+          : player ? "2px solid rgba(255,255,255,0.6)"
+          : "2px dashed rgba(255,255,255,0.25)";
+
+        const shadow = hit === true  ? "0 0 10px rgba(34,197,94,0.8)"
+          : hit === false ? "0 0 10px rgba(239,68,68,0.8)"
+          : player ? "0 2px 12px rgba(0,0,0,0.4)"
+          : "none";
+
+        const nameColor = hit === true ? "#4ade80" : hit === false ? "#f87171" : "white";
+
         return (
           <div key={i} onClick={() => interactive && onSlotClick && onSlotClick(i)}
             style={{ position:"absolute", left:`${slot.left}%`, top:`${slot.top}%`, transform:"translate(-50%,-50%)", display:"flex", flexDirection:"column", alignItems:"center", cursor:interactive?"pointer":"default", zIndex:10, gap:2 }}>
-            {(() => {
-              const hit = player ? isHit(player) : null;
-              const border = isSelected ? "3px solid #fbbf24"
-                : hit === true ? "4px solid #4ade80"
-                : hit === false ? "4px solid #f87171"
-                : player ? "2px solid rgba(255,255,255,0.6)"
-                : "2px dashed rgba(255,255,255,0.25)";
-              const shadow = hit === true ? "0 0 10px rgba(34,197,94,0.8)"
-                : hit === false ? "0 0 10px rgba(239,68,68,0.8)"
-                : player ? "0 2px 12px rgba(0,0,0,0.4)"
-                : "none";
-              const bg = player
-                ? (isSelected ? "rgba(251,191,36,0.3)" : "rgba(29,78,216,0.3)")
-                : (isSelected ? "rgba(251,191,36,0.2)" : "rgba(255,255,255,0.08)");
-              return (<>
-                {/* 포지션 */}
-                <div style={{ fontSize:7, fontWeight:700, color:"rgba(255,255,255,0.7)", background:"rgba(0,0,0,0.5)", padding:"1px 4px", borderRadius:3, letterSpacing:"0.05em" }}>
-                  {slot.pos}
-                </div>
-                {/* 사진 */}
-                <div style={{ width:44, height:44, borderRadius:"50%", border, background:bg, overflow:"hidden", boxShadow:shadow, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                  {(() => { const pid = player?.playerId || (squadMap && (squadMap[String(player?.number)] || squadMap[player?.nameKo])); return pid; })() ? (
-                    <>
-                      <img
-                        src={`${PROXY}?path=/api/player-image?id=${(() => { const pid = player?.playerId || (squadMap && (squadMap[String(player?.number)] || squadMap[player?.nameKo])); return pid; })()}`}
-                        style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"top" }}
-                        onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }}
-                      />
-                      <span style={{ display:"none", fontSize:8, textAlign:"center", lineHeight:1.1, color:"white", fontWeight:700, flexDirection:"column", alignItems:"center", justifyContent:"center", width:"100%", height:"100%", position:"absolute" }}>
-                        {player.number}<br/>{(player.nameKo||player.name||'').trim().slice(0,3)}
-                      </span>
-                    </>
-                  ) : player ? (
-                    <span style={{ fontSize:8, textAlign:"center", lineHeight:1.1, color:"white", fontWeight:700 }}>
-                      {player.number}<br/>{(player.nameKo||player.name||'').trim().slice(0,3)}
-                    </span>
-                  ) : (
-                    <span style={{ opacity:0.4, fontSize:14, color:"white" }}>+</span>
-                  )}
-                </div>
-                {/* 이름 */}
-                {player && (
-                  <div style={{ fontSize:8, fontWeight:700, color: hit===true?"#4ade80":hit===false?"#f87171":"white", textShadow:"0 1px 3px rgba(0,0,0,0.9)", background:"rgba(0,0,0,0.55)", padding:"1px 5px", borderRadius:4, textAlign:"center", maxWidth:52 }}>
-                    {(player.nameKo||player.name||'').trim().slice(0,3)}
-                  </div>
-                )}
-              </>);
-            })()}
+
+            {/* 포지션 */}
+            <div style={{ fontSize:7, fontWeight:700, color:"rgba(255,255,255,0.7)", background:"rgba(0,0,0,0.5)", padding:"1px 4px", borderRadius:3, letterSpacing:"0.05em" }}>
+              {slot.pos}
+            </div>
+
+            {/* 사진 원 */}
+            <div style={{ width:44, height:44, borderRadius:"50%", border, overflow:"hidden", background:"rgba(29,78,216,0.5)", boxShadow:shadow, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", position:"relative" }}>
+              {pid ? (
+                <>
+                  <img
+                    src={`${PROXY}?path=/api/player-image?id=${pid}`}
+                    style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"top", display:"block" }}
+                    onError={e => { e.target.style.display="none"; }}
+                  />
+                </>
+              ) : player ? (
+                <span style={{ fontSize:8, textAlign:"center", lineHeight:1.2, color:"white", fontWeight:700, padding:"0 2px" }}>
+                  {player.number && <>{player.number}<br/></>}{(player.nameKo||player.name||"").trim().slice(0,3)}
+                </span>
+              ) : (
+                <span style={{ opacity:0.4, fontSize:14, color:"white" }}>+</span>
+              )}
+            </div>
+
+            {/* 이름 */}
+            {player ? (
+              <div style={{ fontSize:8, fontWeight:700, color:nameColor, textShadow:"0 1px 3px rgba(0,0,0,0.9)", background:"rgba(0,0,0,0.55)", padding:"1px 5px", borderRadius:4, textAlign:"center", maxWidth:52 }}>
+                {(player.nameKo||player.name||"").trim().slice(0,3)}
+              </div>
+            ) : (
+              <div style={{ fontSize:7, color:"rgba(255,255,255,0.3)", padding:"1px 3px" }}>{slot.pos}</div>
+            )}
           </div>
         );
       })}
     </div>
   );
 }
+
 
 function OtherPredictions({ preds, myNickname, scores, officialPlayers, scorePreds, isHome, actualScore, match, squadMap }) {
   const [expanded, setExpanded] = useState(null);
