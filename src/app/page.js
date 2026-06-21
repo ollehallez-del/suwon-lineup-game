@@ -297,9 +297,18 @@ function OtherPredictions({ preds, myNickname, scores, officialPlayers, scorePre
               {/* 헤더 */}
               <div onClick={() => setExpanded(isOpen ? null : p.nickname)}
                 style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"10px 12px", cursor:"pointer" }}>
-                <span style={{ fontSize:13, fontWeight:700, color:isMe?"#60a5fa":"white" }}>
-                  {p.nickname}{isMe && <span style={{ fontSize:10, marginLeft:4, color:"#60a5fa" }}>나</span>}
-                </span>
+                <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+                  <span style={{ fontSize:13, fontWeight:700, color:isMe?"#60a5fa":"white" }}>
+                    {p.nickname}{isMe && <span style={{ fontSize:10, marginLeft:4, color:"#60a5fa" }}>나</span>}
+                  </span>
+                  {(() => {
+                    const sp = (scorePreds||[]).find(s => s.nickname === p.nickname);
+                    if (!sp) return <span style={{ fontSize:10, color:"rgba(255,255,255,0.2)", background:"rgba(255,255,255,0.04)", borderRadius:5, padding:"1px 6px" }}>승부예측 없음</span>;
+                    const suwon = isHome ? sp.homeScore : sp.awayScore;
+                    const opp   = isHome ? sp.awayScore : sp.homeScore;
+                    return <span style={{ fontSize:11, fontWeight:700, color:"#60a5fa", background:"rgba(96,165,250,0.1)", border:"1px solid rgba(96,165,250,0.3)", borderRadius:6, padding:"2px 7px" }}>{suwon}:{opp}</span>;
+                  })()}
+                </div>
                 <div style={{ display:"flex", alignItems:"center", gap:8 }}>
                   {scores && <span style={{ fontSize:13, fontWeight:900, color:"#fbbf24", fontFamily:"monospace" }}>{matchScore}pt</span>}
                   <span style={{ fontSize:12, color:"rgba(255,255,255,0.4)" }}>{isOpen?"▲":"▼"}</span>
@@ -1141,21 +1150,6 @@ export default function App() {
                   })}
                 </div>
               )}
-              {!scoreData.detail?.[selectedMatch?.id] && <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
-                <button onClick={handleSave} disabled={saveStatus==="저장 중..." || countFilled() < 11} style={{ width:"100%", padding:14, background:countFilled()===11?"linear-gradient(135deg,#1d4ed8,#2563eb)":"rgba(255,255,255,0.05)", border:"none", borderRadius:10, color:"white", fontSize:14, fontWeight:700, cursor:(saveStatus==="저장 중..."||countFilled()<11)?"not-allowed":"pointer", boxShadow:countFilled()===11?"0 4px 16px rgba(37,99,235,0.4)":"none", opacity:(saveStatus==="저장 중..."||countFilled()<11)?0.6:1 }}>
-                  {saveStatus==="저장 중..." ? "저장 중..." : `✅ 선발 예측 + 승부예측 저장 (${countFilled()}/11)`}
-                </button>
-                {mySubmission && (new Date(selectedMatch?.kickoffISO || selectedMatch?.date) - new Date() <= 90*60*1000) && new Date(selectedMatch?.kickoffISO || selectedMatch?.date) > new Date() && (
-                  <div style={{ textAlign:"center", fontSize:11, color:"rgba(255,255,255,0.3)", marginTop:4 }}>🔒 킥오프 90분 전부터 예측 수정이 불가합니다</div>
-                )}
-                {saveStatus && <div style={{ textAlign:"center", fontSize:12, padding:8, color:saveStatus.includes("✅")?"#22c55e":"#fbbf24" }}>{saveStatus}</div>}
-                {mySubmission && myScorePred && !saveStatus && (
-                  <div style={{ display:"flex", gap:8, marginTop:4 }}>
-                    <button onClick={() => setMySubmission(null)} style={{ flex:1, padding:"8px 0", background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:10, color:"#aaa", fontSize:12, fontWeight:700, cursor:"pointer" }}>✏️ 선발 수정</button>
-                    <button onClick={() => setMyScorePred(null)} style={{ flex:1, padding:"8px 0", background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:10, color:"#aaa", fontSize:12, fontWeight:700, cursor:"pointer" }}>✏️ 승부 수정</button>
-                  </div>
-                )}
-              </div>}
               {mySubmission && (
                 <div style={{ marginTop:10, padding:"10px 14px", background:"rgba(34,197,94,0.08)", border:"1px solid rgba(34,197,94,0.2)", borderRadius:8, fontSize:11, color:"#4ade80" }}>
                   <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
@@ -1217,20 +1211,7 @@ export default function App() {
                       </div>
                     </div>
                   )}
-                  {/* 친구들 승부 예측 */}
-                  {scorePreds.length > 0 && (
-                    <div style={{ marginTop:10, borderTop:"1px solid rgba(255,255,255,0.06)", paddingTop:8 }}>
-                      {(scorePreds||[]).map((p, i) => (
-                        <div key={i} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:4, fontSize:12 }}>
-                          <span style={{ color: p.nickname===nickname?"#60a5fa":"white", fontWeight: p.nickname===nickname?700:400 }}>{p.nickname}</span>
-                          <span style={{ fontWeight:700, color: (selectedMatch?.home ? p.homeScore > p.awayScore : p.awayScore > p.homeScore) ? "#4ade80" : p.homeScore === p.awayScore ? "#fbbf24" : "#f87171" }}>
-                            {selectedMatch?.home ? p.homeScore : p.awayScore} : {selectedMatch?.home ? p.awayScore : p.homeScore}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                  /div>
               )}
 
               {lineupAvailable && currentLineup && (
@@ -1258,6 +1239,18 @@ export default function App() {
               {scoringStatus && (
                 <div style={{ textAlign:"center", fontSize:12, padding:8, color:scoringStatus.includes("✅")?"#22c55e":"#fbbf24" }}>{scoringStatus}</div>
               )}
+
+              {/* 통합 저장 버튼 */}
+              {!scoreData.detail?.[selectedMatch?.id] && <div style={{ display:"flex", flexDirection:"column", gap:8, marginTop:8 }}>
+                <button onClick={handleSave} disabled={saveStatus==="저장 중..." || countFilled() < 11} style={{ width:"100%", padding:14, background:countFilled()===11?"linear-gradient(135deg,#1d4ed8,#2563eb)":"rgba(255,255,255,0.05)", border:"none", borderRadius:10, color:"white", fontSize:14, fontWeight:700, cursor:(saveStatus==="저장 중..."||countFilled()<11)?"not-allowed":"pointer", boxShadow:countFilled()===11?"0 4px 16px rgba(37,99,235,0.4)":"none", opacity:(saveStatus==="저장 중..."||countFilled()<11)?0.6:1 }}>
+                  {saveStatus==="저장 중..." ? "저장 중..." : `✅ 선발 예측 + 승부예측 저장 (${countFilled()}/11)`}
+                </button>
+                {mySubmission && (new Date(selectedMatch?.kickoffISO || selectedMatch?.date) - new Date() <= 90*60*1000) && new Date(selectedMatch?.kickoffISO || selectedMatch?.date) > new Date() && (
+                  <div style={{ textAlign:"center", fontSize:11, color:"rgba(255,255,255,0.3)", marginTop:4 }}>🔒 킥오프 90분 전부터 예측 수정이 불가합니다</div>
+                )}
+                {saveStatus && <div style={{ textAlign:"center", fontSize:12, padding:8, color:saveStatus.includes("✅")?"#22c55e":"#fbbf24" }}>{saveStatus}</div>}
+
+              </div>}
 
               {otherPredictions.length > 0 && (
                 <OtherPredictions squadMap={squadMap} preds={otherPredictions} myNickname={nickname} scores={selectedMatch ? scoreData.detail?.[selectedMatch.id] : undefined} officialPlayers={currentLineup?.players} scorePreds={scorePreds} isHome={selectedMatch?.home} actualScore={selectedMatch?.score} />
