@@ -1217,7 +1217,6 @@ export default function App() {
                       </div>
                     </div>
                   )}
-                  {
                   {/* 친구들 승부 예측 */}
                   {scorePreds.length > 0 && (
                     <div style={{ marginTop:10, borderTop:"1px solid rgba(255,255,255,0.06)", paddingTop:8 }}>
