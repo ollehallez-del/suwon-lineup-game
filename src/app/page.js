@@ -508,7 +508,20 @@ export default function App() {
       .finally(() => setScheduleLoading(false));
     fetch(`${PROXY}?path=/api/squad`)
       .then(r => r.json())
-      .then(d => { if (d.players) setSquad(d.players); })
+      .then(d => {
+        if (d.players) {
+          setSquad(d.players);
+          // 번호/이름 → playerId 매핑
+          const map = {};
+          d.players.forEach(p => {
+            if (p.playerId) {
+              map[String(p.number)] = p.playerId;
+              map[p.nameKo] = p.playerId;
+            }
+          });
+          setSquadMap(map);
+        }
+      })
       .catch(() => {});
     // 초기 접속 시 점수 데이터 자동 로드
     fetch(`${PROXY}?path=/api/score`)
