@@ -234,7 +234,7 @@ function PitchView({ slots, formation, onSlotClick, selectedSlot, interactive, a
               {pid ? (
                 <>
                   <img
-                    src={`${PROXY}?path=/api/player-image?id=${pid}`}
+                    src={`${PROXY}?path=${encodeURIComponent(`/api/player-image?id=${pid}`)}`}
                     style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"top", display:"block" }}
                     onError={e => { e.target.style.display="none"; }}
                   />
@@ -450,7 +450,9 @@ export default function App() {
   const [upcomingMatches, setUpcomingMatches] = useState([]);
   const [scheduleLoading, setScheduleLoading] = useState(true);
   const [squad, setSquad] = useState([]);
-  const [squadMap, setSquadMap] = useState({}); // number/nameKo → playerId
+  const [squadMap, setSquadMap] = useState(() => {
+    try { const m = localStorage.getItem('sw:squadMap'); return m ? JSON.parse(m) : {}; } catch(e) { return {}; }
+  }); // number/nameKo → playerId
   const [selectedMatch, setSelectedMatch] = useState(null);
   const [formation, setFormation] = useState("4-3-3");
   const [slots, setSlots] = useState([]);
