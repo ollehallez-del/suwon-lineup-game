@@ -38,7 +38,7 @@ function httpsRequestBuffer(url, method) {
     const req = https.request(options, (res) => {
       const chunks = [];
       res.on('data', c => chunks.push(c));
-      res.on('end', () => resolve({ buffer: Buffer.concat(chunks), contentType: res.headers['content-type'] || 'application/octet-stream' }));
+      res.on('end', () => resolve({ buffer: Buffer.concat(chunks), contentType: res.headers['content-type'] || 'application/octet-stream', statusCode: res.statusCode }));
     });
     req.on('error', reject);
     req.end();
@@ -76,10 +76,15 @@ async function handler(request, method) {
     const targetUrl = base.replace(/\/$/, '') + path;
 
     if (isImage) {
-      const { buffer, contentType } = await httpsRequestBuffer(targetUrl, 'GET');
+      const { buffer, contentType, statusCode } = await httpsRequestBuffer(targetUrl, 'GET');
+      const isSuccess = statusCode === 200 && contentType?.startsWith('image/');
       return new Response(buffer, {
-        status: 200,
-        headers: { ...corsHeaders, 'Content-Type': contentType, 'Cache-Control': 'public, max-age=86400' },
+        status: isSuccess ? 200 : 404,
+        headers: {
+          ...corsHeaders,
+          'Content-Type': isSuccess ? contentType : 'text/plain',
+          'Cache-Control': isSuccess ? 'public, max-age=86400' : 'no-store',
+        },
       });
     }
 
