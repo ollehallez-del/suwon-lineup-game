@@ -471,7 +471,7 @@ export default function App() {
   const [scorePreds, setScorePreds] = useState([]);
   const [myScorePred, setMyScorePred] = useState(null);
   const [scoreHome, setScoreHome] = useState(0);
-  const [scoreAway, setScoreAway] = useState(0);([]);
+  const [scoreAway, setScoreAway] = useState(0);
   const [commentInput, setCommentInput] = useState("");
   const [commentStatus, setCommentStatus] = useState("");
   const [matchPredictions, setMatchPredictions] = useState([]);
@@ -531,6 +531,8 @@ export default function App() {
             }
           });
           setSquadMap(map);
+          // localStorage 캐시 저장
+          try { localStorage.setItem('sw:squadMap', JSON.stringify(map)); } catch(e) {}
         }
       })
       .catch(() => {});
