@@ -234,10 +234,14 @@ function PitchView({ slots, formation, onSlotClick, selectedSlot, interactive, a
               {pid ? (
                 <>
                   <img
+                    key={pid}
                     src={`${PROXY}?path=${encodeURIComponent(`/api/player-image?id=${pid}`)}`}
                     style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"top", display:"block" }}
-                    onError={e => { e.target.style.display="none"; }}
+                    onError={e => { e.target.style.display="none"; e.target.nextSibling && (e.target.nextSibling.style.display="flex"); }}
                   />
+                  <span style={{ display:"none", position:"absolute", inset:0, alignItems:"center", justifyContent:"center", fontSize:8, color:"white", fontWeight:700, textAlign:"center", flexDirection:"column" }}>
+                    {player.number && <>{player.number}<br/></>}{(player.nameKo||player.name||"").trim().slice(0,3)}
+                  </span>
                 </>
               ) : player ? (
                 <span style={{ fontSize:8, textAlign:"center", lineHeight:1.2, color:"white", fontWeight:700, padding:"0 2px" }}>
@@ -662,20 +666,7 @@ export default function App() {
 
 
 
-  useEffect(() => {
-    if (tab === "predict" && selectedMatch) {
-      fetch(`${PROXY}?path=${encodeURIComponent(`/api/score-pred?matchId=${selectedMatch.id}`)}`)
-        .then(r => r.json())
-        .then(sd => {
-          const preds = sd.predictions || [];
-          setScorePreds(preds);
-          const mine = preds.find(p => p.nickname === nickname);
-          if (mine) { setMyScorePred(mine); setScoreHome(mine.homeScore); setScoreAway(mine.awayScore); }
-          else { setMyScorePred(null); }
-        })
-        .catch(() => {});
-    }
-  }, [tab]);
+
 
   useEffect(() => { if (tab === "league") loadLeague(); }, [tab]);
 
