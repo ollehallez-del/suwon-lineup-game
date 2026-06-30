@@ -10,7 +10,7 @@ function httpsRequest(url, method, body) {
       path: u.pathname + u.search,
       method: method || 'GET',
       rejectUnauthorized: false,
-      headers: { 'Content-Type': 'application/json', 'User-Agent': 'Mozilla/5.0' },
+      headers: { 'Content-Type': 'application/json', 'User-Agent': 'Mozilla/5.0', 'ngrok-skip-browser-warning': 'true' },
     };
     if (body) options.headers['Content-Length'] = Buffer.byteLength(body);
     const req = https.request(options, (res) => {
@@ -33,7 +33,7 @@ function httpsRequestBuffer(url, method) {
       path: u.pathname + u.search,
       method: method || 'GET',
       rejectUnauthorized: false,
-      headers: { 'User-Agent': 'Mozilla/5.0' },
+      headers: { 'User-Agent': 'Mozilla/5.0', 'ngrok-skip-browser-warning': 'true' },
     };
     const req = https.request(options, (res) => {
       const chunks = [];
