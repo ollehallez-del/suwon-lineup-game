@@ -180,6 +180,18 @@ function PitchView({ slots, formation, onSlotClick, selectedSlot, interactive, a
     );
   }
 
+  function enrichPredSlots(preds, squadMap) {
+    if (!preds || !squadMap) return preds;
+    return preds.map(p => ({
+      ...p,
+      slots: (p.slots||[]).map(s => {
+        if (!s.player || s.player.playerId) return s;
+        const pid = squadMap[String(s.player.number)] || squadMap[s.player.nameKo];
+        return pid ? { ...s, player: { ...s.player, playerId: pid } } : s;
+      })
+    }));
+  }
+
   function getPlayerId(player) {
     if (!player) return null;
     if (player.playerId) return player.playerId;
@@ -422,7 +434,7 @@ function MatchCard({ match, active, onClick, lineupAvailable, selectedMatch }) {
     <div onClick={onClick} style={{ padding:"10px 14px", borderRadius:10, border:active?"2px solid #3b82f6":"1.5px solid rgba(255,255,255,0.08)", background:active?"rgba(59,130,246,0.1)":"rgba(255,255,255,0.03)", cursor:"pointer" }}>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
         <div>
-          <div style={{ fontSize:10, color:"rgba(255,255,255,0.4)", marginBottom:2 }}>{match.round ? `${match.round}R` : ''} · {dateStr} {!isPast&&timeStr} · {match.home?"홈":"원정"}</div>
+          <div style={{ fontSize:10, color:"rgba(255,255,255,0.4)", marginBottom:2 }}>{match.tournament === 'Korean Cup' ? `코리아컵 ${match.roundName || ''}` : match.round ? `${match.round}R` : ''} · {dateStr} {!isPast&&timeStr} · {match.home?"홈":"원정"}</div>
           <div style={{ fontSize:13, fontWeight:700, color:"white" }}>vs {match.opponent}</div>
         </div>
         <div style={{ textAlign:"right" }}>
@@ -642,7 +654,7 @@ export default function App() {
           setFormation("4-3-3");
           resetSlots("4-3-3");
         }
-        setOtherPredictions(preds);
+        setOtherPredictions(enrichPredSlots(preds, squadMap));
       })
       .catch(() => {});
   }, [selectedMatch?.id, nickname]);
@@ -785,7 +797,7 @@ export default function App() {
       // 다른 사람 예측도 새로고침
       fetch(`${PROXY}?path=/api/predictions?matchId=${selectedMatch.id}`)
         .then(r => r.json())
-        .then(d => setOtherPredictions(d.predictions || []))
+        .then(d => setOtherPredictions(enrichPredSlots(d.predictions || [], squadMap)))
         .catch(() => {});
     } catch(e) {
       store.set(`sw:pred_${selectedMatch.id}_${nickname}`, data);
