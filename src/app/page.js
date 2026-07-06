@@ -180,18 +180,6 @@ function PitchView({ slots, formation, onSlotClick, selectedSlot, interactive, a
     );
   }
 
-  function enrichPredSlots(preds, squadMap) {
-    if (!preds || !squadMap) return preds;
-    return preds.map(p => ({
-      ...p,
-      slots: (p.slots||[]).map(s => {
-        if (!s.player || s.player.playerId) return s;
-        const pid = squadMap[String(s.player.number)] || squadMap[s.player.nameKo];
-        return pid ? { ...s, player: { ...s.player, playerId: pid } } : s;
-      })
-    }));
-  }
-
   function getPlayerId(player) {
     if (!player) return null;
     if (player.playerId) return player.playerId;
@@ -246,8 +234,7 @@ function PitchView({ slots, formation, onSlotClick, selectedSlot, interactive, a
               {pid ? (
                 <>
                   <img
-                    key={pid}
-                    src={`${PROXY}?path=${encodeURIComponent(`/api/player-image?id=${pid}`)}`}
+                    src={`${PROXY}?path=/api/player-image?id=${pid}`}
                     style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"top", display:"block" }}
                     onError={e => { e.target.style.display="none"; e.target.nextSibling && (e.target.nextSibling.style.display="flex"); }}
                   />
@@ -466,9 +453,7 @@ export default function App() {
   const [upcomingMatches, setUpcomingMatches] = useState([]);
   const [scheduleLoading, setScheduleLoading] = useState(true);
   const [squad, setSquad] = useState([]);
-  const [squadMap, setSquadMap] = useState(() => {
-    try { const m = localStorage.getItem('sw:squadMap'); return m ? JSON.parse(m) : {}; } catch(e) { return {}; }
-  }); // number/nameKo → playerId
+  const [squadMap, setSquadMap] = useState({}); // number/nameKo → playerId
   const [selectedMatch, setSelectedMatch] = useState(null);
   const [formation, setFormation] = useState("4-3-3");
   const [slots, setSlots] = useState([]);
@@ -547,8 +532,6 @@ export default function App() {
             }
           });
           setSquadMap(map);
-          // localStorage 캐시 저장
-          try { localStorage.setItem('sw:squadMap', JSON.stringify(map)); } catch(e) {}
         }
       })
       .catch(() => {});
@@ -654,7 +637,7 @@ export default function App() {
           setFormation("4-3-3");
           resetSlots("4-3-3");
         }
-        setOtherPredictions(enrichPredSlots(preds, squadMap));
+        setOtherPredictions(preds);
       })
       .catch(() => {});
   }, [selectedMatch?.id, nickname]);
@@ -676,8 +659,20 @@ export default function App() {
     }
   }, [tab, selectedMatch]);
 
-
-
+  useEffect(() => {
+    if (tab === "predict" && selectedMatch) {
+      fetch(`${PROXY}?path=${encodeURIComponent(`/api/score-pred?matchId=${selectedMatch.id}`)}`)
+        .then(r => r.json())
+        .then(sd => {
+          const preds = sd.predictions || [];
+          setScorePreds(preds);
+          const mine = preds.find(p => p.nickname === nickname);
+          if (mine) { setMyScorePred(mine); setScoreHome(mine.homeScore); setScoreAway(mine.awayScore); }
+          else { setMyScorePred(null); }
+        })
+        .catch(() => {});
+    }
+  }, [tab]);
 
 
   useEffect(() => { if (tab === "league") loadLeague(); }, [tab]);
@@ -797,7 +792,7 @@ export default function App() {
       // 다른 사람 예측도 새로고침
       fetch(`${PROXY}?path=/api/predictions?matchId=${selectedMatch.id}`)
         .then(r => r.json())
-        .then(d => setOtherPredictions(enrichPredSlots(d.predictions || [], squadMap)))
+        .then(d => setOtherPredictions(d.predictions || []))
         .catch(() => {});
     } catch(e) {
       store.set(`sw:pred_${selectedMatch.id}_${nickname}`, data);
