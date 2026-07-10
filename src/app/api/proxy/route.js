@@ -13,8 +13,9 @@ function httpsRequest(url, method, body) {
       headers: { 'Content-Type': 'application/json', 'User-Agent': 'Mozilla/5.0', 'ngrok-skip-browser-warning': 'true' },
     };
     if (body) options.headers['Content-Length'] = Buffer.byteLength(body);
-    const req = https.request(options, (res) => {
-      let data = '';
+   const req = https.request(options, (res) => {
+  res.setEncoding('utf8');
+  let data = '';
       res.on('data', c => data += c);
       res.on('end', () => resolve(data));
     });
