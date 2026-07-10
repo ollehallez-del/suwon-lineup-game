@@ -239,12 +239,12 @@ function PitchView({ slots, formation, onSlotClick, selectedSlot, interactive, a
                     onError={e => { e.target.style.display="none"; e.target.nextSibling && (e.target.nextSibling.style.display="flex"); }}
                   />
                   <span style={{ display:"none", position:"absolute", inset:0, alignItems:"center", justifyContent:"center", fontSize:8, color:"white", fontWeight:700, textAlign:"center", flexDirection:"column" }}>
-                    {player.number && <>{player.number}<br/></>}{(player.nameKo||player.name||"").trim().slice(0,3)}
+                    {player.number && <>{player.number}<br/></>}{(player.nameKo||player.name||"").trim().split(" ").map((w,i) => <span key={i}>{w}<br/></span>)}
                   </span>
                 </>
               ) : player ? (
                 <span style={{ fontSize:8, textAlign:"center", lineHeight:1.2, color:"white", fontWeight:700, padding:"0 2px" }}>
-                  {player.number && <>{player.number}<br/></>}{(player.nameKo||player.name||"").trim().slice(0,3)}
+                  {player.number && <>{player.number}<br/></>}{(player.nameKo||player.name||"").trim().split(" ").map((w,i) => <span key={i}>{w}<br/></span>)}
                 </span>
               ) : (
                 <span style={{ opacity:0.4, fontSize:14, color:"white" }}>+</span>
@@ -254,7 +254,7 @@ function PitchView({ slots, formation, onSlotClick, selectedSlot, interactive, a
             {/* 이름 */}
             {player ? (
               <div style={{ fontSize:8, fontWeight:700, color:nameColor, textShadow:"0 1px 3px rgba(0,0,0,0.9)", background:"rgba(0,0,0,0.55)", padding:"1px 5px", borderRadius:4, textAlign:"center", maxWidth:52 }}>
-                {(player.nameKo||player.name||"").trim().slice(0,3)}
+                {(player.nameKo||player.name||"").trim().split(" ").map((w,i) => <span key={i}>{w}<br/></span>)}
               </div>
             ) : (
               <div style={{ fontSize:7, color:"rgba(255,255,255,0.3)", padding:"1px 3px" }}>{slot.pos}</div>
