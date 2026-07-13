@@ -267,6 +267,86 @@ function PitchView({ slots, formation, onSlotClick, selectedSlot, interactive, a
 }
 
 
+
+function NicknameManager({ adminPassword, proxy }) {
+  const [nicknames, setNicknames] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [editTarget, setEditTarget] = useState(null);
+  const [editValue, setEditValue] = useState("");
+  const [status, setStatus] = useState("");
+
+  async function loadNicknames() {
+    setLoading(true);
+    try {
+      const r = await fetch(`${proxy}?path=/api/admin/nicknames`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: adminPassword }),
+      });
+      const d = await r.json();
+      setNicknames(d.nicknames || []);
+    } catch(e) { setStatus("❌ 로드 실패"); }
+    setLoading(false);
+  }
+
+  async function deleteNickname(nick) {
+    if (!confirm(`"${nick}" 닉네임을 삭제하시겠습니까?\n예측, 점수, 코멘트가 모두 삭제됩니다.`)) return;
+    try {
+      const r = await fetch(`${proxy}?path=/api/admin/nicknames`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: adminPassword, nickname: nick }),
+      });
+      const d = await r.json();
+      if (d.ok) { setStatus("✅ 삭제 완료"); loadNicknames(); }
+      else setStatus("❌ " + (d.error || "삭제 실패"));
+    } catch(e) { setStatus("❌ 오류"); }
+  }
+
+  async function renameNickname(oldNick, newNick) {
+    if (!newNick.trim()) return;
+    try {
+      const r = await fetch(`${proxy}?path=/api/admin/nicknames`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: adminPassword, oldNickname: oldNick, newNickname: newNick.trim() }),
+      });
+      const d = await r.json();
+      if (d.ok) { setStatus("✅ 수정 완료"); setEditTarget(null); loadNicknames(); }
+      else setStatus("❌ " + (d.error || "수정 실패"));
+    } catch(e) { setStatus("❌ 오류"); }
+  }
+
+  return (
+    <div>
+      <button onClick={loadNicknames} style={{ background:"rgba(255,255,255,0.07)", border:"1px solid rgba(255,255,255,0.12)", borderRadius:6, padding:"6px 12px", color:"white", fontSize:12, cursor:"pointer", marginBottom:8 }}>
+        {loading ? "로딩 중..." : "🔄 닉네임 목록 불러오기"}
+      </button>
+      {status && <div style={{ fontSize:12, padding:6, color:status.includes("✅")?"#4ade80":"#f87171", marginBottom:8 }}>{status}</div>}
+      <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+        {nicknames.map(nick => (
+          <div key={nick} style={{ display:"flex", alignItems:"center", gap:8, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:8, padding:"8px 12px" }}>
+            {editTarget === nick ? (
+              <>
+                <input value={editValue} onChange={e=>setEditValue(e.target.value)}
+                  style={{ flex:1, background:"rgba(255,255,255,0.1)", border:"1px solid rgba(255,255,255,0.2)", borderRadius:6, padding:"4px 8px", color:"white", fontSize:13 }} />
+                <button onClick={()=>renameNickname(nick, editValue)} style={{ background:"#16a34a", border:"none", borderRadius:6, padding:"4px 10px", color:"white", fontSize:12, cursor:"pointer" }}>저장</button>
+                <button onClick={()=>setEditTarget(null)} style={{ background:"rgba(255,255,255,0.1)", border:"none", borderRadius:6, padding:"4px 10px", color:"white", fontSize:12, cursor:"pointer" }}>취소</button>
+              </>
+            ) : (
+              <>
+                <span style={{ flex:1, fontSize:13, fontWeight:600 }}>{nick}</span>
+                <button onClick={()=>{ setEditTarget(nick); setEditValue(nick); }} style={{ background:"rgba(59,130,246,0.2)", border:"1px solid rgba(59,130,246,0.3)", borderRadius:6, padding:"4px 10px", color:"#60a5fa", fontSize:12, cursor:"pointer" }}>수정</button>
+                <button onClick={()=>deleteNickname(nick)} style={{ background:"rgba(239,68,68,0.1)", border:"1px solid rgba(239,68,68,0.2)", borderRadius:6, padding:"4px 10px", color:"#f87171", fontSize:12, cursor:"pointer" }}>삭제</button>
+              </>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function OtherPredictions({ preds, myNickname, scores, officialPlayers, scorePreds, isHome, actualScore, match, squadMap }) {
   const [expanded, setExpanded] = useState(null);
   const sortedPreds = scores
@@ -497,6 +577,7 @@ export default function App() {
   const [adminHomeScore, setAdminHomeScore] = useState(0);
   const [adminAwayScore, setAdminAwayScore] = useState(0);
   const [adminStatus, setAdminStatus] = useState("");
+  const [adminTapCount, setAdminTapCount] = useState(0);
 
   useEffect(() => {
     const nn = store.get('sw:nickname');
@@ -1007,7 +1088,16 @@ export default function App() {
 
       <div style={{ background:"linear-gradient(135deg,#1e3a8a 0%,#1d4ed8 50%,#2563eb 100%)", padding:"16px 20px 0", boxShadow:"0 4px 24px rgba(0,0,0,0.4)" }}>
         <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:12 }}>
-          <div style={{ width:42, height:42, borderRadius:"50%", background:"linear-gradient(135deg,#1e40af,#3b82f6)", border:"2px solid #60a5fa", display:"flex", alignItems:"center", justifyContent:"center", fontSize:20 }}>⚽</div>
+          <div onClick={() => {
+            const next = adminTapCount + 1;
+            setAdminTapCount(next);
+            if (next >= 5) {
+              setTab("admin");
+              setAdminTapCount(0);
+            }
+          }} style={{ width:42, height:42, borderRadius:"50%", overflow:"hidden", cursor:"pointer" }}>
+            <img src="https://api.sofascore.com/api/v1/team/7652/image" style={{ width:"100%", height:"100%", objectFit:"cover" }} onError={e => { e.target.style.display="none"; e.target.parentNode.innerHTML="⚽"; }} />
+          </div>
           <div>
             <div style={{ fontSize:18, fontWeight:900, letterSpacing:"-0.02em" }}>수원삼성 선발 예측</div>
             <div style={{ fontSize:11, color:"rgba(255,255,255,0.6)" }}>2026 K리그2 · 이정효 감독</div>
@@ -1607,8 +1697,14 @@ export default function App() {
                     {adminStatus && <div style={{ textAlign:"center", fontSize:12, padding:8, color:adminStatus.includes("✅")?"#4ade80":"#f87171" }}>{adminStatus}</div>}
                   </div>
                 )}
+
+              {/* 닉네임 관리 */}
+              <div style={{ marginTop:16 }}>
+                <div style={{ fontSize:12, color:"rgba(255,255,255,0.4)", marginBottom:8, textTransform:"uppercase", letterSpacing:"0.1em" }}>닉네임 관리</div>
+                <NicknameManager adminPassword="3579" proxy={PROXY} />
               </div>
-            )}
+
+            </div>
           </div>
         )}
 
