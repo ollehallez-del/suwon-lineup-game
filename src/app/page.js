@@ -1703,8 +1703,7 @@ export default function App() {
                 <div style={{ fontSize:12, color:"rgba(255,255,255,0.4)", marginBottom:8, textTransform:"uppercase", letterSpacing:"0.1em" }}>닉네임 관리</div>
                 <NicknameManager adminPassword="3579" proxy={PROXY} />
               </div>
-
-            </div>
+          </div>
         )}
 
         {tab === "ranking" && (
