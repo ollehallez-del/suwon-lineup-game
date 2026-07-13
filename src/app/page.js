@@ -1096,7 +1096,7 @@ export default function App() {
               setAdminTapCount(0);
             }
           }} style={{ width:42, height:42, borderRadius:"50%", overflow:"hidden", cursor:"pointer" }}>
-            <img src="https://api.sofascore.com/api/v1/team/7652/image" style={{ width:"100%", height:"100%", objectFit:"cover" }} onError={e => { e.target.style.display="none"; e.target.parentNode.innerHTML="⚽"; }} />
+            <img src="/suwon.png" style={{ width:"100%", height:"100%", objectFit:"cover" }} onError={e => { e.target.style.display="none"; e.target.parentNode.innerHTML="⚽"; }} />
           </div>
           <div>
             <div style={{ fontSize:18, fontWeight:900, letterSpacing:"-0.02em" }}>수원삼성 선발 예측</div>
