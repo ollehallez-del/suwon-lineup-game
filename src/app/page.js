@@ -290,7 +290,7 @@ function NicknameManager({ adminPassword, proxy }) {
   }
 
   async function deleteNickname(nick) {
-    if (!confirm(`"${nick}" 닉네임을 삭제하시겠습니까?\n예측, 점수, 코멘트가 모두 삭제됩니다.`)) return;
+    if (!confirm(`"${nick}" 닉네임을 삭제하시겠습니까? 예측, 점수, 코멘트가 모두 삭제됩니다.`)) return;
     try {
       const r = await fetch(`${proxy}?path=/api/admin/nicknames`, {
         method: "DELETE",
