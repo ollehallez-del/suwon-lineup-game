@@ -1706,6 +1706,7 @@ export default function App() {
 
             </div>
           </div>
+        </div>
         )}
 
         {tab === "ranking" && (
