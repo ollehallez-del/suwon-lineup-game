@@ -781,6 +781,16 @@ export default function App() {
     setSelectedSlot(null);
   }
 
+  function changeFormationKeepPlayers(f) {
+    const layout = FORMATION_LAYOUTS[f] || FORMATION_LAYOUTS["4-3-3"];
+    setFormation(f);
+    setSlots(prev => {
+      const currentPlayers = prev.map(s => s.player).filter(Boolean);
+      return layout.map((l, i) => ({ pos: l.pos, player: currentPlayers[i] || null }));
+    });
+    setSelectedSlot(null);
+  }
+
   function handleFormationChange(f) { setFormation(f); resetSlots(f); }
   function handleSlotClick(i) {
     if (selectedSlot === null) {
@@ -1095,11 +1105,11 @@ export default function App() {
               setTab("admin");
               setAdminTapCount(0);
             }
-          }} style={{ width:42, height:42, borderRadius:"50%", overflow:"hidden", cursor:"pointer" }}>
-            <img src="/suwon.png" style={{ width:"100%", height:"100%", objectFit:"cover", transform:"scale(1.3)" }} onError={e => { e.target.style.display="none"; e.target.parentNode.innerHTML="⚽"; }} />
+          }} style={{ cursor:"pointer", width:40, height:40, borderRadius:"50%", background:"white", display:"flex", alignItems:"center", justifyContent:"center", overflow:"hidden", flexShrink:0 }}>
+            <img src="/suwon.png" style={{ width:"85%", height:"85%", objectFit:"contain" }} onError={e => { e.target.style.display="none"; e.target.parentNode.innerHTML="⚽"; }} />
           </div>
           <div>
-            <div style={{ fontSize:18, fontWeight:900, letterSpacing:"-0.02em" }}>수원삼성 선발 예측</div>
+            <div style={{ fontSize:15, fontWeight:900, letterSpacing:"-0.02em", whiteSpace:"nowrap" }}>수원삼성 선발 예측</div>
             <div style={{ fontSize:11, color:"rgba(255,255,255,0.6)" }}>2026 K리그2 · 이정효 감독</div>
           </div>
           <div style={{ marginLeft:"auto" }}>
@@ -1219,6 +1229,12 @@ export default function App() {
               </div>
               {selectedSlot !== null && (
                 <div style={{ marginBottom:12, background:"rgba(255,255,255,0.04)", border:"1.5px solid rgba(59,130,246,0.3)", borderRadius:12, padding:12 }}>
+                  <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginBottom:6, fontWeight:700 }}>포메이션</div>
+                  <div style={{ display:"flex", flexWrap:"wrap", gap:5, marginBottom:12 }}>
+                    {Object.keys(FORMATION_LAYOUTS).map(f => (
+                      <button key={f} onClick={() => changeFormationKeepPlayers(f)} style={{ padding:"3px 8px", background:formation===f?"#1d4ed8":"rgba(255,255,255,0.06)", border:formation===f?"1px solid #3b82f6":"1px solid rgba(255,255,255,0.1)", borderRadius:6, color:"white", fontSize:11, cursor:"pointer" }}>{f}</button>
+                    ))}
+                  </div>
                   <div style={{ fontSize:11, color:"#60a5fa", marginBottom:10, fontWeight:700 }}>[{slots[selectedSlot]?.pos}] 포지션 선수 선택</div>
                   {squad.length === 0 && <div style={{ fontSize:11, color:"rgba(255,255,255,0.3)", padding:8 }}>⚠️ 선수 목록을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.</div>}
                   {posOrder.map(posKey => {
@@ -1248,7 +1264,15 @@ export default function App() {
                     <span>✅ 예측 완료!</span>
 {selectedMatch && new Date(selectedMatch.kickoffISO || selectedMatch.date) > new Date() && !scoreData.detail?.[selectedMatch.id] && (
                       (new Date(selectedMatch.kickoffISO || selectedMatch.date) - new Date() > 90*60*1000)
-                        ? <button onClick={handleDeletePred} style={{ background:"rgba(239,68,68,0.2)", border:"1px solid rgba(239,68,68,0.4)", borderRadius:6, padding:"2px 8px", color:"#fc8181", fontSize:10, cursor:"pointer" }}>삭제</button>
+                        ? <div style={{ display:"flex", gap:6 }}>
+                            <button onClick={() => {
+                              setFormation(mySubmission.formation);
+                              resetSlots(mySubmission.formation);
+                              if (mySubmission.slots) setSlots(mySubmission.slots);
+                              setMySubmission(null);
+                            }} style={{ background:"rgba(59,130,246,0.2)", border:"1px solid rgba(59,130,246,0.4)", borderRadius:6, padding:"2px 8px", color:"#60a5fa", fontSize:10, cursor:"pointer" }}>수정</button>
+                            <button onClick={handleDeletePred} style={{ background:"rgba(239,68,68,0.2)", border:"1px solid rgba(239,68,68,0.4)", borderRadius:6, padding:"2px 8px", color:"#fc8181", fontSize:10, cursor:"pointer" }}>삭제</button>
+                          </div>
                         : <span style={{ fontSize:10, color:"rgba(255,255,255,0.3)" }}>🔒 잠김</span>
                     )}
                   </div>
