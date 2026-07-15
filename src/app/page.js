@@ -1263,7 +1263,7 @@ export default function App() {
                   <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
                     <span>✅ 예측 완료!</span>
 {selectedMatch && new Date(selectedMatch.kickoffISO || selectedMatch.date) > new Date() && !scoreData.detail?.[selectedMatch.id] && (
-                      (new Date(selectedMatch.kickoffISO || selectedMatch.date) - new Date() > 90*60*1000)
+                      (new Date(selectedMatch.kickoffISO || selectedMatch.date) - new Date() > 2*60*60*1000)
                         ? <div style={{ display:"flex", gap:6 }}>
                             <button onClick={() => {
                               setFormation(mySubmission.formation);
@@ -1281,7 +1281,7 @@ export default function App() {
               )}
 
               {/* 승부 예측 섹션 */}
-              {selectedMatch && (new Date(selectedMatch.kickoffISO || selectedMatch.date) - new Date() > 90*60*1000) && (
+              {selectedMatch && (new Date(selectedMatch.kickoffISO || selectedMatch.date) - new Date() > 2*60*60*1000) && (
                 <div style={{ marginBottom:12, padding:"12px 14px", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:10 }}>
                   <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginBottom:10, fontWeight:700 }}>🎯 승부 예측</div>
                   {myScorePred ? (
@@ -1298,7 +1298,7 @@ export default function App() {
                           <div style={{ fontSize:28, fontWeight:900, color:(selectedMatch.home?scoreHome>scoreAway:scoreAway>scoreHome)?"#4ade80":scoreHome===scoreAway?"#fbbf24":"#f87171" }}>{scoreAway}</div>
                         </div>
                       </div>
-                      {!scoreData.detail?.[selectedMatch?.id] && ((new Date(selectedMatch?.kickoffISO || selectedMatch?.date) - new Date() > 90*60*1000) ? <button onClick={() => setMyScorePred(null)} style={{ background:"rgba(255,255,255,0.08)", border:"1px solid rgba(255,255,255,0.15)", borderRadius:6, padding:"4px 10px", color:"#aaa", fontSize:11, cursor:"pointer" }}>수정</button> : <span style={{ fontSize:10, color:"rgba(255,255,255,0.3)" }}>🔒 잠김</span>)}
+                      {!scoreData.detail?.[selectedMatch?.id] && ((new Date(selectedMatch?.kickoffISO || selectedMatch?.date) - new Date() > 2*60*60*1000) ? <button onClick={() => setMyScorePred(null)} style={{ background:"rgba(255,255,255,0.08)", border:"1px solid rgba(255,255,255,0.15)", borderRadius:6, padding:"4px 10px", color:"#aaa", fontSize:11, cursor:"pointer" }}>수정</button> : <span style={{ fontSize:10, color:"rgba(255,255,255,0.3)" }}>🔒 잠김</span>)}
                     </div>
                   ) : (
                     // 입력 모드
@@ -1361,8 +1361,8 @@ export default function App() {
                 <button onClick={handleSave} disabled={saveStatus==="저장 중..." || countFilled() < 11} style={{ width:"100%", padding:14, background:countFilled()===11?"linear-gradient(135deg,#1d4ed8,#2563eb)":"rgba(255,255,255,0.05)", border:"none", borderRadius:10, color:"white", fontSize:14, fontWeight:700, cursor:(saveStatus==="저장 중..."||countFilled()<11)?"not-allowed":"pointer", boxShadow:countFilled()===11?"0 4px 16px rgba(37,99,235,0.4)":"none", opacity:(saveStatus==="저장 중..."||countFilled()<11)?0.6:1 }}>
                   {saveStatus==="저장 중..." ? "저장 중..." : `✅ 선발 예측 + 승부예측 저장 (${countFilled()}/11)`}
                 </button>
-                {mySubmission && (new Date(selectedMatch?.kickoffISO || selectedMatch?.date) - new Date() <= 90*60*1000) && new Date(selectedMatch?.kickoffISO || selectedMatch?.date) > new Date() && (
-                  <div style={{ textAlign:"center", fontSize:11, color:"rgba(255,255,255,0.3)", marginTop:4 }}>🔒 킥오프 90분 전부터 예측 수정이 불가합니다</div>
+                {mySubmission && (new Date(selectedMatch?.kickoffISO || selectedMatch?.date) - new Date() <= 2*60*60*1000) && new Date(selectedMatch?.kickoffISO || selectedMatch?.date) > new Date() && (
+                  <div style={{ textAlign:"center", fontSize:11, color:"rgba(255,255,255,0.3)", marginTop:4 }}>🔒 킥오프 2시간 전부터 예측 수정이 불가합니다</div>
                 )}
                 {saveStatus && <div style={{ textAlign:"center", fontSize:12, padding:8, color:saveStatus.includes("✅")?"#22c55e":"#fbbf24" }}>{saveStatus}</div>}
 
@@ -1459,8 +1459,8 @@ export default function App() {
                                 <span style={{ color:"#fbbf24", fontWeight:700, minWidth:36 }}>
                                   {inc.time}{inc.addedTime > 0 ? `+${inc.addedTime}` : ""}'
                                 </span>
-                                <span>{inc.incidentClass === 'ownGoal' ? '🔴' : inc.incidentClass === 'penalty' ? '⚽P' : '⚽'}</span>
-                                <span style={{ color: (viewingMatch.home ? inc.isHome : !inc.isHome) ? "#60a5fa" : "#f87171", fontWeight:600 }}>{inc.player}</span>
+                                <span>{(inc.incidentClass === 'ownGoal' || inc.isOwnGoal) ? '🔴' : inc.incidentClass === 'penalty' ? '⚽P' : '⚽'}</span>
+                                <span style={{ color: (viewingMatch.home ? inc.isHome : !inc.isHome) ? "#60a5fa" : "#f87171", fontWeight:600 }}>{inc.player}{inc.isOwnGoal ? ' (자책골)' : ''}</span>
                                 {inc.assist && <span style={{ color:"rgba(255,255,255,0.4)", fontSize:11 }}>🅰️ {inc.assist}</span>}
                                 <span style={{ marginLeft:"auto", color:"rgba(255,255,255,0.5)", fontSize:11 }}>{inc.homeScore}:{inc.awayScore}</span>
                               </div>
@@ -1884,7 +1884,7 @@ export default function App() {
                   <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
                     {rankingView.preds.length === 0 && <div style={{ textAlign:"center", padding:24, color:"rgba(255,255,255,0.3)" }}>예측 데이터가 없습니다.</div>}
                     {rankingView.preds.map((p, i) => {
-                      const d = new Date(p.savedAt);
+                      const d = new Date(p.kickoffISO || p.savedAt);
                       return (
                         <div key={i} onClick={() => {
                           setRankingPredDetail(p);
@@ -1938,7 +1938,7 @@ export default function App() {
                       const myPreds = Object.entries(allPredData).flatMap(([matchId, preds]) =>
                         preds.filter(p => p.nickname === entry.nickname).map(p => {
                           const matchInfo = [...(pastMatches||[]), ...(upcomingMatches||[])].find(m => m.id === matchId);
-                          return { ...p, isHome: matchInfo?.home, score: matchInfo?.score };
+                          return { ...p, isHome: matchInfo?.home, score: matchInfo?.score, kickoffISO: matchInfo?.kickoffISO };
                         })
                       );
                       return (
