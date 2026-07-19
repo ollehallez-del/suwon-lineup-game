@@ -1701,7 +1701,17 @@ export default function App() {
                         });
                         const d = await r.json();
                         if (d.ok) {
-                          setAdminStatus("✅ 저장 완료! 채점 완료!");
+                          const scored = d.scored;
+                          const scores = d.scores || {};
+                          const nicknames = Object.keys(scores);
+                          const scoreMsg = scored
+                            ? `채점 완료! 참여자 ${nicknames.length}명`
+                            : "스코어 입력 후 채점됩니다";
+                          setAdminStatus("✅ 저장 완료! " + scoreMsg);
+                          // lineup 다시 fetch해서 슬롯 테두리 업데이트
+                          fetch(`${PROXY}?path=/api/lineup?eventId=${adminMatch.id}`).then(r=>r.json()).then(d=>{
+                            if (d.lineup) setCurrentLineup(d.lineup);
+                          }).catch(()=>{});
                           fetch(`${PROXY}?path=/api/score`).then(r=>r.json()).then(d=>setScoreData(d)).catch(()=>{});
                         } else {
                           setAdminStatus("❌ " + (d.error || "저장 실패"));
@@ -1940,7 +1950,7 @@ export default function App() {
                           const matchInfo = [...(pastMatches||[]), ...(upcomingMatches||[])].find(m => m.id === matchId);
                           return { ...p, isHome: matchInfo?.home, score: matchInfo?.score, kickoffISO: matchInfo?.kickoffISO };
                         })
-                      );
+                      ).sort((a, b) => new Date(a.kickoffISO||0) - new Date(b.kickoffISO||0));
                       return (
                         <div key={idx} onClick={() => { setRankingView({ nickname: entry.nickname, preds: myPreds }); setRankingPredDetail(null); }}
                           style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 14px", background:entry.nickname===nickname?"rgba(59,130,246,0.1)":"rgba(255,255,255,0.03)", border:entry.nickname===nickname?"1.5px solid rgba(59,130,246,0.4)":"1.5px solid rgba(255,255,255,0.06)", borderRadius:10, cursor:"pointer" }}>
