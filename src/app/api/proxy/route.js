@@ -14,6 +14,7 @@ function httpsRequest(url, method, body) {
     };
     if (body) options.headers['Content-Length'] = Buffer.byteLength(body);
     const req = https.request(options, (res) => {
+      res.setEncoding('utf8');
       let data = '';
       res.on('data', c => data += c);
       res.on('end', () => resolve(data));
