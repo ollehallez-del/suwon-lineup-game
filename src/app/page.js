@@ -1486,7 +1486,7 @@ export default function App() {
                                   <span style={{ fontSize:10, color:"rgba(255,255,255,0.3)", minWidth:20, textAlign:"right" }}>#{p.number}</span>
                                   <span style={{ fontSize:12, flex:1, color:p.subIn?"#4ade80":"rgba(255,255,255,0.5)", fontWeight:p.subIn?600:400 }}>{(p.nameKo||p.name||"").trim()}</span>
                                   {p.subIn
-                                    ? <span style={{ fontSize:10, color:"#4ade80" }}>↑{p.subTime}'</span>
+                                    ? <span style={{ fontSize:10, color:"#4ade80" }}>↑{p.subTime}' ({p.subOut}→)</span>
                                     : <span style={{ fontSize:10, color:"rgba(255,255,255,0.2)" }}>미출전</span>
                                   }
                                 </div>
