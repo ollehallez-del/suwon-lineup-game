@@ -50,7 +50,10 @@ async function fetchSubstitutes(gameId) {
   const subInMap = {};
   subEvents.forEach(s => {
     const halfMin = s.halfType === 2 ? s.timeMin + 45 : s.timeMin;
-    subInMap[String(s.playerId)] = { subTime: halfMin, subOut: s.playerName2 || null };
+    // playerId = 나간 선수, playerId2 = 투입 선수
+    if (s.playerId2) {
+      subInMap[String(s.playerId2)] = { subTime: halfMin, subOut: s.playerName || null };
+    }
   });
 
   // 2. HTML에서 벤치 전체 명단
