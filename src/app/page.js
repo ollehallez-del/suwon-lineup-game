@@ -1905,6 +1905,23 @@ export default function App() {
                             </div>
                           ))
                       }
+                        {rankingLineupToggle === "actual" && rankingLineup?.substitutes && rankingLineup.substitutes.length > 0 && (
+                          <div style={{ marginTop:10 }}>
+                            <div style={{ fontSize:10, color:"rgba(255,255,255,0.35)", marginBottom:5, textTransform:"uppercase", letterSpacing:"0.08em" }}>교체 명단</div>
+                            <div style={{ display:"flex", flexDirection:"column", gap:3 }}>
+                              {rankingLineup.substitutes.map((p, j) => (
+                                <div key={j} style={{ display:"flex", alignItems:"center", gap:6, padding:"4px 8px", borderRadius:6, background:p.subIn?"rgba(34,197,94,0.06)":"rgba(255,255,255,0.02)" }}>
+                                  <span style={{ fontSize:9, color:"rgba(255,255,255,0.3)", minWidth:18, textAlign:"right" }}>#{p.number}</span>
+                                  <span style={{ fontSize:11, flex:1, color:p.subIn?"#4ade80":"rgba(255,255,255,0.4)", fontWeight:p.subIn?600:400 }}>{(p.nameKo||p.name||"").trim()}</span>
+                                  {p.subIn
+                                    ? <span style={{ fontSize:10, color:"#4ade80" }}>↑{p.subTime}' ({p.subOut}→)</span>
+                                    : <span style={{ fontSize:10, color:"rgba(255,255,255,0.2)" }}>미출전</span>
+                                  }
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                     </div>
                   </div>
                 ) : (
