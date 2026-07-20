@@ -1219,7 +1219,7 @@ export default function App() {
                 <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginBottom:8, textTransform:"uppercase", letterSpacing:"0.1em" }}>포메이션</div>
                 <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
                   {Object.keys(FORMATION_LAYOUTS).map(f => (
-                    <button key={f} onClick={()=>handleFormationChange(f)} style={{ flex:1, padding:"8px 0", minWidth:70, background:formation===f?"#1d4ed8":"rgba(255,255,255,0.05)", border:formation===f?"1.5px solid #3b82f6":"1.5px solid rgba(255,255,255,0.1)", borderRadius:8, color:"white", fontSize:12, fontWeight:700, cursor:"pointer" }}>{f}</button>
+                    <button key={f} onClick={()=>changeFormationKeepPlayers(f)} style={{ flex:1, padding:"8px 0", minWidth:70, background:formation===f?"#1d4ed8":"rgba(255,255,255,0.05)", border:formation===f?"1.5px solid #3b82f6":"1.5px solid rgba(255,255,255,0.1)", borderRadius:8, color:"white", fontSize:12, fontWeight:700, cursor:"pointer" }}>{f}</button>
                   ))}
                 </div>
               </div>}
