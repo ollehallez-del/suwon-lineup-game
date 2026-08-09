@@ -208,17 +208,17 @@ function PitchView({ slots, formation, onSlotClick, selectedSlot, interactive, a
         const pid = getPlayerId(player);
 
         const border = isSelected ? "3px solid #fbbf24"
-          : hit === true  ? "4px solid #4ade80"
+          : hit === true  ? "4px solid #1D4ED8"
           : hit === false ? "4px solid #E14C58"
           : player ? "2px solid rgba(255,255,255,0.7)"
           : "2px dashed rgba(255,255,255,0.3)";
 
-        const shadow = hit === true  ? "0 0 10px rgba(34,197,94,0.8)"
+        const shadow = hit === true  ? "0 0 10px rgba(29,78,216,0.8)"
           : hit === false ? "0 0 10px rgba(239,68,68,0.8)"
           : player ? "0 2px 12px rgba(0,0,0,0.4)"
           : "none";
 
-        const nameColor = hit === true ? "#4ade80" : hit === false ? "#E14C58" : "white";
+        const nameColor = hit === true ? "#1D4ED8" : hit === false ? "#E14C58" : "white";
 
         return (
           <div key={i} onClick={() => interactive && onSlotClick && onSlotClick(i)}
@@ -445,7 +445,7 @@ function OtherPredictions({ preds, myNickname, scores, officialPlayers, scorePre
                           const actualWin = as > ao; const spWin = (isHome ? sp.homeScore : sp.awayScore) > (isHome ? sp.awayScore : sp.homeScore);
                           const actualDraw = as === ao; const spDraw = sp.homeScore === sp.awayScore;
                           const resultMatch = !exact && spWin === actualWin && spDraw === actualDraw;
-                          if (exact) return <span style={{ fontSize:11, background:"rgba(34,197,94,0.15)", border:"1px solid rgba(34,197,94,0.3)", borderRadius:6, padding:"3px 8px", color:"#4ade80", fontWeight:700 }}>🎯 정확한 스코어 +15pt</span>;
+                          if (exact) return <span style={{ fontSize:11, background:"rgba(29,78,216,0.12)", border:"1px solid rgba(29,78,216,0.3)", borderRadius:6, padding:"3px 8px", color:"#1D4ED8", fontWeight:700 }}>🎯 정확한 스코어 +15pt</span>;
                           if (resultMatch) return <span style={{ fontSize:11, background:"rgba(96,165,250,0.15)", border:"1px solid rgba(96,165,250,0.3)", borderRadius:6, padding:"3px 8px", color:"#5B8DEF", fontWeight:700 }}>✅ 승무패 적중 +5pt</span>;
                           return <span style={{ fontSize:11, background:"rgba(212,34,48,0.10)", border:"1px solid rgba(212,34,48,0.18)", borderRadius:6, padding:"3px 8px", color:"#E14C58", fontWeight:700 }}>❌ 승부예측 미적중</span>;
                         })()}
@@ -467,10 +467,10 @@ function OtherPredictions({ preds, myNickname, scores, officialPlayers, scorePre
                             (s.player.nameKo && s.player.nameKo===ap.nameKo)
                           )
                         : null;
-                      const bg = matched===true ? "rgba(34,197,94,0.1)" : matched===false ? "rgba(212,34,48,0.10)" : "rgba(15,33,71,0.05)";
-                      const border = matched===true ? "1px solid rgba(34,197,94,0.3)" : matched===false ? "1px solid rgba(212,34,48,0.28)" : "1px solid rgba(15,33,71,0.08)";
-                      const color = matched===true ? "#4ade80" : matched===false ? "#E14C58" : "#0F2147";
-                      const numColor = matched===true ? "#4ade80" : matched===false ? "#E14C58" : "#5B6B8C";
+                      const bg = matched===true ? "rgba(29,78,216,0.1)" : matched===false ? "rgba(212,34,48,0.10)" : "rgba(15,33,71,0.05)";
+                      const border = matched===true ? "1px solid rgba(29,78,216,0.3)" : matched===false ? "1px solid rgba(212,34,48,0.28)" : "1px solid rgba(15,33,71,0.08)";
+                      const color = matched===true ? "#1D4ED8" : matched===false ? "#E14C58" : "#0F2147";
+                      const numColor = matched===true ? "#1D4ED8" : matched===false ? "#E14C58" : "#5B6B8C";
                       return (
                         <div key={j} style={{ display:"flex", alignItems:"center", gap:4, background:bg, border, borderRadius:8, padding:"4px 8px" }}>
                           <span style={{ fontSize:9, color:numColor }}>#{s.player.number}</span>
@@ -1853,7 +1853,7 @@ export default function App() {
                               </span>
                             )}
                             {rankingScorePred && (exact
-                              ? <span style={{ fontSize:11, background:"rgba(34,197,94,0.15)", border:"1px solid rgba(34,197,94,0.3)", borderRadius:6, padding:"3px 8px", color:"#4ade80", fontWeight:700 }}>🎯 정확한 스코어 +15pt</span>
+                              ? <span style={{ fontSize:11, background:"rgba(29,78,216,0.12)", border:"1px solid rgba(29,78,216,0.3)", borderRadius:6, padding:"3px 8px", color:"#1D4ED8", fontWeight:700 }}>🎯 정확한 스코어 +15pt</span>
                               : resultMatch
                                 ? <span style={{ fontSize:11, background:"rgba(96,165,250,0.15)", border:"1px solid rgba(96,165,250,0.3)", borderRadius:6, padding:"3px 8px", color:"#5B8DEF", fontWeight:700 }}>✅ 승무패 적중 +5pt</span>
                                 : <span style={{ fontSize:11, background:"rgba(212,34,48,0.10)", border:"1px solid rgba(212,34,48,0.18)", borderRadius:6, padding:"3px 8px", color:"#E14C58", fontWeight:700 }}>❌ 승부예측 미적중</span>
@@ -1888,10 +1888,10 @@ export default function App() {
                                   (s.player.nameKo && s.player.nameKo === ap.nameKo)
                                 )
                               : null;
-                            const bg = matched === true ? "rgba(34,197,94,0.1)" : matched === false ? "rgba(212,34,48,0.10)" : "rgba(15,33,71,0.05)";
-                            const border = matched === true ? "1px solid rgba(34,197,94,0.3)" : matched === false ? "1px solid rgba(212,34,48,0.28)" : "1px solid rgba(15,33,71,0.08)";
-                            const color = matched === true ? "#4ade80" : matched === false ? "#E14C58" : "#0F2147";
-                            const numColor = matched === true ? "#4ade80" : matched === false ? "#E14C58" : "#888";
+                            const bg = matched === true ? "rgba(29,78,216,0.1)" : matched === false ? "rgba(212,34,48,0.10)" : "rgba(15,33,71,0.05)";
+                            const border = matched === true ? "1px solid rgba(29,78,216,0.3)" : matched === false ? "1px solid rgba(212,34,48,0.28)" : "1px solid rgba(15,33,71,0.08)";
+                            const color = matched === true ? "#1D4ED8" : matched === false ? "#E14C58" : "#0F2147";
+                            const numColor = matched === true ? "#1D4ED8" : matched === false ? "#E14C58" : "#5B6B8C";
                             return (
                               <div key={j} style={{ display:"flex", alignItems:"center", gap:4, background:bg, border, borderRadius:8, padding:"4px 8px" }}>
                                 <span style={{ fontSize:9, color:numColor }}>#{s.player.number}</span>
@@ -1900,9 +1900,9 @@ export default function App() {
                             );
                           })
                         : (rankingLineup?.players||[]).map((p,j) => (
-                            <div key={j} style={{ display:"flex", alignItems:"center", gap:4, background:"rgba(34,197,94,0.1)", border:"1px solid rgba(34,197,94,0.3)", borderRadius:8, padding:"4px 8px" }}>
-                              <span style={{ fontSize:9, color:"#4ade80" }}>#{p.number}</span>
-                              <span style={{ fontSize:11, fontWeight:600, color:"#4ade80" }}>{p.nameKo||p.name}</span>
+                            <div key={j} style={{ display:"flex", alignItems:"center", gap:4, background:"rgba(29,78,216,0.1)", border:"1px solid rgba(29,78,216,0.3)", borderRadius:8, padding:"4px 8px" }}>
+                              <span style={{ fontSize:9, color:"#1D4ED8" }}>#{p.number}</span>
+                              <span style={{ fontSize:11, fontWeight:600, color:"#1D4ED8" }}>{p.nameKo||p.name}</span>
                             </div>
                           ))
                       }
