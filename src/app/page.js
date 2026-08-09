@@ -429,12 +429,12 @@ function OtherPredictions({ preds, myNickname, scores, officialPlayers, scorePre
                     <div style={{ marginBottom:12, padding:"10px 12px", background:"rgba(15,33,71,0.03)", border:"1px solid rgba(15,33,71,0.06)", borderRadius:10 }}>
                       <div style={{ display:"flex", flexWrap:"wrap", gap:6, alignItems:"center" }}>
                         {hitCount !== null && (
-                          <span style={{ fontSize:11, background:"rgba(251,191,36,0.15)", border:"1px solid rgba(251,191,36,0.3)", borderRadius:6, padding:"3px 8px", color:"#fbbf24", fontWeight:700 }}>
+                          <span style={{ fontSize:11, background:"rgba(251,191,36,0.18)", border:"1px solid rgba(217,160,10,0.35)", borderRadius:6, padding:"3px 8px", color:"#92400E", fontWeight:700 }}>
                             ⚽ {hitCount}명 적중 +{hitCount*5}pt
                           </span>
                         )}
                         {hitCount === 11 && (
-                          <span style={{ fontSize:11, background:"rgba(251,191,36,0.15)", border:"1px solid rgba(251,191,36,0.3)", borderRadius:6, padding:"3px 8px", color:"#fbbf24", fontWeight:700 }}>
+                          <span style={{ fontSize:11, background:"rgba(251,191,36,0.18)", border:"1px solid rgba(217,160,10,0.35)", borderRadius:6, padding:"3px 8px", color:"#92400E", fontWeight:700 }}>
                             🌟 전원 보너스 +30pt
                           </span>
                         )}
@@ -469,8 +469,8 @@ function OtherPredictions({ preds, myNickname, scores, officialPlayers, scorePre
                         : null;
                       const bg = matched===true ? "rgba(34,197,94,0.1)" : matched===false ? "rgba(212,34,48,0.10)" : "rgba(15,33,71,0.05)";
                       const border = matched===true ? "1px solid rgba(34,197,94,0.3)" : matched===false ? "1px solid rgba(212,34,48,0.28)" : "1px solid rgba(15,33,71,0.08)";
-                      const color = matched===true ? "#4ade80" : matched===false ? "#E14C58" : "white";
-                      const numColor = matched===true ? "#4ade80" : matched===false ? "#E14C58" : "#888";
+                      const color = matched===true ? "#4ade80" : matched===false ? "#E14C58" : "#0F2147";
+                      const numColor = matched===true ? "#4ade80" : matched===false ? "#E14C58" : "#5B6B8C";
                       return (
                         <div key={j} style={{ display:"flex", alignItems:"center", gap:4, background:bg, border, borderRadius:8, padding:"4px 8px" }}>
                           <span style={{ fontSize:9, color:numColor }}>#{s.player.number}</span>
@@ -1520,7 +1520,7 @@ export default function App() {
                       setHistoryScoringStatus("채점 실패");
                       setTimeout(() => setHistoryScoringStatus(""), 3000);
                     }
-                  }} disabled={historyScoringStatus === "채점 중..."} style={{ width:"100%", padding:10, background: historyScoringStatus==="채점 중..."?"rgba(251,191,36,0.05)":"rgba(251,191,36,0.15)", border:"1px solid rgba(251,191,36,0.3)", borderRadius:8, color:"#fbbf24", fontSize:12, cursor:historyScoringStatus==="채점 중..."?"not-allowed":"pointer", marginBottom:8, fontWeight:700 }}>
+                  }} disabled={historyScoringStatus === "채점 중..."} style={{ width:"100%", padding:10, background: historyScoringStatus==="채점 중..."?"rgba(251,191,36,0.08)":"rgba(251,191,36,0.18)", border:"1px solid rgba(217,160,10,0.35)", borderRadius:8, color:"#92400E", fontSize:12, cursor:historyScoringStatus==="채점 중..."?"not-allowed":"pointer", marginBottom:8, fontWeight:700 }}>
                     {historyScoringStatus || "🏆 채점하기"}
                   </button>
                 )}
@@ -1844,11 +1844,11 @@ export default function App() {
                       return (
                         <div style={{ marginBottom:12, padding:"10px 12px", background:"rgba(15,33,71,0.03)", border:"1px solid rgba(15,33,71,0.06)", borderRadius:10 }}>
                           <div style={{ display:"flex", flexWrap:"wrap", gap:6, alignItems:"center" }}>
-                            <span style={{ fontSize:11, background:"rgba(251,191,36,0.15)", border:"1px solid rgba(251,191,36,0.3)", borderRadius:6, padding:"3px 8px", color:"#fbbf24", fontWeight:700 }}>
+                            <span style={{ fontSize:11, background:"rgba(251,191,36,0.18)", border:"1px solid rgba(217,160,10,0.35)", borderRadius:6, padding:"3px 8px", color:"#92400E", fontWeight:700 }}>
                               ⚽ {hitCount}명 적중 +{hitCount*5}pt
                             </span>
                             {hitCount === 11 && (
-                              <span style={{ fontSize:11, background:"rgba(251,191,36,0.15)", border:"1px solid rgba(251,191,36,0.3)", borderRadius:6, padding:"3px 8px", color:"#fbbf24", fontWeight:700 }}>
+                              <span style={{ fontSize:11, background:"rgba(251,191,36,0.18)", border:"1px solid rgba(217,160,10,0.35)", borderRadius:6, padding:"3px 8px", color:"#92400E", fontWeight:700 }}>
                                 🌟 전원 보너스 +30pt
                               </span>
                             )}
@@ -1890,7 +1890,7 @@ export default function App() {
                               : null;
                             const bg = matched === true ? "rgba(34,197,94,0.1)" : matched === false ? "rgba(212,34,48,0.10)" : "rgba(15,33,71,0.05)";
                             const border = matched === true ? "1px solid rgba(34,197,94,0.3)" : matched === false ? "1px solid rgba(212,34,48,0.28)" : "1px solid rgba(15,33,71,0.08)";
-                            const color = matched === true ? "#4ade80" : matched === false ? "#E14C58" : "white";
+                            const color = matched === true ? "#4ade80" : matched === false ? "#E14C58" : "#0F2147";
                             const numColor = matched === true ? "#4ade80" : matched === false ? "#E14C58" : "#888";
                             return (
                               <div key={j} style={{ display:"flex", alignItems:"center", gap:4, background:bg, border, borderRadius:8, padding:"4px 8px" }}>
