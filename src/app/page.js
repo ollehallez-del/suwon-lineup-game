@@ -1483,11 +1483,11 @@ export default function App() {
                             <div style={{ fontSize:11, color:"rgba(15,33,71,0.45)", marginBottom:6, textTransform:"uppercase", letterSpacing:"0.08em" }}>교체 명단</div>
                             <div style={{ display:"flex", flexDirection:"column", gap:3 }}>
                               {officialLineup.substitutes.map((p, i) => (
-                                <div key={i} style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:6, background:p.subIn?"rgba(34,197,94,0.08)":"rgba(15,33,71,0.03)" }}>
+                                <div key={i} style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:6, background:p.subIn?"rgba(29,78,216,0.10)":"rgba(15,33,71,0.03)" }}>
                                   <span style={{ fontSize:10, color:"rgba(15,33,71,0.35)", minWidth:20, textAlign:"right" }}>#{p.number}</span>
-                                  <span style={{ fontSize:12, flex:1, color:p.subIn?"#4ade80":"rgba(15,33,71,0.55)", fontWeight:p.subIn?600:400 }}>{(p.nameKo||p.name||"").trim()}</span>
+                                  <span style={{ fontSize:12, flex:1, color:p.subIn?"#1D4ED8":"rgba(15,33,71,0.55)", fontWeight:p.subIn?600:400 }}>{(p.nameKo||p.name||"").trim()}</span>
                                   {p.subIn
-                                    ? <span style={{ fontSize:10, color:"#4ade80" }}>↑{p.subTime}' ({p.subOut}→)</span>
+                                    ? <span style={{ fontSize:10, color:"#1D4ED8" }}>↑{p.subTime}' ({p.subOut}→)</span>
                                     : <span style={{ fontSize:10, color:"rgba(15,33,71,0.32)" }}>미출전</span>
                                   }
                                 </div>
@@ -1912,11 +1912,11 @@ export default function App() {
                         <div style={{ fontSize:11, color:"rgba(15,33,71,0.45)", marginBottom:6, textTransform:"uppercase", letterSpacing:"0.08em" }}>교체 명단</div>
                         <div style={{ display:"flex", flexDirection:"column", gap:3 }}>
                           {rankingLineup.substitutes.map((p, j) => (
-                            <div key={j} style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:6, background:p.subIn?"rgba(34,197,94,0.08)":"rgba(15,33,71,0.03)" }}>
+                            <div key={j} style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:6, background:p.subIn?"rgba(29,78,216,0.10)":"rgba(15,33,71,0.03)" }}>
                               <span style={{ fontSize:10, color:"rgba(15,33,71,0.35)", minWidth:20, textAlign:"right" }}>#{p.number}</span>
-                              <span style={{ fontSize:11, flex:1, color:p.subIn?"#4ade80":"rgba(15,33,71,0.45)", fontWeight:p.subIn?600:400 }}>{(p.nameKo||p.name||"").trim()}</span>
+                              <span style={{ fontSize:11, flex:1, color:p.subIn?"#1D4ED8":"rgba(15,33,71,0.45)", fontWeight:p.subIn?600:400 }}>{(p.nameKo||p.name||"").trim()}</span>
                               {p.subIn
-                                ? <span style={{ fontSize:10, color:"#4ade80" }}>↑{p.subTime}' ({p.subOut}→)</span>
+                                ? <span style={{ fontSize:10, color:"#1D4ED8" }}>↑{p.subTime}' ({p.subOut}→)</span>
                                 : <span style={{ fontSize:10, color:"rgba(15,33,71,0.32)" }}>미출전</span>
                               }
                             </div>
