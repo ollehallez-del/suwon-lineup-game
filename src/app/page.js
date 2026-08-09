@@ -381,7 +381,7 @@ function OtherPredictions({ preds, myNickname, scores, officialPlayers, scorePre
               <div onClick={() => setExpanded(isOpen ? null : p.nickname)}
                 style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"10px 12px", cursor:"pointer" }}>
                 <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-                  <span style={{ fontSize:13, fontWeight:700, color:isMe?"#5B8DEF":"white" }}>
+                  <span style={{ fontSize:13, fontWeight:700, color:isMe?"#5B8DEF":"#0F2147" }}>
                     {p.nickname}{isMe && <span style={{ fontSize:10, marginLeft:4, color:"#5B8DEF" }}>나</span>}
                   </span>
                   {(() => {
@@ -1110,8 +1110,8 @@ export default function App() {
             <img src="/suwon.png" style={{ width:"85%", height:"85%", objectFit:"contain" }} onError={e => { e.target.style.display="none"; e.target.parentNode.innerHTML="⚽"; }} />
           </div>
           <div>
-            <div style={{ fontSize:15, fontWeight:900, letterSpacing:"-0.02em", whiteSpace:"nowrap" }}>수원삼성 선발 예측</div>
-            <div style={{ fontSize:11, color:"rgba(15,33,71,0.65)" }}>2026 K리그2 · 이정효 감독</div>
+            <div style={{ fontSize:15, fontWeight:900, letterSpacing:"-0.02em", whiteSpace:"nowrap", color:"white" }}>수원삼성 선발 예측</div>
+            <div style={{ fontSize:11, color:"rgba(255,255,255,0.75)" }}>2026 K리그2 · 이정효 감독</div>
           </div>
           <div style={{ marginLeft:"auto" }}>
             {isLoggedIn && (
@@ -1573,7 +1573,7 @@ export default function App() {
                   return (
                     <div key={i} style={{ display:"grid", gridTemplateColumns:"30px 1fr 36px 36px 50px 50px", gap:4, padding:"9px 12px", background: isSuwon ? "rgba(37,99,235,0.2)" : i%2===0 ? "rgba(255,255,255,0.02)" : "transparent", borderTop:"1px solid rgba(15,33,71,0.04)", fontSize:12 }}>
                       <div style={{ color: row.position <= 2 ? "#4ade80" : row.position >= 9 ? "#E14C58" : "rgba(15,33,71,0.65)", fontWeight:700 }}>{row.position}</div>
-                      <div style={{ color: isSuwon ? "#5B8DEF" : "white", fontWeight: isSuwon ? 700 : 400, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{row.team?.name}</div>
+                      <div style={{ color: isSuwon ? "#5B8DEF" : "#0F2147", fontWeight: isSuwon ? 700 : 400, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{row.team?.name}</div>
                       <div style={{ textAlign:"center", color:"rgba(15,33,71,0.65)" }}>{row.matches}</div>
                       <div style={{ textAlign:"center", color:"#0F2147", fontWeight:700 }}>{row.points}</div>
                       <div style={{ textAlign:"center", color:"rgba(15,33,71,0.65)" }}>{row.scoresFor}</div>
