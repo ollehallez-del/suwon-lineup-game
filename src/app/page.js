@@ -218,7 +218,7 @@ function PitchView({ slots, formation, onSlotClick, selectedSlot, interactive, a
           : player ? "0 2px 12px rgba(0,0,0,0.4)"
           : "none";
 
-        const nameColor = hit === true ? "#1D4ED8" : hit === false ? "#E14C58" : "white";
+        const nameColor = "white";
 
         return (
           <div key={i} onClick={() => interactive && onSlotClick && onSlotClick(i)}
