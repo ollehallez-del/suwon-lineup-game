@@ -393,7 +393,7 @@ function OtherPredictions({ preds, myNickname, scores, officialPlayers, scorePre
                   })()}
                 </div>
                 <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                  {scores && <span style={{ fontSize:13, fontWeight:900, color:"#fbbf24", fontFamily:"monospace" }}>{matchScore}pt</span>}
+                  {scores && <span style={{ fontSize:13, fontWeight:900, color:"#0F2147", fontFamily:"monospace" }}>{matchScore}pt</span>}
                   <span style={{ fontSize:12, color:"rgba(15,33,71,0.45)" }}>{isOpen?"▲":"▼"}</span>
                 </div>
               </div>
@@ -408,7 +408,7 @@ function OtherPredictions({ preds, myNickname, scores, officialPlayers, scorePre
                       {hitCount !== null && (
                         <div style={{ flex:1, background:"rgba(15,33,71,0.04)", border:"1px solid rgba(15,33,71,0.06)", borderRadius:10, padding:"8px 10px", textAlign:"center" }}>
                           <div style={{ fontSize:9, color:"rgba(15,33,71,0.45)", marginBottom:3 }}>선발 적중</div>
-                          <div style={{ fontSize:16, fontWeight:900, color:"#fbbf24" }}>{hitCount}/11</div>
+                          <div style={{ fontSize:16, fontWeight:900, color:"#0F2147" }}>{hitCount}/11</div>
                         </div>
                       )}
                       {sp && (
@@ -419,7 +419,7 @@ function OtherPredictions({ preds, myNickname, scores, officialPlayers, scorePre
                       )}
                       <div style={{ flex:1, background:"rgba(15,33,71,0.04)", border:"1px solid rgba(15,33,71,0.06)", borderRadius:10, padding:"8px 10px", textAlign:"center" }}>
                         <div style={{ fontSize:9, color:"rgba(15,33,71,0.45)", marginBottom:3 }}>총점</div>
-                        <div style={{ fontSize:16, fontWeight:900, color:"#fbbf24" }}>{matchScore}pt</div>
+                        <div style={{ fontSize:16, fontWeight:900, color:"#0F2147" }}>{matchScore}pt</div>
                       </div>
                     </div>
                   )}
@@ -449,7 +449,7 @@ function OtherPredictions({ preds, myNickname, scores, officialPlayers, scorePre
                           if (resultMatch) return <span style={{ fontSize:11, background:"rgba(96,165,250,0.15)", border:"1px solid rgba(96,165,250,0.3)", borderRadius:6, padding:"3px 8px", color:"#5B8DEF", fontWeight:700 }}>✅ 승무패 적중 +5pt</span>;
                           return <span style={{ fontSize:11, background:"rgba(212,34,48,0.10)", border:"1px solid rgba(212,34,48,0.18)", borderRadius:6, padding:"3px 8px", color:"#E14C58", fontWeight:700 }}>❌ 승부예측 미적중</span>;
                         })()}
-                        <span style={{ fontSize:13, fontWeight:900, color:"#fbbf24", marginLeft:"auto", fontFamily:"monospace" }}>= {matchScore}pt</span>
+                        <span style={{ fontSize:13, fontWeight:900, color:"#0F2147", marginLeft:"auto", fontFamily:"monospace" }}>= {matchScore}pt</span>
                       </div>
                     </div>
                   )}
@@ -493,7 +493,7 @@ function OtherPredictions({ preds, myNickname, scores, officialPlayers, scorePre
 function MatchCard({ match, active, onClick, lineupAvailable, selectedMatch }) {
   const isPast = match.status === 'finished';
   const resultLabel = match.result === 'W' ? '승' : match.result === 'D' ? '무' : match.result === 'L' ? '패' : null;
-  const resultColor = match.result === 'W' ? '#22c55e' : match.result === 'D' ? '#eab308' : '#D42230';
+  const resultColor = match.result === 'W' ? '#22c55e' : match.result === 'D' ? '#0F2147' : '#D42230';
   const d = new Date(match.kickoffISO || match.date);
   const dateStr = `${d.getMonth()+1}/${d.getDate()}`;
   const timeStr = d.toLocaleTimeString('ko-KR', { hour:'2-digit', minute:'2-digit' });
@@ -1388,8 +1388,8 @@ export default function App() {
                       <div style={{ fontSize:14, fontWeight:700 }}>vs {viewingMatch.opponent}</div>
                     </div>
                     <div style={{ textAlign:"right" }}>
-                      {viewingMatch.score && <div style={{ fontSize:18, fontWeight:900, color:viewingMatch.result==='W'?'#22c55e':viewingMatch.result==='D'?'#eab308':'#D42230', fontFamily:"monospace" }}>{viewingMatch.score}</div>}
-                      {viewingMatch.result && <div style={{ fontSize:11, fontWeight:700, color:viewingMatch.result==='W'?'#22c55e':viewingMatch.result==='D'?'#eab308':'#D42230' }}>{viewingMatch.result==='W'?'승':viewingMatch.result==='D'?'무':'패'}</div>}
+                      {viewingMatch.score && <div style={{ fontSize:18, fontWeight:900, color:viewingMatch.result==='W'?'#22c55e':viewingMatch.result==='D'?'#0F2147':'#D42230', fontFamily:"monospace" }}>{viewingMatch.score}</div>}
+                      {viewingMatch.result && <div style={{ fontSize:11, fontWeight:700, color:viewingMatch.result==='W'?'#22c55e':viewingMatch.result==='D'?'#0F2147':'#D42230' }}>{viewingMatch.result==='W'?'승':viewingMatch.result==='D'?'무':'패'}</div>}
                     </div>
                   </div>
                   <div style={{ padding:12 }}>
@@ -1457,7 +1457,7 @@ export default function App() {
                             <div style={{ fontSize:11, color:"rgba(15,33,71,0.45)", marginBottom:8, fontWeight:700 }}>⚽ 득점 기록</div>
                             {matchIncidents.map((inc, idx) => (
                               <div key={idx} style={{ display:"flex", alignItems:"center", gap:6, marginBottom:4, fontSize:12 }}>
-                                <span style={{ color:"#fbbf24", fontWeight:700, minWidth:36 }}>
+                                <span style={{ color:"#0F2147", fontWeight:700, minWidth:36 }}>
                                   {inc.time}{inc.addedTime > 0 ? `+${inc.addedTime}` : ""}'
                                 </span>
                                 <span>{(inc.incidentClass === 'ownGoal' || inc.isOwnGoal) ? '🔴' : inc.incidentClass === 'penalty' ? '⚽P' : '⚽'}</span>
@@ -1483,12 +1483,12 @@ export default function App() {
                             <div style={{ fontSize:11, color:"rgba(15,33,71,0.45)", marginBottom:6, textTransform:"uppercase", letterSpacing:"0.08em" }}>교체 명단</div>
                             <div style={{ display:"flex", flexDirection:"column", gap:3 }}>
                               {officialLineup.substitutes.map((p, i) => (
-                                <div key={i} style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:6, background:p.subIn?"rgba(34,197,94,0.06)":"rgba(255,255,255,0.02)" }}>
+                                <div key={i} style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:6, background:p.subIn?"rgba(34,197,94,0.08)":"rgba(15,33,71,0.03)" }}>
                                   <span style={{ fontSize:10, color:"rgba(15,33,71,0.35)", minWidth:20, textAlign:"right" }}>#{p.number}</span>
                                   <span style={{ fontSize:12, flex:1, color:p.subIn?"#4ade80":"rgba(15,33,71,0.55)", fontWeight:p.subIn?600:400 }}>{(p.nameKo||p.name||"").trim()}</span>
                                   {p.subIn
                                     ? <span style={{ fontSize:10, color:"#4ade80" }}>↑{p.subTime}' ({p.subOut}→)</span>
-                                    : <span style={{ fontSize:10, color:"rgba(15,33,71,0.18)" }}>미출전</span>
+                                    : <span style={{ fontSize:10, color:"rgba(15,33,71,0.32)" }}>미출전</span>
                                   }
                                 </div>
                               ))}
@@ -1536,8 +1536,8 @@ export default function App() {
                       <div style={{ fontSize:14, fontWeight:700 }}>vs {m.opponent}</div>
                     </div>
                     <div style={{ textAlign:"right", display:"flex", flexDirection:"column", alignItems:"flex-end", gap:2 }}>
-                      {m.score && <div style={{ fontSize:16, fontWeight:900, color:m.result==='W'?'#22c55e':m.result==='D'?'#eab308':'#D42230', fontFamily:"monospace" }}>{m.score}</div>}
-                      {m.result && <div style={{ fontSize:10, fontWeight:700, color:m.result==='W'?'#22c55e':m.result==='D'?'#eab308':'#D42230' }}>{m.result==='W'?'승':m.result==='D'?'무':'패'}</div>}
+                      {m.score && <div style={{ fontSize:16, fontWeight:900, color:m.result==='W'?'#22c55e':m.result==='D'?'#0F2147':'#D42230', fontFamily:"monospace" }}>{m.score}</div>}
+                      {m.result && <div style={{ fontSize:10, fontWeight:700, color:m.result==='W'?'#22c55e':m.result==='D'?'#0F2147':'#D42230' }}>{m.result==='W'?'승':m.result==='D'?'무':'패'}</div>}
                       <div style={{ fontSize:9, color:"#5B8DEF" }}>라인업 보기 →</div>
                     </div>
                   </div>
@@ -1571,7 +1571,7 @@ export default function App() {
                 {leagueStandings.map((row, i) => {
                   const isSuwon = row.isSuwon === true;
                   return (
-                    <div key={i} style={{ display:"grid", gridTemplateColumns:"30px 1fr 36px 36px 50px 50px", gap:4, padding:"9px 12px", background: isSuwon ? "rgba(37,99,235,0.2)" : i%2===0 ? "rgba(255,255,255,0.02)" : "transparent", borderTop:"1px solid rgba(15,33,71,0.04)", fontSize:12 }}>
+                    <div key={i} style={{ display:"grid", gridTemplateColumns:"30px 1fr 36px 36px 50px 50px", gap:4, padding:"9px 12px", background: isSuwon ? "rgba(37,99,235,0.08)" : i%2===0 ? "rgba(15,33,71,0.02)" : "transparent", borderTop:"1px solid rgba(15,33,71,0.04)", fontSize:12 }}>
                       <div style={{ color: row.position <= 2 ? "#4ade80" : row.position >= 9 ? "#E14C58" : "rgba(15,33,71,0.65)", fontWeight:700 }}>{row.position}</div>
                       <div style={{ color: isSuwon ? "#5B8DEF" : "#0F2147", fontWeight: isSuwon ? 700 : 400, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{row.team?.name}</div>
                       <div style={{ textAlign:"center", color:"rgba(15,33,71,0.65)" }}>{row.matches}</div>
@@ -1773,7 +1773,7 @@ export default function App() {
                     {(() => {
                       const m = pastMatches.find(m => String(m.id) === String(rankingPredDetail?.matchId));
                       if (!m) return null;
-                      const rc = m.result==='W'?'#22c55e':m.result==='D'?'#eab308':'#D42230';
+                      const rc = m.result==='W'?'#22c55e':m.result==='D'?'#0F2147':'#D42230';
                       const d = new Date(m.kickoffISO||m.date);
                       const dateStr = `${d.getMonth()+1}/${d.getDate()}`;
                       return (
@@ -1804,7 +1804,7 @@ export default function App() {
                         <div style={{ display:"flex", gap:8, marginBottom:10 }}>
                           <div style={{ flex:1, background:"rgba(15,33,71,0.04)", border:"1px solid rgba(15,33,71,0.06)", borderRadius:10, padding:"10px 12px", textAlign:"center" }}>
                             <div style={{ fontSize:10, color:"rgba(15,33,71,0.45)", marginBottom:4 }}>선발 적중</div>
-                            <div style={{ fontSize:18, fontWeight:900, color:"#fbbf24" }}>{hitCount}/11</div>
+                            <div style={{ fontSize:18, fontWeight:900, color:"#0F2147" }}>{hitCount}/11</div>
                           </div>
                           {spScore && (
                             <div style={{ flex:1, background:"rgba(15,33,71,0.04)", border:"1px solid rgba(15,33,71,0.06)", borderRadius:10, padding:"10px 12px", textAlign:"center" }}>
@@ -1814,7 +1814,7 @@ export default function App() {
                           )}
                           <div style={{ flex:1, background:"rgba(15,33,71,0.04)", border:"1px solid rgba(15,33,71,0.06)", borderRadius:10, padding:"10px 12px", textAlign:"center" }}>
                             <div style={{ fontSize:10, color:"rgba(15,33,71,0.45)", marginBottom:4 }}>총점</div>
-                            <div style={{ fontSize:18, fontWeight:900, color:"#fbbf24" }}>{matchScore}pt</div>
+                            <div style={{ fontSize:18, fontWeight:900, color:"#0F2147" }}>{matchScore}pt</div>
                           </div>
                         </div>
                       );
@@ -1858,7 +1858,7 @@ export default function App() {
                                 ? <span style={{ fontSize:11, background:"rgba(96,165,250,0.15)", border:"1px solid rgba(96,165,250,0.3)", borderRadius:6, padding:"3px 8px", color:"#5B8DEF", fontWeight:700 }}>✅ 승무패 적중 +5pt</span>
                                 : <span style={{ fontSize:11, background:"rgba(212,34,48,0.10)", border:"1px solid rgba(212,34,48,0.18)", borderRadius:6, padding:"3px 8px", color:"#E14C58", fontWeight:700 }}>❌ 승부예측 미적중</span>
                             )}
-                            <span style={{ fontSize:13, fontWeight:900, color:"#fbbf24", marginLeft:"auto", fontFamily:"monospace" }}>= {matchScore}pt</span>
+                            <span style={{ fontSize:13, fontWeight:900, color:"#0F2147", marginLeft:"auto", fontFamily:"monospace" }}>= {matchScore}pt</span>
                           </div>
                         </div>
                       );
@@ -1912,12 +1912,12 @@ export default function App() {
                         <div style={{ fontSize:11, color:"rgba(15,33,71,0.45)", marginBottom:6, textTransform:"uppercase", letterSpacing:"0.08em" }}>교체 명단</div>
                         <div style={{ display:"flex", flexDirection:"column", gap:3 }}>
                           {rankingLineup.substitutes.map((p, j) => (
-                            <div key={j} style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:6, background:p.subIn?"rgba(34,197,94,0.06)":"rgba(255,255,255,0.02)" }}>
+                            <div key={j} style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:6, background:p.subIn?"rgba(34,197,94,0.08)":"rgba(15,33,71,0.03)" }}>
                               <span style={{ fontSize:10, color:"rgba(15,33,71,0.35)", minWidth:20, textAlign:"right" }}>#{p.number}</span>
                               <span style={{ fontSize:11, flex:1, color:p.subIn?"#4ade80":"rgba(15,33,71,0.45)", fontWeight:p.subIn?600:400 }}>{(p.nameKo||p.name||"").trim()}</span>
                               {p.subIn
                                 ? <span style={{ fontSize:10, color:"#4ade80" }}>↑{p.subTime}' ({p.subOut}→)</span>
-                                : <span style={{ fontSize:10, color:"rgba(15,33,71,0.18)" }}>미출전</span>
+                                : <span style={{ fontSize:10, color:"rgba(15,33,71,0.32)" }}>미출전</span>
                               }
                             </div>
                           ))}
@@ -1955,7 +1955,7 @@ export default function App() {
                           </div>
                           <div style={{ textAlign:"right" }}>
                             {scoreData.detail?.[p.matchId]?.[rankingView.nickname] !== undefined && (
-                              <div style={{ fontSize:14, fontWeight:900, color:"#fbbf24", fontFamily:"monospace" }}>{scoreData.detail[p.matchId][rankingView.nickname]}pt</div>
+                              <div style={{ fontSize:14, fontWeight:900, color:"#0F2147", fontFamily:"monospace" }}>{scoreData.detail[p.matchId][rankingView.nickname]}pt</div>
                             )}
                             <div style={{ fontSize:12, color:"#5B8DEF" }}>보기 →</div>
                           </div>
@@ -1995,7 +1995,7 @@ export default function App() {
                             <div style={{ fontSize:10, color: entry.scoredCount >= 5 ? "rgba(15,33,71,0.35)" : "#E14C58" }}>예측 {entry.scoredCount}경기{entry.scoredCount < 5 ? ` (${5-entry.scoredCount}경기 더 필요)` : ""}</div>
                           </div>
                           <div style={{ textAlign:"right" }}>
-                            <div style={{ fontSize:18, fontWeight:900, color:"#fbbf24", fontFamily:"monospace" }}>{entry.avg}pt</div>
+                            <div style={{ fontSize:18, fontWeight:900, color:"#0F2147", fontFamily:"monospace" }}>{entry.avg}pt</div>
                             <div style={{ fontSize:10, color:"rgba(15,33,71,0.35)" }}>총 {entry.score}pt · ›</div>
                           </div>
                         </div>
