@@ -190,15 +190,15 @@ function PitchView({ slots, formation, onSlotClick, selectedSlot, interactive, a
   }
 
   return (
-    <div style={{ position:"relative", width:"100%", paddingBottom:"155%", background:"linear-gradient(180deg,#1a4d2e 0%,#1e5c35 20%,#16a34a 40%,#1e5c35 60%,#1a4d2e 100%)", borderRadius:12, overflow:"hidden", border:"1.5px solid rgba(255,255,255,0.1)" }}>
+    <div style={{ position:"relative", width:"100%", paddingBottom:"155%", background:"linear-gradient(180deg,#1a4d2e 0%,#1e5c35 20%,#16a34a 40%,#1e5c35 60%,#1a4d2e 100%)", borderRadius:12, overflow:"hidden", border:"1.5px solid rgba(255,255,255,0.15)" }}>
       <svg style={{ position:"absolute", inset:0, width:"100%", height:"100%" }} viewBox="0 0 100 155">
-        <rect x="5" y="5" width="90" height="145" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="0.5"/>
-        <line x1="5" y1="77" x2="95" y2="77" stroke="rgba(255,255,255,0.15)" strokeWidth="0.5"/>
-        <circle cx="50" cy="77" r="10" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="0.5"/>
-        <rect x="20" y="5" width="60" height="20" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="0.5"/>
-        <rect x="32" y="5" width="36" height="8" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="0.5"/>
-        <rect x="20" y="128" width="60" height="20" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="0.5"/>
-        <rect x="32" y="141" width="36" height="8" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="0.5"/>
+        <rect x="5" y="5" width="90" height="145" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="0.5"/>
+        <line x1="5" y1="77" x2="95" y2="77" stroke="rgba(255,255,255,0.25)" strokeWidth="0.5"/>
+        <circle cx="50" cy="77" r="10" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="0.5"/>
+        <rect x="20" y="5" width="60" height="20" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="0.5"/>
+        <rect x="32" y="5" width="36" height="8" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="0.5"/>
+        <rect x="20" y="128" width="60" height="20" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="0.5"/>
+        <rect x="32" y="141" width="36" height="8" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="0.5"/>
       </svg>
       {layout.map((slot, i) => {
         const s = slots[i];
@@ -209,23 +209,23 @@ function PitchView({ slots, formation, onSlotClick, selectedSlot, interactive, a
 
         const border = isSelected ? "3px solid #fbbf24"
           : hit === true  ? "4px solid #4ade80"
-          : hit === false ? "4px solid #f87171"
-          : player ? "2px solid rgba(255,255,255,0.6)"
-          : "2px dashed rgba(255,255,255,0.25)";
+          : hit === false ? "4px solid #E14C58"
+          : player ? "2px solid rgba(255,255,255,0.7)"
+          : "2px dashed rgba(255,255,255,0.3)";
 
         const shadow = hit === true  ? "0 0 10px rgba(34,197,94,0.8)"
           : hit === false ? "0 0 10px rgba(239,68,68,0.8)"
           : player ? "0 2px 12px rgba(0,0,0,0.4)"
           : "none";
 
-        const nameColor = hit === true ? "#4ade80" : hit === false ? "#f87171" : "white";
+        const nameColor = hit === true ? "#4ade80" : hit === false ? "#E14C58" : "white";
 
         return (
           <div key={i} onClick={() => interactive && onSlotClick && onSlotClick(i)}
             style={{ position:"absolute", left:`${slot.left}%`, top:`${slot.top}%`, transform:"translate(-50%,-50%)", display:"flex", flexDirection:"column", alignItems:"center", cursor:interactive?"pointer":"default", zIndex:10, gap:2 }}>
 
             {/* 포지션 */}
-            <div style={{ fontSize:7, fontWeight:700, color:"rgba(255,255,255,0.7)", background:"rgba(0,0,0,0.5)", padding:"1px 4px", borderRadius:3, letterSpacing:"0.05em" }}>
+            <div style={{ fontSize:7, fontWeight:700, color:"rgba(255,255,255,0.85)", background:"rgba(0,0,0,0.5)", padding:"1px 4px", borderRadius:3, letterSpacing:"0.05em" }}>
               {slot.pos}
             </div>
 
@@ -257,7 +257,7 @@ function PitchView({ slots, formation, onSlotClick, selectedSlot, interactive, a
                 {(player.nameKo||player.name||"").trim().split(" ").map((w,i) => <span key={i}>{w}<br/></span>)}
               </div>
             ) : (
-              <div style={{ fontSize:7, color:"rgba(255,255,255,0.3)", padding:"1px 3px" }}>{slot.pos}</div>
+              <div style={{ fontSize:7, color:"rgba(255,255,255,0.5)", padding:"1px 3px" }}>{slot.pos}</div>
             )}
           </div>
         );
@@ -319,25 +319,25 @@ function NicknameManager({ adminPassword, proxy }) {
 
   return (
     <div>
-      <button onClick={loadNicknames} style={{ background:"rgba(255,255,255,0.07)", border:"1px solid rgba(255,255,255,0.12)", borderRadius:6, padding:"6px 12px", color:"white", fontSize:12, cursor:"pointer", marginBottom:8 }}>
+      <button onClick={loadNicknames} style={{ background:"rgba(15,33,71,0.06)", border:"1px solid rgba(15,33,71,0.10)", borderRadius:6, padding:"6px 12px", color:"#0F2147", fontSize:12, cursor:"pointer", marginBottom:8 }}>
         {loading ? "로딩 중..." : "🔄 닉네임 목록 불러오기"}
       </button>
-      {status && <div style={{ fontSize:12, padding:6, color:status.includes("✅")?"#4ade80":"#f87171", marginBottom:8 }}>{status}</div>}
+      {status && <div style={{ fontSize:12, padding:6, color:status.includes("✅")?"#4ade80":"#E14C58", marginBottom:8 }}>{status}</div>}
       <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
         {nicknames.map(nick => (
-          <div key={nick} style={{ display:"flex", alignItems:"center", gap:8, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:8, padding:"8px 12px" }}>
+          <div key={nick} style={{ display:"flex", alignItems:"center", gap:8, background:"rgba(15,33,71,0.04)", border:"1px solid rgba(15,33,71,0.06)", borderRadius:8, padding:"8px 12px" }}>
             {editTarget === nick ? (
               <>
                 <input value={editValue} onChange={e=>setEditValue(e.target.value)}
-                  style={{ flex:1, background:"rgba(255,255,255,0.1)", border:"1px solid rgba(255,255,255,0.2)", borderRadius:6, padding:"4px 8px", color:"white", fontSize:13 }} />
+                  style={{ flex:1, background:"rgba(15,33,71,0.08)", border:"1px solid rgba(15,33,71,0.18)", borderRadius:6, padding:"4px 8px", color:"#0F2147", fontSize:13 }} />
                 <button onClick={()=>renameNickname(nick, editValue)} style={{ background:"#16a34a", border:"none", borderRadius:6, padding:"4px 10px", color:"white", fontSize:12, cursor:"pointer" }}>저장</button>
-                <button onClick={()=>setEditTarget(null)} style={{ background:"rgba(255,255,255,0.1)", border:"none", borderRadius:6, padding:"4px 10px", color:"white", fontSize:12, cursor:"pointer" }}>취소</button>
+                <button onClick={()=>setEditTarget(null)} style={{ background:"rgba(15,33,71,0.08)", border:"none", borderRadius:6, padding:"4px 10px", color:"#0F2147", fontSize:12, cursor:"pointer" }}>취소</button>
               </>
             ) : (
               <>
                 <span style={{ flex:1, fontSize:13, fontWeight:600 }}>{nick}</span>
-                <button onClick={()=>{ setEditTarget(nick); setEditValue(nick); }} style={{ background:"rgba(59,130,246,0.2)", border:"1px solid rgba(59,130,246,0.3)", borderRadius:6, padding:"4px 10px", color:"#60a5fa", fontSize:12, cursor:"pointer" }}>수정</button>
-                <button onClick={()=>deleteNickname(nick)} style={{ background:"rgba(239,68,68,0.1)", border:"1px solid rgba(239,68,68,0.2)", borderRadius:6, padding:"4px 10px", color:"#f87171", fontSize:12, cursor:"pointer" }}>삭제</button>
+                <button onClick={()=>{ setEditTarget(nick); setEditValue(nick); }} style={{ background:"rgba(59,130,246,0.2)", border:"1px solid rgba(59,130,246,0.3)", borderRadius:6, padding:"4px 10px", color:"#5B8DEF", fontSize:12, cursor:"pointer" }}>수정</button>
+                <button onClick={()=>deleteNickname(nick)} style={{ background:"rgba(212,34,48,0.10)", border:"1px solid rgba(212,34,48,0.18)", borderRadius:6, padding:"4px 10px", color:"#E14C58", fontSize:12, cursor:"pointer" }}>삭제</button>
               </>
             )}
           </div>
@@ -354,7 +354,7 @@ function OtherPredictions({ preds, myNickname, scores, officialPlayers, scorePre
     : preds;
   return (
     <div style={{ marginTop:16 }}>
-      <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginBottom:8, textTransform:"uppercase", letterSpacing:"0.1em" }}>친구들 예측 ({preds.length}명)</div>
+      <div style={{ fontSize:11, color:"rgba(15,33,71,0.45)", marginBottom:8, textTransform:"uppercase", letterSpacing:"0.1em" }}>친구들 예측 ({preds.length}명)</div>
       <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
         {sortedPreds.map((p, i) => {
           const isMe = p.nickname === myNickname;
@@ -376,25 +376,25 @@ function OtherPredictions({ preds, myNickname, scores, officialPlayers, scorePre
             ? (isHome ? sp.homeScore : sp.awayScore) + ':' + (isHome ? sp.awayScore : sp.homeScore)
             : null;
           return (
-            <div key={i} style={{ background:isMe?"rgba(59,130,246,0.1)":"rgba(255,255,255,0.04)", border:isMe?"1px solid rgba(59,130,246,0.3)":"1px solid rgba(255,255,255,0.08)", borderRadius:10, overflow:"hidden" }}>
+            <div key={i} style={{ background:isMe?"rgba(59,130,246,0.1)":"rgba(15,33,71,0.04)", border:isMe?"1px solid rgba(59,130,246,0.3)":"1px solid rgba(15,33,71,0.06)", borderRadius:10, overflow:"hidden" }}>
               {/* 헤더 */}
               <div onClick={() => setExpanded(isOpen ? null : p.nickname)}
                 style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"10px 12px", cursor:"pointer" }}>
                 <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-                  <span style={{ fontSize:13, fontWeight:700, color:isMe?"#60a5fa":"white" }}>
-                    {p.nickname}{isMe && <span style={{ fontSize:10, marginLeft:4, color:"#60a5fa" }}>나</span>}
+                  <span style={{ fontSize:13, fontWeight:700, color:isMe?"#5B8DEF":"white" }}>
+                    {p.nickname}{isMe && <span style={{ fontSize:10, marginLeft:4, color:"#5B8DEF" }}>나</span>}
                   </span>
                   {(() => {
                     const sp = (scorePreds||[]).find(s => s.nickname === p.nickname);
-                    if (!sp) return <span style={{ fontSize:10, color:"rgba(255,255,255,0.2)", background:"rgba(255,255,255,0.04)", borderRadius:5, padding:"1px 6px" }}>승부예측 없음</span>;
+                    if (!sp) return <span style={{ fontSize:10, color:"rgba(15,33,71,0.18)", background:"rgba(15,33,71,0.04)", borderRadius:5, padding:"1px 6px" }}>승부예측 없음</span>;
                     const suwon = isHome ? sp.homeScore : sp.awayScore;
                     const opp   = isHome ? sp.awayScore : sp.homeScore;
-                    return <span style={{ fontSize:11, fontWeight:700, color:"#60a5fa", background:"rgba(96,165,250,0.1)", border:"1px solid rgba(96,165,250,0.3)", borderRadius:6, padding:"2px 7px" }}>{suwon}:{opp}</span>;
+                    return <span style={{ fontSize:11, fontWeight:700, color:"#5B8DEF", background:"rgba(96,165,250,0.1)", border:"1px solid rgba(96,165,250,0.3)", borderRadius:6, padding:"2px 7px" }}>{suwon}:{opp}</span>;
                   })()}
                 </div>
                 <div style={{ display:"flex", alignItems:"center", gap:8 }}>
                   {scores && <span style={{ fontSize:13, fontWeight:900, color:"#fbbf24", fontFamily:"monospace" }}>{matchScore}pt</span>}
-                  <span style={{ fontSize:12, color:"rgba(255,255,255,0.4)" }}>{isOpen?"▲":"▼"}</span>
+                  <span style={{ fontSize:12, color:"rgba(15,33,71,0.45)" }}>{isOpen?"▲":"▼"}</span>
                 </div>
               </div>
 
@@ -406,19 +406,19 @@ function OtherPredictions({ preds, myNickname, scores, officialPlayers, scorePre
                   {scores && (
                     <div style={{ display:"flex", gap:8, marginBottom:10 }}>
                       {hitCount !== null && (
-                        <div style={{ flex:1, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:10, padding:"8px 10px", textAlign:"center" }}>
-                          <div style={{ fontSize:9, color:"rgba(255,255,255,0.4)", marginBottom:3 }}>선발 적중</div>
+                        <div style={{ flex:1, background:"rgba(15,33,71,0.04)", border:"1px solid rgba(15,33,71,0.06)", borderRadius:10, padding:"8px 10px", textAlign:"center" }}>
+                          <div style={{ fontSize:9, color:"rgba(15,33,71,0.45)", marginBottom:3 }}>선발 적중</div>
                           <div style={{ fontSize:16, fontWeight:900, color:"#fbbf24" }}>{hitCount}/11</div>
                         </div>
                       )}
                       {sp && (
-                        <div style={{ flex:1, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:10, padding:"8px 10px", textAlign:"center" }}>
-                          <div style={{ fontSize:9, color:"rgba(255,255,255,0.4)", marginBottom:3 }}>승부예측</div>
-                          <div style={{ fontSize:16, fontWeight:900, color:"#60a5fa" }}>{spDisplay}</div>
+                        <div style={{ flex:1, background:"rgba(15,33,71,0.04)", border:"1px solid rgba(15,33,71,0.06)", borderRadius:10, padding:"8px 10px", textAlign:"center" }}>
+                          <div style={{ fontSize:9, color:"rgba(15,33,71,0.45)", marginBottom:3 }}>승부예측</div>
+                          <div style={{ fontSize:16, fontWeight:900, color:"#5B8DEF" }}>{spDisplay}</div>
                         </div>
                       )}
-                      <div style={{ flex:1, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:10, padding:"8px 10px", textAlign:"center" }}>
-                        <div style={{ fontSize:9, color:"rgba(255,255,255,0.4)", marginBottom:3 }}>총점</div>
+                      <div style={{ flex:1, background:"rgba(15,33,71,0.04)", border:"1px solid rgba(15,33,71,0.06)", borderRadius:10, padding:"8px 10px", textAlign:"center" }}>
+                        <div style={{ fontSize:9, color:"rgba(15,33,71,0.45)", marginBottom:3 }}>총점</div>
                         <div style={{ fontSize:16, fontWeight:900, color:"#fbbf24" }}>{matchScore}pt</div>
                       </div>
                     </div>
@@ -426,7 +426,7 @@ function OtherPredictions({ preds, myNickname, scores, officialPlayers, scorePre
 
                   {/* 채점 내역 */}
                   {scores && (
-                    <div style={{ marginBottom:12, padding:"10px 12px", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:10 }}>
+                    <div style={{ marginBottom:12, padding:"10px 12px", background:"rgba(15,33,71,0.03)", border:"1px solid rgba(15,33,71,0.06)", borderRadius:10 }}>
                       <div style={{ display:"flex", flexWrap:"wrap", gap:6, alignItems:"center" }}>
                         {hitCount !== null && (
                           <span style={{ fontSize:11, background:"rgba(251,191,36,0.15)", border:"1px solid rgba(251,191,36,0.3)", borderRadius:6, padding:"3px 8px", color:"#fbbf24", fontWeight:700 }}>
@@ -446,8 +446,8 @@ function OtherPredictions({ preds, myNickname, scores, officialPlayers, scorePre
                           const actualDraw = as === ao; const spDraw = sp.homeScore === sp.awayScore;
                           const resultMatch = !exact && spWin === actualWin && spDraw === actualDraw;
                           if (exact) return <span style={{ fontSize:11, background:"rgba(34,197,94,0.15)", border:"1px solid rgba(34,197,94,0.3)", borderRadius:6, padding:"3px 8px", color:"#4ade80", fontWeight:700 }}>🎯 정확한 스코어 +15pt</span>;
-                          if (resultMatch) return <span style={{ fontSize:11, background:"rgba(96,165,250,0.15)", border:"1px solid rgba(96,165,250,0.3)", borderRadius:6, padding:"3px 8px", color:"#60a5fa", fontWeight:700 }}>✅ 승무패 적중 +5pt</span>;
-                          return <span style={{ fontSize:11, background:"rgba(239,68,68,0.1)", border:"1px solid rgba(239,68,68,0.2)", borderRadius:6, padding:"3px 8px", color:"#f87171", fontWeight:700 }}>❌ 승부예측 미적중</span>;
+                          if (resultMatch) return <span style={{ fontSize:11, background:"rgba(96,165,250,0.15)", border:"1px solid rgba(96,165,250,0.3)", borderRadius:6, padding:"3px 8px", color:"#5B8DEF", fontWeight:700 }}>✅ 승무패 적중 +5pt</span>;
+                          return <span style={{ fontSize:11, background:"rgba(212,34,48,0.10)", border:"1px solid rgba(212,34,48,0.18)", borderRadius:6, padding:"3px 8px", color:"#E14C58", fontWeight:700 }}>❌ 승부예측 미적중</span>;
                         })()}
                         <span style={{ fontSize:13, fontWeight:900, color:"#fbbf24", marginLeft:"auto", fontFamily:"monospace" }}>= {matchScore}pt</span>
                       </div>
@@ -455,7 +455,7 @@ function OtherPredictions({ preds, myNickname, scores, officialPlayers, scorePre
                   )}
 
                   {/* 포메이션 + 작전판 */}
-                  <div style={{ fontSize:10, color:"rgba(255,255,255,0.35)", marginBottom:8 }}>{p.formation} 포메이션</div>
+                  <div style={{ fontSize:10, color:"rgba(15,33,71,0.4)", marginBottom:8 }}>{p.formation} 포메이션</div>
                   <PitchView formation={p.formation} slots={readonlySlots} interactive={false} actualPlayers={officialPlayers} squadMap={squadMap} />
 
                   {/* 하단 배지 */}
@@ -467,10 +467,10 @@ function OtherPredictions({ preds, myNickname, scores, officialPlayers, scorePre
                             (s.player.nameKo && s.player.nameKo===ap.nameKo)
                           )
                         : null;
-                      const bg = matched===true ? "rgba(34,197,94,0.1)" : matched===false ? "rgba(239,68,68,0.1)" : "rgba(255,255,255,0.05)";
-                      const border = matched===true ? "1px solid rgba(34,197,94,0.3)" : matched===false ? "1px solid rgba(239,68,68,0.3)" : "1px solid rgba(255,255,255,0.1)";
-                      const color = matched===true ? "#4ade80" : matched===false ? "#f87171" : "white";
-                      const numColor = matched===true ? "#4ade80" : matched===false ? "#f87171" : "#888";
+                      const bg = matched===true ? "rgba(34,197,94,0.1)" : matched===false ? "rgba(212,34,48,0.10)" : "rgba(15,33,71,0.05)";
+                      const border = matched===true ? "1px solid rgba(34,197,94,0.3)" : matched===false ? "1px solid rgba(212,34,48,0.28)" : "1px solid rgba(15,33,71,0.08)";
+                      const color = matched===true ? "#4ade80" : matched===false ? "#E14C58" : "white";
+                      const numColor = matched===true ? "#4ade80" : matched===false ? "#E14C58" : "#888";
                       return (
                         <div key={j} style={{ display:"flex", alignItems:"center", gap:4, background:bg, border, borderRadius:8, padding:"4px 8px" }}>
                           <span style={{ fontSize:9, color:numColor }}>#{s.player.number}</span>
@@ -493,23 +493,23 @@ function OtherPredictions({ preds, myNickname, scores, officialPlayers, scorePre
 function MatchCard({ match, active, onClick, lineupAvailable, selectedMatch }) {
   const isPast = match.status === 'finished';
   const resultLabel = match.result === 'W' ? '승' : match.result === 'D' ? '무' : match.result === 'L' ? '패' : null;
-  const resultColor = match.result === 'W' ? '#22c55e' : match.result === 'D' ? '#eab308' : '#ef4444';
+  const resultColor = match.result === 'W' ? '#22c55e' : match.result === 'D' ? '#eab308' : '#D42230';
   const d = new Date(match.kickoffISO || match.date);
   const dateStr = `${d.getMonth()+1}/${d.getDate()}`;
   const timeStr = d.toLocaleTimeString('ko-KR', { hour:'2-digit', minute:'2-digit' });
   return (
-    <div onClick={onClick} style={{ padding:"10px 14px", borderRadius:10, border:active?"2px solid #3b82f6":"1.5px solid rgba(255,255,255,0.08)", background:active?"rgba(59,130,246,0.1)":"rgba(255,255,255,0.03)", cursor:"pointer" }}>
+    <div onClick={onClick} style={{ padding:"10px 14px", borderRadius:10, border:active?"2px solid #3B82F6":"1.5px solid rgba(15,33,71,0.06)", background:active?"rgba(59,130,246,0.1)":"rgba(15,33,71,0.03)", cursor:"pointer" }}>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
         <div>
-          <div style={{ fontSize:10, color:"rgba(255,255,255,0.4)", marginBottom:2 }}>{match.tournament === 'Korean Cup' ? `코리아컵 ${match.roundName || ''}` : match.round ? `${match.round}R` : ''} · {dateStr} {!isPast&&timeStr} · {match.home?"홈":"원정"}</div>
-          <div style={{ fontSize:13, fontWeight:700, color:"white" }}>vs {match.opponent}</div>
+          <div style={{ fontSize:10, color:"rgba(15,33,71,0.45)", marginBottom:2 }}>{match.tournament === 'Korean Cup' ? `코리아컵 ${match.roundName || ''}` : match.round ? `${match.round}R` : ''} · {dateStr} {!isPast&&timeStr} · {match.home?"홈":"원정"}</div>
+          <div style={{ fontSize:13, fontWeight:700, color:"#0F2147" }}>vs {match.opponent}</div>
         </div>
         <div style={{ textAlign:"right" }}>
           {isPast && match.score && <>
             <div style={{ fontSize:16, fontWeight:900, color:resultColor, fontFamily:"monospace" }}>{match.score}</div>
             <div style={{ fontSize:10, color:resultColor, fontWeight:700 }}>{resultLabel}</div>
           </>}
-          {!isPast && <div style={{ fontSize:10, color: lineupAvailable && selectedMatch?.id === match.id ? "#4ade80" : "#60a5fa", fontWeight:700 }}>{lineupAvailable && selectedMatch?.id === match.id ? "라인업 발표" : "예측 가능"}</div>}
+          {!isPast && <div style={{ fontSize:10, color: lineupAvailable && selectedMatch?.id === match.id ? "#4ade80" : "#5B8DEF", fontWeight:700 }}>{lineupAvailable && selectedMatch?.id === match.id ? "라인업 발표" : "예측 가능"}</div>}
         </div>
       </div>
     </div>
@@ -1093,10 +1093,11 @@ export default function App() {
   const usedNumbers = new Set(slots.filter(s => s.player).map(s => s.player.number));
 
   return (
-    <div style={{ minHeight:"100vh", background:"#0a0e1a", color:"white", fontFamily:"'Noto Sans KR','Apple SD Gothic Neo',sans-serif" }}>
+    <div style={{ minHeight:"100vh", background:"#F0F3F9", color:"#0F2147", fontFamily:"'Noto Sans KR','Apple SD Gothic Neo',sans-serif" }}>
       <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet" />
 
-      <div style={{ background:"linear-gradient(135deg,#1e3a8a 0%,#1d4ed8 50%,#2563eb 100%)", padding:"16px 20px 0", boxShadow:"0 4px 24px rgba(0,0,0,0.4)" }}>
+      <div style={{ height:4, background:"linear-gradient(90deg,#0F2147 0%,#0F2147 33%,#FFFFFF 33%,#FFFFFF 66%,#D42230 66%,#D42230 100%)" }} />
+      <div style={{ background:"linear-gradient(135deg,#0F2147 0%,#1D4ED8 50%,#3B82F6 100%)", padding:"16px 20px 0", boxShadow:"0 4px 24px rgba(0,0,0,0.4)" }}>
         <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:12 }}>
           <div onClick={() => {
             const next = adminTapCount + 1;
@@ -1110,13 +1111,13 @@ export default function App() {
           </div>
           <div>
             <div style={{ fontSize:15, fontWeight:900, letterSpacing:"-0.02em", whiteSpace:"nowrap" }}>수원삼성 선발 예측</div>
-            <div style={{ fontSize:11, color:"rgba(255,255,255,0.6)" }}>2026 K리그2 · 이정효 감독</div>
+            <div style={{ fontSize:11, color:"rgba(15,33,71,0.65)" }}>2026 K리그2 · 이정효 감독</div>
           </div>
           <div style={{ marginLeft:"auto" }}>
             {isLoggedIn && (
               <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-                <div onClick={()=>setShowChangeNick(!showChangeNick)} style={{ fontSize:12, background:"rgba(255,255,255,0.15)", padding:"4px 10px", borderRadius:20, fontWeight:700, cursor:"pointer" }}>👤 {nickname} ✏️</div>
-                <button onClick={handleLogout} style={{ background:"rgba(255,255,255,0.1)", border:"none", borderRadius:8, padding:"4px 8px", color:"rgba(255,255,255,0.5)", fontSize:10, cursor:"pointer" }}>로그아웃</button>
+                <div onClick={()=>setShowChangeNick(!showChangeNick)} style={{ fontSize:12, background:"rgba(15,33,71,0.12)", padding:"4px 10px", borderRadius:20, fontWeight:700, cursor:"pointer" }}>👤 {nickname} ✏️</div>
+                <button onClick={handleLogout} style={{ background:"rgba(15,33,71,0.08)", border:"none", borderRadius:8, padding:"4px 8px", color:"rgba(15,33,71,0.55)", fontSize:10, cursor:"pointer" }}>로그아웃</button>
               </div>
             )}
           </div>
@@ -1131,16 +1132,16 @@ export default function App() {
       {/* 닉네임 삭제 모달 */}
       {showDeleteNick && (
         <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.7)", zIndex:100, display:"flex", alignItems:"center", justifyContent:"center", padding:20 }}>
-          <div style={{ background:"#1a1f2e", border:"1px solid rgba(239,68,68,0.3)", borderRadius:16, padding:24, width:"100%", maxWidth:360 }}>
-            <div style={{ fontSize:16, fontWeight:700, marginBottom:4, color:"white" }}>🗑️ 닉네임 삭제</div>
-            <div style={{ fontSize:12, color:"#f87171", marginBottom:16 }}>삭제 후 복구가 불가능합니다.</div>
+          <div style={{ background:"#FFFFFF", border:"1px solid rgba(212,34,48,0.28)", borderRadius:16, padding:24, width:"100%", maxWidth:360 }}>
+            <div style={{ fontSize:16, fontWeight:700, marginBottom:4, color:"#0F2147" }}>🗑️ 닉네임 삭제</div>
+            <div style={{ fontSize:12, color:"#E14C58", marginBottom:16 }}>삭제 후 복구가 불가능합니다.</div>
             <input type="password" value={deletePassword} onChange={e=>setDeletePassword(e.target.value)}
               placeholder="관리자 비밀번호 입력"
               onKeyDown={e=>e.key==="Enter"&&handleDeleteNickname()}
-              style={{ width:"100%", background:"rgba(255,255,255,0.08)", border:"1px solid rgba(239,68,68,0.3)", borderRadius:8, padding:"10px 12px", color:"white", fontSize:13, outline:"none", marginBottom:8, boxSizing:"border-box" }} />
-            {deleteError && <div style={{ fontSize:11, color:"#f87171", marginBottom:8 }}>{deleteError}</div>}
+              style={{ width:"100%", background:"rgba(15,33,71,0.06)", border:"1px solid rgba(212,34,48,0.28)", borderRadius:8, padding:"10px 12px", color:"#0F2147", fontSize:13, outline:"none", marginBottom:8, boxSizing:"border-box" }} />
+            {deleteError && <div style={{ fontSize:11, color:"#E14C58", marginBottom:8 }}>{deleteError}</div>}
             <div style={{ display:"flex", gap:8 }}>
-              <button onClick={()=>{setShowDeleteNick(false);setDeletePassword("");setDeleteError("");}} style={{ flex:1, padding:10, background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:8, color:"#aaa", fontSize:13, cursor:"pointer" }}>취소</button>
+              <button onClick={()=>{setShowDeleteNick(false);setDeletePassword("");setDeleteError("");}} style={{ flex:1, padding:10, background:"rgba(15,33,71,0.05)", border:"1px solid rgba(15,33,71,0.08)", borderRadius:8, color:"#5B6B8C", fontSize:13, cursor:"pointer" }}>취소</button>
               <button onClick={handleDeleteNickname} style={{ flex:1, padding:10, background:"#dc2626", border:"none", borderRadius:8, color:"white", fontSize:13, fontWeight:700, cursor:"pointer" }}>삭제</button>
             </div>
           </div>
@@ -1150,18 +1151,18 @@ export default function App() {
       {/* 닉네임 변경 모달 */}
       {showChangeNick && (
         <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.7)", zIndex:100, display:"flex", alignItems:"center", justifyContent:"center", padding:20 }}>
-          <div style={{ background:"#1a1f2e", border:"1px solid rgba(255,255,255,0.1)", borderRadius:16, padding:24, width:"100%", maxWidth:360 }}>
+          <div style={{ background:"#FFFFFF", border:"1px solid rgba(15,33,71,0.08)", borderRadius:16, padding:24, width:"100%", maxWidth:360 }}>
             <div style={{ fontSize:16, fontWeight:700, marginBottom:16 }}>닉네임 변경</div>
             <input value={changeInput} onChange={e=>setChangeInput(e.target.value)}
               placeholder="새 닉네임 (최대 10자)" maxLength={10}
               onKeyDown={e=>e.key==="Enter"&&handleChangeNickname()}
-              style={{ width:"100%", background:"rgba(255,255,255,0.08)", border:"1px solid rgba(255,255,255,0.15)", borderRadius:8, padding:"10px 12px", color:"white", fontSize:13, outline:"none", marginBottom:8, boxSizing:"border-box" }} />
-            {changeError && <div style={{ fontSize:11, color:"#f87171", marginBottom:8 }}>{changeError}</div>}
+              style={{ width:"100%", background:"rgba(15,33,71,0.06)", border:"1px solid rgba(15,33,71,0.12)", borderRadius:8, padding:"10px 12px", color:"#0F2147", fontSize:13, outline:"none", marginBottom:8, boxSizing:"border-box" }} />
+            {changeError && <div style={{ fontSize:11, color:"#E14C58", marginBottom:8 }}>{changeError}</div>}
             <div style={{ display:"flex", gap:8 }}>
-              <button onClick={()=>{setShowChangeNick(false);setChangeError("");}} style={{ flex:1, padding:10, background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:8, color:"#aaa", fontSize:13, cursor:"pointer" }}>취소</button>
-              <button onClick={handleChangeNickname} style={{ flex:1, padding:10, background:"#1d4ed8", border:"none", borderRadius:8, color:"white", fontSize:13, fontWeight:700, cursor:"pointer" }}>변경</button>
+              <button onClick={()=>{setShowChangeNick(false);setChangeError("");}} style={{ flex:1, padding:10, background:"rgba(15,33,71,0.05)", border:"1px solid rgba(15,33,71,0.08)", borderRadius:8, color:"#5B6B8C", fontSize:13, cursor:"pointer" }}>취소</button>
+              <button onClick={handleChangeNickname} style={{ flex:1, padding:10, background:"#1D4ED8", border:"none", borderRadius:8, color:"white", fontSize:13, fontWeight:700, cursor:"pointer" }}>변경</button>
             </div>
-            <button onClick={()=>{setShowChangeNick(false);setShowDeleteNick(true);}} style={{ width:"100%", marginTop:8, padding:8, background:"rgba(239,68,68,0.1)", border:"1px solid rgba(239,68,68,0.3)", borderRadius:8, color:"#f87171", fontSize:12, cursor:"pointer" }}>🗑️ 닉네임 삭제</button>
+            <button onClick={()=>{setShowChangeNick(false);setShowDeleteNick(true);}} style={{ width:"100%", marginTop:8, padding:8, background:"rgba(212,34,48,0.10)", border:"1px solid rgba(212,34,48,0.28)", borderRadius:8, color:"#E14C58", fontSize:12, cursor:"pointer" }}>🗑️ 닉네임 삭제</button>
           </div>
         </div>
       )}
@@ -1171,17 +1172,17 @@ export default function App() {
       {/* 로그인 화면 */}
       {!isLoggedIn ? (
         <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:"60vh", gap:16 }}>
-          <div style={{ fontSize:16, fontWeight:700, color:"rgba(255,255,255,0.7)", marginBottom:8 }}>닉네임을 입력해주세요</div>
+          <div style={{ fontSize:16, fontWeight:700, color:"rgba(15,33,71,0.75)", marginBottom:8 }}>닉네임을 입력해주세요</div>
           <div style={{ width:"100%", maxWidth:320, display:"flex", flexDirection:"column", gap:10 }}>
             <input value={loginInput} onChange={e=>setLoginInput(e.target.value)}
               placeholder="닉네임 입력 (최대 10자)" maxLength={10}
               onKeyDown={e=>e.key==="Enter"&&handleLogin()}
-              style={{ width:"100%", background:"rgba(255,255,255,0.08)", border:"1px solid rgba(255,255,255,0.15)", borderRadius:10, padding:"12px 14px", color:"white", fontSize:14, outline:"none", boxSizing:"border-box" }} />
-            {loginError && <div style={{ fontSize:12, color:"#f87171", textAlign:"center" }}>{loginError}</div>}
-            <button onClick={handleLogin} disabled={loginLoading} style={{ width:"100%", padding:14, background:"linear-gradient(135deg,#1d4ed8,#2563eb)", border:"none", borderRadius:10, color:"white", fontSize:15, fontWeight:700, cursor:"pointer", boxShadow:"0 4px 16px rgba(37,99,235,0.4)" }}>
+              style={{ width:"100%", background:"rgba(15,33,71,0.06)", border:"1px solid rgba(15,33,71,0.12)", borderRadius:10, padding:"12px 14px", color:"#0F2147", fontSize:14, outline:"none", boxSizing:"border-box" }} />
+            {loginError && <div style={{ fontSize:12, color:"#E14C58", textAlign:"center" }}>{loginError}</div>}
+            <button onClick={handleLogin} disabled={loginLoading} style={{ width:"100%", padding:14, background:"linear-gradient(135deg,#0F2147,#1D4ED8)", border:"none", borderRadius:10, color:"white", fontSize:15, fontWeight:700, cursor:"pointer", boxShadow:"0 4px 16px rgba(37,99,235,0.4)" }}>
               {loginLoading ? "확인 중..." : "시작하기"}
             </button>
-            <div style={{ fontSize:11, color:"rgba(255,255,255,0.3)", textAlign:"center", lineHeight:1.6 }}>
+            <div style={{ fontSize:11, color:"rgba(15,33,71,0.35)", textAlign:"center", lineHeight:1.6 }}>
               닉네임만 입력하면 바로 시작할 수 있어요!
             </div>
           </div>
@@ -1191,13 +1192,13 @@ export default function App() {
         <>
         {tab === "predict" && (
           <div>
-            {scheduleLoading && <div style={{ textAlign:"center", padding:40, color:"rgba(255,255,255,0.4)" }}>⚽ 경기 일정 불러오는 중...</div>}
+            {scheduleLoading && <div style={{ textAlign:"center", padding:40, color:"rgba(15,33,71,0.45)" }}>⚽ 경기 일정 불러오는 중...</div>}
             {!scheduleLoading && upcomingMatches.length === 0 && (
-              <div style={{ textAlign:"center", padding:40, color:"rgba(255,255,255,0.3)", fontSize:13 }}>예정된 경기가 없습니다.</div>
+              <div style={{ textAlign:"center", padding:40, color:"rgba(15,33,71,0.35)", fontSize:13 }}>예정된 경기가 없습니다.</div>
             )}
             {!scheduleLoading && upcomingMatches.length > 0 && (
               <div style={{ marginBottom:14 }}>
-                <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginBottom:8, textTransform:"uppercase", letterSpacing:"0.1em" }}>예측할 경기 선택</div>
+                <div style={{ fontSize:11, color:"rgba(15,33,71,0.45)", marginBottom:8, textTransform:"uppercase", letterSpacing:"0.1em" }}>예측할 경기 선택</div>
                 <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
                   {upcomingMatches.slice(0,5).map(m => <MatchCard key={m.id} match={m} active={selectedMatch?.id===m.id} lineupAvailable={lineupAvailable} selectedMatch={selectedMatch} onClick={async ()=>{
                     setSelectedMatch(m);
@@ -1216,38 +1217,38 @@ export default function App() {
             )}
             {selectedMatch && <>
               {!mySubmission && <div style={{ marginBottom:12 }}>
-                <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginBottom:8, textTransform:"uppercase", letterSpacing:"0.1em" }}>포메이션</div>
+                <div style={{ fontSize:11, color:"rgba(15,33,71,0.45)", marginBottom:8, textTransform:"uppercase", letterSpacing:"0.1em" }}>포메이션</div>
                 <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
                   {Object.keys(FORMATION_LAYOUTS).map(f => (
-                    <button key={f} onClick={()=>changeFormationKeepPlayers(f)} style={{ flex:1, padding:"8px 0", minWidth:70, background:formation===f?"#1d4ed8":"rgba(255,255,255,0.05)", border:formation===f?"1.5px solid #3b82f6":"1.5px solid rgba(255,255,255,0.1)", borderRadius:8, color:"white", fontSize:12, fontWeight:700, cursor:"pointer" }}>{f}</button>
+                    <button key={f} onClick={()=>changeFormationKeepPlayers(f)} style={{ flex:1, padding:"8px 0", minWidth:70, background:formation===f?"#1D4ED8":"rgba(15,33,71,0.05)", border:formation===f?"1.5px solid #3B82F6":"1.5px solid rgba(15,33,71,0.08)", borderRadius:8, color:formation===f?"white":"#0F2147", fontSize:12, fontWeight:700, cursor:"pointer" }}>{f}</button>
                   ))}
                 </div>
               </div>}
               <div style={{ marginBottom:12 }}>
-                <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginBottom:8, textTransform:"uppercase", letterSpacing:"0.1em" }}>작전판 ({countFilled()}/11) · 포지션 클릭 후 선수 선택 · 선수끼리 클릭하면 위치 교체</div>
+                <div style={{ fontSize:11, color:"rgba(15,33,71,0.45)", marginBottom:8, textTransform:"uppercase", letterSpacing:"0.1em" }}>작전판 ({countFilled()}/11) · 포지션 클릭 후 선수 선택 · 선수끼리 클릭하면 위치 교체</div>
                 <PitchView slots={slots} formation={formation} onSlotClick={handleSlotClick} squadMap={squadMap} selectedSlot={selectedSlot} interactive={true} actualPlayers={currentLineup?.players} squadMap={squadMap} />
               </div>
               {selectedSlot !== null && (
-                <div style={{ marginBottom:12, background:"rgba(255,255,255,0.04)", border:"1.5px solid rgba(59,130,246,0.3)", borderRadius:12, padding:12 }}>
-                  <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginBottom:6, fontWeight:700 }}>포메이션</div>
+                <div style={{ marginBottom:12, background:"rgba(15,33,71,0.04)", border:"1.5px solid rgba(59,130,246,0.3)", borderRadius:12, padding:12 }}>
+                  <div style={{ fontSize:11, color:"rgba(15,33,71,0.45)", marginBottom:6, fontWeight:700 }}>포메이션</div>
                   <div style={{ display:"flex", flexWrap:"wrap", gap:5, marginBottom:12 }}>
                     {Object.keys(FORMATION_LAYOUTS).map(f => (
-                      <button key={f} onClick={() => changeFormationKeepPlayers(f)} style={{ padding:"3px 8px", background:formation===f?"#1d4ed8":"rgba(255,255,255,0.06)", border:formation===f?"1px solid #3b82f6":"1px solid rgba(255,255,255,0.1)", borderRadius:6, color:"white", fontSize:11, cursor:"pointer" }}>{f}</button>
+                      <button key={f} onClick={() => changeFormationKeepPlayers(f)} style={{ padding:"3px 8px", background:formation===f?"#1D4ED8":"rgba(15,33,71,0.05)", border:formation===f?"1px solid #3B82F6":"1px solid rgba(15,33,71,0.08)", borderRadius:6, color:formation===f?"white":"#0F2147", fontSize:11, cursor:"pointer" }}>{f}</button>
                     ))}
                   </div>
-                  <div style={{ fontSize:11, color:"#60a5fa", marginBottom:10, fontWeight:700 }}>[{slots[selectedSlot]?.pos}] 포지션 선수 선택</div>
-                  {squad.length === 0 && <div style={{ fontSize:11, color:"rgba(255,255,255,0.3)", padding:8 }}>⚠️ 선수 목록을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.</div>}
+                  <div style={{ fontSize:11, color:"#5B8DEF", marginBottom:10, fontWeight:700 }}>[{slots[selectedSlot]?.pos}] 포지션 선수 선택</div>
+                  {squad.length === 0 && <div style={{ fontSize:11, color:"rgba(15,33,71,0.35)", padding:8 }}>⚠️ 선수 목록을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.</div>}
                   {posOrder.map(posKey => {
                     const players = squadByPos[posKey] || [];
                     if (!players.length) return null;
                     return (
                       <div key={posKey} style={{ marginBottom:10 }}>
-                        <div style={{ fontSize:10, color:"rgba(255,255,255,0.35)", marginBottom:5 }}>{posGroupLabel[posKey]}</div>
+                        <div style={{ fontSize:10, color:"rgba(15,33,71,0.4)", marginBottom:5 }}>{posGroupLabel[posKey]}</div>
                         <div style={{ display:"flex", flexWrap:"wrap", gap:5 }}>
                           {players.map(p => {
                             const inUse = usedNumbers.has(p.number) && slots[selectedSlot]?.player?.number !== p.number;
                             return (
-                              <button key={p.number} onClick={()=>!inUse&&handlePlayerSelect(p)} style={{ padding:"5px 8px", background:inUse?"rgba(255,255,255,0.03)":"rgba(29,78,216,0.3)", border:inUse?"1px solid rgba(255,255,255,0.06)":"1px solid rgba(59,130,246,0.4)", borderRadius:6, color:inUse?"rgba(255,255,255,0.25)":"white", fontSize:11, cursor:inUse?"default":"pointer", fontWeight:600, textDecoration:inUse?"line-through":"none", fontFamily:"'Noto Sans KR',sans-serif" }}>
+                              <button key={p.number} onClick={()=>!inUse&&handlePlayerSelect(p)} style={{ padding:"5px 8px", background:inUse?"rgba(15,33,71,0.03)":"rgba(29,78,216,0.3)", border:inUse?"1px solid rgba(15,33,71,0.05)":"1px solid rgba(59,130,246,0.4)", borderRadius:6, color:inUse?"rgba(15,33,71,0.22)":"white", fontSize:11, cursor:inUse?"default":"pointer", fontWeight:600, textDecoration:inUse?"line-through":"none", fontFamily:"'Noto Sans KR',sans-serif" }}>
                                 {p.number} {(p.nameKo||p.name).trim()}
                               </button>
                             );
@@ -1270,59 +1271,59 @@ export default function App() {
                               resetSlots(mySubmission.formation);
                               if (mySubmission.slots) setSlots(mySubmission.slots);
                               setMySubmission(null);
-                            }} style={{ background:"rgba(59,130,246,0.2)", border:"1px solid rgba(59,130,246,0.4)", borderRadius:6, padding:"2px 8px", color:"#60a5fa", fontSize:10, cursor:"pointer" }}>수정</button>
-                            <button onClick={handleDeletePred} style={{ background:"rgba(239,68,68,0.2)", border:"1px solid rgba(239,68,68,0.4)", borderRadius:6, padding:"2px 8px", color:"#fc8181", fontSize:10, cursor:"pointer" }}>삭제</button>
+                            }} style={{ background:"rgba(59,130,246,0.2)", border:"1px solid rgba(59,130,246,0.4)", borderRadius:6, padding:"2px 8px", color:"#5B8DEF", fontSize:10, cursor:"pointer" }}>수정</button>
+                            <button onClick={handleDeletePred} style={{ background:"rgba(212,34,48,0.10)", border:"1px solid rgba(212,34,48,0.35)", borderRadius:6, padding:"2px 8px", color:"#D42230", fontSize:10, cursor:"pointer" }}>삭제</button>
                           </div>
-                        : <span style={{ fontSize:10, color:"rgba(255,255,255,0.3)" }}>🔒 잠김</span>
+                        : <span style={{ fontSize:10, color:"rgba(15,33,71,0.35)" }}>🔒 잠김</span>
                     )}
                   </div>
-                  <div style={{ color:"rgba(255,255,255,0.4)", marginTop:3 }}>{mySubmission.formation} · {new Date(mySubmission.savedAt).toLocaleString("ko-KR",{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"})}</div>
+                  <div style={{ color:"rgba(15,33,71,0.45)", marginTop:3 }}>{mySubmission.formation} · {new Date(mySubmission.savedAt).toLocaleString("ko-KR",{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"})}</div>
                 </div>
               )}
 
               {/* 승부 예측 섹션 */}
               {selectedMatch && (new Date(selectedMatch.kickoffISO || selectedMatch.date) - new Date() > 2*60*60*1000) && (
-                <div style={{ marginBottom:12, padding:"12px 14px", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:10 }}>
-                  <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginBottom:10, fontWeight:700 }}>🎯 승부 예측</div>
+                <div style={{ marginBottom:12, padding:"12px 14px", background:"rgba(15,33,71,0.03)", border:"1px solid rgba(15,33,71,0.06)", borderRadius:10 }}>
+                  <div style={{ fontSize:11, color:"rgba(15,33,71,0.45)", marginBottom:10, fontWeight:700 }}>🎯 승부 예측</div>
                   {myScorePred ? (
                     // 저장된 스코어 표시 (홈:원정 순서)
                     <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8 }}>
                       <div style={{ display:"flex", alignItems:"center", gap:12, flex:1, justifyContent:"center" }}>
                         <div style={{ textAlign:"center" }}>
-                          <div style={{ fontSize:11, color:selectedMatch.home?"#60a5fa":"#f87171", marginBottom:4 }}>{selectedMatch.home?"수원":selectedMatch.opponent}</div>
-                          <div style={{ fontSize:28, fontWeight:900, color:(selectedMatch.home?scoreHome>scoreAway:scoreAway>scoreHome)?"#4ade80":scoreHome===scoreAway?"#fbbf24":"#f87171" }}>{scoreHome}</div>
+                          <div style={{ fontSize:11, color:selectedMatch.home?"#5B8DEF":"#E14C58", marginBottom:4 }}>{selectedMatch.home?"수원":selectedMatch.opponent}</div>
+                          <div style={{ fontSize:28, fontWeight:900, color:(selectedMatch.home?scoreHome>scoreAway:scoreAway>scoreHome)?"#4ade80":scoreHome===scoreAway?"#fbbf24":"#E14C58" }}>{scoreHome}</div>
                         </div>
-                        <div style={{ fontSize:20, color:"rgba(255,255,255,0.3)", fontWeight:700 }}>:</div>
+                        <div style={{ fontSize:20, color:"rgba(15,33,71,0.35)", fontWeight:700 }}>:</div>
                         <div style={{ textAlign:"center" }}>
-                          <div style={{ fontSize:11, color:selectedMatch.home?"#f87171":"#60a5fa", marginBottom:4 }}>{selectedMatch.home?selectedMatch.opponent:"수원"}</div>
-                          <div style={{ fontSize:28, fontWeight:900, color:(selectedMatch.home?scoreHome>scoreAway:scoreAway>scoreHome)?"#4ade80":scoreHome===scoreAway?"#fbbf24":"#f87171" }}>{scoreAway}</div>
+                          <div style={{ fontSize:11, color:selectedMatch.home?"#E14C58":"#5B8DEF", marginBottom:4 }}>{selectedMatch.home?selectedMatch.opponent:"수원"}</div>
+                          <div style={{ fontSize:28, fontWeight:900, color:(selectedMatch.home?scoreHome>scoreAway:scoreAway>scoreHome)?"#4ade80":scoreHome===scoreAway?"#fbbf24":"#E14C58" }}>{scoreAway}</div>
                         </div>
                       </div>
-                      {!scoreData.detail?.[selectedMatch?.id] && ((new Date(selectedMatch?.kickoffISO || selectedMatch?.date) - new Date() > 2*60*60*1000) ? <button onClick={() => setMyScorePred(null)} style={{ background:"rgba(255,255,255,0.08)", border:"1px solid rgba(255,255,255,0.15)", borderRadius:6, padding:"4px 10px", color:"#aaa", fontSize:11, cursor:"pointer" }}>수정</button> : <span style={{ fontSize:10, color:"rgba(255,255,255,0.3)" }}>🔒 잠김</span>)}
+                      {!scoreData.detail?.[selectedMatch?.id] && ((new Date(selectedMatch?.kickoffISO || selectedMatch?.date) - new Date() > 2*60*60*1000) ? <button onClick={() => setMyScorePred(null)} style={{ background:"rgba(15,33,71,0.06)", border:"1px solid rgba(15,33,71,0.12)", borderRadius:6, padding:"4px 10px", color:"#5B6B8C", fontSize:11, cursor:"pointer" }}>수정</button> : <span style={{ fontSize:10, color:"rgba(15,33,71,0.35)" }}>🔒 잠김</span>)}
                     </div>
                   ) : (
                     // 입력 모드
                     <div>
                       <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:12, marginBottom:10 }}>
                         <div style={{ textAlign:"center", flex:1 }}>
-                          <div style={{ fontSize:11, color:"#60a5fa", marginBottom:6, fontWeight:700 }}>수원</div>
+                          <div style={{ fontSize:11, color:"#5B8DEF", marginBottom:6, fontWeight:700 }}>수원</div>
                           <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}>
-                            <button onClick={()=>selectedMatch.home?setScoreHome(Math.max(0,scoreHome-1)):setScoreAway(Math.max(0,scoreAway-1))} style={{ width:26,height:26,borderRadius:6,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"white",fontSize:14,cursor:"pointer" }}>−</button>
+                            <button onClick={()=>selectedMatch.home?setScoreHome(Math.max(0,scoreHome-1)):setScoreAway(Math.max(0,scoreAway-1))} style={{ width:26,height:26,borderRadius:6,background:"rgba(15,33,71,0.06)",border:"1px solid rgba(15,33,71,0.12)",color:"#0F2147",fontSize:14,cursor:"pointer" }}>−</button>
                             <span style={{ fontSize:26,fontWeight:900,minWidth:28,textAlign:"center" }}>{selectedMatch.home?scoreHome:scoreAway}</span>
-                            <button onClick={()=>selectedMatch.home?setScoreHome(scoreHome+1):setScoreAway(scoreAway+1)} style={{ width:26,height:26,borderRadius:6,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"white",fontSize:14,cursor:"pointer" }}>+</button>
+                            <button onClick={()=>selectedMatch.home?setScoreHome(scoreHome+1):setScoreAway(scoreAway+1)} style={{ width:26,height:26,borderRadius:6,background:"rgba(15,33,71,0.06)",border:"1px solid rgba(15,33,71,0.12)",color:"#0F2147",fontSize:14,cursor:"pointer" }}>+</button>
                           </div>
                         </div>
-                        <div style={{ fontSize:18,color:"rgba(255,255,255,0.3)",fontWeight:700 }}>:</div>
+                        <div style={{ fontSize:18,color:"rgba(15,33,71,0.35)",fontWeight:700 }}>:</div>
                         <div style={{ textAlign:"center", flex:1 }}>
-                          <div style={{ fontSize:11, color:"#f87171", marginBottom:6, fontWeight:700 }}>{selectedMatch.opponent}</div>
+                          <div style={{ fontSize:11, color:"#E14C58", marginBottom:6, fontWeight:700 }}>{selectedMatch.opponent}</div>
                           <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}>
-                            <button onClick={()=>selectedMatch.home?setScoreAway(Math.max(0,scoreAway-1)):setScoreHome(Math.max(0,scoreHome-1))} style={{ width:26,height:26,borderRadius:6,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"white",fontSize:14,cursor:"pointer" }}>−</button>
+                            <button onClick={()=>selectedMatch.home?setScoreAway(Math.max(0,scoreAway-1)):setScoreHome(Math.max(0,scoreHome-1))} style={{ width:26,height:26,borderRadius:6,background:"rgba(15,33,71,0.06)",border:"1px solid rgba(15,33,71,0.12)",color:"#0F2147",fontSize:14,cursor:"pointer" }}>−</button>
                             <span style={{ fontSize:26,fontWeight:900,minWidth:28,textAlign:"center" }}>{selectedMatch.home?scoreAway:scoreHome}</span>
-                            <button onClick={()=>selectedMatch.home?setScoreAway(scoreAway+1):setScoreHome(scoreHome+1)} style={{ width:26,height:26,borderRadius:6,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"white",fontSize:14,cursor:"pointer" }}>+</button>
+                            <button onClick={()=>selectedMatch.home?setScoreAway(scoreAway+1):setScoreHome(scoreHome+1)} style={{ width:26,height:26,borderRadius:6,background:"rgba(15,33,71,0.06)",border:"1px solid rgba(15,33,71,0.12)",color:"#0F2147",fontSize:14,cursor:"pointer" }}>+</button>
                           </div>
                         </div>
                       </div>
-                      <div style={{ textAlign:"center", fontSize:11, marginBottom:8, color: (selectedMatch.home ? scoreHome > scoreAway : scoreAway > scoreHome) ? "#4ade80" : scoreHome === scoreAway ? "#fbbf24" : "#f87171" }}>
+                      <div style={{ textAlign:"center", fontSize:11, marginBottom:8, color: (selectedMatch.home ? scoreHome > scoreAway : scoreAway > scoreHome) ? "#4ade80" : scoreHome === scoreAway ? "#fbbf24" : "#E14C58" }}>
                         {(selectedMatch.home ? scoreHome > scoreAway : scoreAway > scoreHome) ? "🔵 수원 승리" : scoreHome === scoreAway ? "⚪ 무승부" : "🔴 상대팀 승리"}
                       </div>
                     </div>
@@ -1335,8 +1336,8 @@ export default function App() {
                   <div style={{ padding:"8px 12px", background:"rgba(34,197,94,0.08)", border:"1px solid rgba(34,197,94,0.2)", borderRadius:8, fontSize:11, color:"#4ade80", textAlign:"center", marginBottom:10 }}>
                     ✅ 선발 발표됨! {scoringStatus || "자동 채점 완료"}
                   </div>
-                  <div style={{ background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:10, padding:"10px 12px", marginBottom:10 }}>
-                    <div style={{ fontSize:11, color:"rgba(255,255,255,0.5)", marginBottom:6, fontWeight:700 }}>🏟️ 실제 선발 ({currentLineup.formation})</div>
+                  <div style={{ background:"rgba(15,33,71,0.04)", border:"1px solid rgba(15,33,71,0.06)", borderRadius:10, padding:"10px 12px", marginBottom:10 }}>
+                    <div style={{ fontSize:11, color:"rgba(15,33,71,0.55)", marginBottom:6, fontWeight:700 }}>🏟️ 실제 선발 ({currentLineup.formation})</div>
                     <div style={{ display:"flex", flexWrap:"wrap", gap:4 }}>
                       {(currentLineup.players||[]).map((p,i) => (
                         <div key={i} style={{ fontSize:11, background:"rgba(34,197,94,0.2)", border:"1px solid rgba(34,197,94,0.4)", borderRadius:6, padding:"3px 8px", color:"#4ade80", fontWeight:700 }}>
@@ -1348,7 +1349,7 @@ export default function App() {
                 </div>
               )}
               {!lineupAvailable && selectedMatch && (
-                <div style={{ marginTop:8, padding:"8px 12px", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:8, fontSize:11, color:"rgba(255,255,255,0.3)", textAlign:"center" }}>
+                <div style={{ marginTop:8, padding:"8px 12px", background:"rgba(15,33,71,0.03)", border:"1px solid rgba(15,33,71,0.06)", borderRadius:8, fontSize:11, color:"rgba(15,33,71,0.35)", textAlign:"center" }}>
                   ⏳ 선발 발표 대기 중... (30초마다 자동 확인)
                 </div>
               )}
@@ -1358,11 +1359,11 @@ export default function App() {
 
               {/* 통합 저장 버튼 */}
               {!scoreData.detail?.[selectedMatch?.id] && <div style={{ display:"flex", flexDirection:"column", gap:8, marginTop:8 }}>
-                <button onClick={handleSave} disabled={saveStatus==="저장 중..." || countFilled() < 11} style={{ width:"100%", padding:14, background:countFilled()===11?"linear-gradient(135deg,#1d4ed8,#2563eb)":"rgba(255,255,255,0.05)", border:"none", borderRadius:10, color:"white", fontSize:14, fontWeight:700, cursor:(saveStatus==="저장 중..."||countFilled()<11)?"not-allowed":"pointer", boxShadow:countFilled()===11?"0 4px 16px rgba(37,99,235,0.4)":"none", opacity:(saveStatus==="저장 중..."||countFilled()<11)?0.6:1 }}>
+                <button onClick={handleSave} disabled={saveStatus==="저장 중..." || countFilled() < 11} style={{ width:"100%", padding:14, background:countFilled()===11?"linear-gradient(135deg,#0F2147,#1D4ED8)":"rgba(15,33,71,0.05)", border:"none", borderRadius:10, color:countFilled()===11?"white":"#0F2147", fontSize:14, fontWeight:700, cursor:(saveStatus==="저장 중..."||countFilled()<11)?"not-allowed":"pointer", boxShadow:countFilled()===11?"0 4px 16px rgba(37,99,235,0.4)":"none", opacity:(saveStatus==="저장 중..."||countFilled()<11)?0.6:1 }}>
                   {saveStatus==="저장 중..." ? "저장 중..." : `✅ 선발 예측 + 승부예측 저장 (${countFilled()}/11)`}
                 </button>
                 {mySubmission && (new Date(selectedMatch?.kickoffISO || selectedMatch?.date) - new Date() <= 2*60*60*1000) && new Date(selectedMatch?.kickoffISO || selectedMatch?.date) > new Date() && (
-                  <div style={{ textAlign:"center", fontSize:11, color:"rgba(255,255,255,0.3)", marginTop:4 }}>🔒 킥오프 2시간 전부터 예측 수정이 불가합니다</div>
+                  <div style={{ textAlign:"center", fontSize:11, color:"rgba(15,33,71,0.35)", marginTop:4 }}>🔒 킥오프 2시간 전부터 예측 수정이 불가합니다</div>
                 )}
                 {saveStatus && <div style={{ textAlign:"center", fontSize:12, padding:8, color:saveStatus.includes("✅")?"#22c55e":"#fbbf24" }}>{saveStatus}</div>}
 
@@ -1377,43 +1378,43 @@ export default function App() {
 
         {tab === "history" && (
           <div>
-            <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginBottom:12, textTransform:"uppercase", letterSpacing:"0.1em" }}>이전 경기 실제 선발</div>
+            <div style={{ fontSize:11, color:"rgba(15,33,71,0.45)", marginBottom:12, textTransform:"uppercase", letterSpacing:"0.1em" }}>이전 경기 실제 선발</div>
             {viewingMatch ? (
               <div>
-                <div style={{ background:"rgba(255,255,255,0.04)", border:"1.5px solid rgba(255,255,255,0.1)", borderRadius:12, overflow:"hidden", marginBottom:8 }}>
-                  <div style={{ padding:"12px 14px", borderBottom:"1px solid rgba(255,255,255,0.06)", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                <div style={{ background:"rgba(15,33,71,0.04)", border:"1.5px solid rgba(15,33,71,0.08)", borderRadius:12, overflow:"hidden", marginBottom:8 }}>
+                  <div style={{ padding:"12px 14px", borderBottom:"1px solid rgba(15,33,71,0.05)", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
                     <div>
-                      <div style={{ fontSize:10, color:"rgba(255,255,255,0.4)", marginBottom:2 }}>{viewingMatch.round}R · {new Date(viewingMatch.date).toLocaleDateString('ko-KR',{month:'short',day:'numeric'})} · {viewingMatch.home?"홈":"원정"}</div>
+                      <div style={{ fontSize:10, color:"rgba(15,33,71,0.45)", marginBottom:2 }}>{viewingMatch.round}R · {new Date(viewingMatch.date).toLocaleDateString('ko-KR',{month:'short',day:'numeric'})} · {viewingMatch.home?"홈":"원정"}</div>
                       <div style={{ fontSize:14, fontWeight:700 }}>vs {viewingMatch.opponent}</div>
                     </div>
                     <div style={{ textAlign:"right" }}>
-                      {viewingMatch.score && <div style={{ fontSize:18, fontWeight:900, color:viewingMatch.result==='W'?'#22c55e':viewingMatch.result==='D'?'#eab308':'#ef4444', fontFamily:"monospace" }}>{viewingMatch.score}</div>}
-                      {viewingMatch.result && <div style={{ fontSize:11, fontWeight:700, color:viewingMatch.result==='W'?'#22c55e':viewingMatch.result==='D'?'#eab308':'#ef4444' }}>{viewingMatch.result==='W'?'승':viewingMatch.result==='D'?'무':'패'}</div>}
+                      {viewingMatch.score && <div style={{ fontSize:18, fontWeight:900, color:viewingMatch.result==='W'?'#22c55e':viewingMatch.result==='D'?'#eab308':'#D42230', fontFamily:"monospace" }}>{viewingMatch.score}</div>}
+                      {viewingMatch.result && <div style={{ fontSize:11, fontWeight:700, color:viewingMatch.result==='W'?'#22c55e':viewingMatch.result==='D'?'#eab308':'#D42230' }}>{viewingMatch.result==='W'?'승':viewingMatch.result==='D'?'무':'패'}</div>}
                     </div>
                   </div>
                   <div style={{ padding:12 }}>
-                    {lineupLoading && <div style={{ textAlign:"center", padding:20, color:"rgba(255,255,255,0.4)" }}>선발 명단 불러오는 중...</div>}
-                    {!lineupLoading && !officialLineup && <div style={{ textAlign:"center", padding:20, color:"rgba(255,255,255,0.3)" }}>선발 명단 데이터가 없습니다.</div>}
+                    {lineupLoading && <div style={{ textAlign:"center", padding:20, color:"rgba(15,33,71,0.45)" }}>선발 명단 불러오는 중...</div>}
+                    {!lineupLoading && !officialLineup && <div style={{ textAlign:"center", padding:20, color:"rgba(15,33,71,0.35)" }}>선발 명단 데이터가 없습니다.</div>}
                     {!lineupLoading && officialLineup && (() => {
                       const fmKey = officialLineup.formation?.replace(/\s/g,'-')||'4-3-3';
                       const layout = FORMATION_LAYOUTS[fmKey]||FORMATION_LAYOUTS['4-3-3'];
                       const readonlySlots = layout.map((pos,i) => ({ pos:pos.pos, player:officialLineup.players[i]||null }));
                       return <>
                         {/* 코멘트 섹션 */}
-                        <div style={{ marginBottom:12, padding:"10px 12px", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:10 }}>
-                          <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginBottom:8, fontWeight:700 }}>💬 한줄 코멘트</div>
+                        <div style={{ marginBottom:12, padding:"10px 12px", background:"rgba(15,33,71,0.03)", border:"1px solid rgba(15,33,71,0.06)", borderRadius:10 }}>
+                          <div style={{ fontSize:11, color:"rgba(15,33,71,0.45)", marginBottom:8, fontWeight:700 }}>💬 한줄 코멘트</div>
                           {matchComments.length > 0 && (
                             <div style={{ marginBottom:8 }}>
                               {matchComments.map((c, i) => (
                                 <div key={i} style={{ display:"flex", gap:6, marginBottom:4, fontSize:12, alignItems:"center" }}>
-                                  <span style={{ color:"#60a5fa", fontWeight:700, minWidth:60, flexShrink:0 }}>{c.nickname}</span>
-                                  <span style={{ color:"rgba(255,255,255,0.7)", flex:1 }}>{c.comment}</span>
+                                  <span style={{ color:"#5B8DEF", fontWeight:700, minWidth:60, flexShrink:0 }}>{c.nickname}</span>
+                                  <span style={{ color:"rgba(15,33,71,0.75)", flex:1 }}>{c.comment}</span>
                                   {c.nickname === nickname && (
                                     <button onClick={async () => {
                                       await fetch(`${PROXY}?path=${encodeURIComponent(`/api/comments?matchId=${viewingMatch.id}&nickname=${encodeURIComponent(nickname)}`)}`, { method:'DELETE' });
                                       setMatchComments(prev => prev.filter(x => x.nickname !== nickname));
                                       setCommentInput('');
-                                    }} style={{ background:"none", border:"none", color:"rgba(239,68,68,0.6)", cursor:"pointer", fontSize:10, flexShrink:0 }}>삭제</button>
+                                    }} style={{ background:"none", border:"none", color:"rgba(212,34,48,0.75)", cursor:"pointer", fontSize:10, flexShrink:0 }}>삭제</button>
                                   )}
                                 </div>
                               ))}
@@ -1432,7 +1433,7 @@ export default function App() {
                                   if (d.ok) { setMatchComments(prev => [...prev, { nickname, comment: commentInput.trim() }]); setCommentInput(''); }
                                 }}
                                 placeholder={`한줄 코멘트 (${commentInput.length}/50)`}
-                                style={{ flex:1, background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.12)", borderRadius:6, padding:"6px 10px", color:"white", fontSize:12, outline:"none" }} />
+                                style={{ flex:1, background:"rgba(15,33,71,0.05)", border:"1px solid rgba(15,33,71,0.10)", borderRadius:6, padding:"6px 10px", color:"#0F2147", fontSize:12, outline:"none" }} />
                               <button onClick={async () => {
                                 if (!commentInput.trim()) return;
                                 const r = await fetch(`${PROXY}?path=${encodeURIComponent(`/api/comments?matchId=${viewingMatch.id}`)}`, {
@@ -1441,37 +1442,37 @@ export default function App() {
                                 });
                                 const d = await r.json();
                                 if (d.ok) { setMatchComments(prev => [...prev, { nickname, comment: commentInput.trim() }]); setCommentInput(''); }
-                              }} style={{ background:"#1d4ed8", border:"none", borderRadius:6, padding:"6px 12px", color:"white", fontSize:12, cursor:"pointer", flexShrink:0 }}>등록</button>
+                              }} style={{ background:"#1D4ED8", border:"none", borderRadius:6, padding:"6px 12px", color:"white", fontSize:12, cursor:"pointer", flexShrink:0 }}>등록</button>
                             </div>
                           )}
                           {nickname && matchComments.find(c => c.nickname === nickname) && (
-                            <div style={{ fontSize:11, color:"rgba(255,255,255,0.3)" }}>삭제 후 다시 작성할 수 있습니다.</div>
+                            <div style={{ fontSize:11, color:"rgba(15,33,71,0.35)" }}>삭제 후 다시 작성할 수 있습니다.</div>
                           )}
-                          {!nickname && <div style={{ fontSize:11, color:"rgba(255,255,255,0.3)" }}>로그인 후 작성 가능합니다.</div>}
+                          {!nickname && <div style={{ fontSize:11, color:"rgba(15,33,71,0.35)" }}>로그인 후 작성 가능합니다.</div>}
                         </div>
 
                         {/* 득점 기록 */}
                         {matchIncidents.length > 0 && (
-                          <div style={{ marginBottom:12, padding:"10px 12px", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:10 }}>
-                            <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginBottom:8, fontWeight:700 }}>⚽ 득점 기록</div>
+                          <div style={{ marginBottom:12, padding:"10px 12px", background:"rgba(15,33,71,0.03)", border:"1px solid rgba(15,33,71,0.06)", borderRadius:10 }}>
+                            <div style={{ fontSize:11, color:"rgba(15,33,71,0.45)", marginBottom:8, fontWeight:700 }}>⚽ 득점 기록</div>
                             {matchIncidents.map((inc, idx) => (
                               <div key={idx} style={{ display:"flex", alignItems:"center", gap:6, marginBottom:4, fontSize:12 }}>
                                 <span style={{ color:"#fbbf24", fontWeight:700, minWidth:36 }}>
                                   {inc.time}{inc.addedTime > 0 ? `+${inc.addedTime}` : ""}'
                                 </span>
                                 <span>{(inc.incidentClass === 'ownGoal' || inc.isOwnGoal) ? '🔴' : inc.incidentClass === 'penalty' ? '⚽P' : '⚽'}</span>
-                                <span style={{ color: (viewingMatch.home ? inc.isHome : !inc.isHome) ? "#60a5fa" : "#f87171", fontWeight:600 }}>{inc.player}{inc.isOwnGoal ? ' (자책골)' : ''}</span>
-                                {inc.assist && <span style={{ color:"rgba(255,255,255,0.4)", fontSize:11 }}>🅰️ {inc.assist}</span>}
-                                <span style={{ marginLeft:"auto", color:"rgba(255,255,255,0.5)", fontSize:11 }}>{inc.homeScore}:{inc.awayScore}</span>
+                                <span style={{ color: (viewingMatch.home ? inc.isHome : !inc.isHome) ? "#5B8DEF" : "#E14C58", fontWeight:600 }}>{inc.player}{inc.isOwnGoal ? ' (자책골)' : ''}</span>
+                                {inc.assist && <span style={{ color:"rgba(15,33,71,0.45)", fontSize:11 }}>🅰️ {inc.assist}</span>}
+                                <span style={{ marginLeft:"auto", color:"rgba(15,33,71,0.55)", fontSize:11 }}>{inc.homeScore}:{inc.awayScore}</span>
                               </div>
                             ))}
                           </div>
                         )}
-                        <div style={{ fontSize:10, color:"rgba(255,255,255,0.35)", marginBottom:8 }}>{officialLineup.formation} 포메이션</div>
+                        <div style={{ fontSize:10, color:"rgba(15,33,71,0.4)", marginBottom:8 }}>{officialLineup.formation} 포메이션</div>
                         <PitchView formation={fmKey} slots={readonlySlots} interactive={false} squadMap={squadMap} />
                         <div style={{ marginTop:10, display:"flex", flexWrap:"wrap", gap:5 }}>
                           {officialLineup.players.map((p,i) => (
-                            <div key={i} style={{ display:"flex", alignItems:"center", gap:4, background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:8, padding:"4px 8px" }}>
+                            <div key={i} style={{ display:"flex", alignItems:"center", gap:4, background:"rgba(15,33,71,0.05)", border:"1px solid rgba(15,33,71,0.08)", borderRadius:8, padding:"4px 8px" }}>
                               <span style={{ fontSize:9, color:"#888" }}>#{p.number}</span>
                               <span style={{ fontSize:11, fontWeight:600 }}>{(p.nameKo||p.name).trim()}</span>
                             </div>
@@ -1479,15 +1480,15 @@ export default function App() {
                         </div>
                         {officialLineup.substitutes && officialLineup.substitutes.length > 0 && (
                           <div style={{ marginTop:12 }}>
-                            <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginBottom:6, textTransform:"uppercase", letterSpacing:"0.08em" }}>교체 명단</div>
+                            <div style={{ fontSize:11, color:"rgba(15,33,71,0.45)", marginBottom:6, textTransform:"uppercase", letterSpacing:"0.08em" }}>교체 명단</div>
                             <div style={{ display:"flex", flexDirection:"column", gap:3 }}>
                               {officialLineup.substitutes.map((p, i) => (
                                 <div key={i} style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:6, background:p.subIn?"rgba(34,197,94,0.06)":"rgba(255,255,255,0.02)" }}>
-                                  <span style={{ fontSize:10, color:"rgba(255,255,255,0.3)", minWidth:20, textAlign:"right" }}>#{p.number}</span>
-                                  <span style={{ fontSize:12, flex:1, color:p.subIn?"#4ade80":"rgba(255,255,255,0.5)", fontWeight:p.subIn?600:400 }}>{(p.nameKo||p.name||"").trim()}</span>
+                                  <span style={{ fontSize:10, color:"rgba(15,33,71,0.35)", minWidth:20, textAlign:"right" }}>#{p.number}</span>
+                                  <span style={{ fontSize:12, flex:1, color:p.subIn?"#4ade80":"rgba(15,33,71,0.55)", fontWeight:p.subIn?600:400 }}>{(p.nameKo||p.name||"").trim()}</span>
                                   {p.subIn
                                     ? <span style={{ fontSize:10, color:"#4ade80" }}>↑{p.subTime}' ({p.subOut}→)</span>
-                                    : <span style={{ fontSize:10, color:"rgba(255,255,255,0.2)" }}>미출전</span>
+                                    : <span style={{ fontSize:10, color:"rgba(15,33,71,0.18)" }}>미출전</span>
                                   }
                                 </div>
                               ))}
@@ -1523,21 +1524,21 @@ export default function App() {
                     {historyScoringStatus || "🏆 채점하기"}
                   </button>
                 )}
-                <button onClick={()=>{ setViewingMatch(null); setMatchIncidents([]); setMatchComments([]); setCommentInput(''); setCommentStatus(''); setScorePreds([]); setMyScorePred(null); setScoreHome(0); setScoreAway(0); setMatchComments([]); setCommentInput(''); setCommentStatus(''); }} style={{ width:"100%", padding:10, background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:8, color:"rgba(255,255,255,0.5)", fontSize:12, cursor:"pointer" }}>← 목록으로</button>
+                <button onClick={()=>{ setViewingMatch(null); setMatchIncidents([]); setMatchComments([]); setCommentInput(''); setCommentStatus(''); setScorePreds([]); setMyScorePred(null); setScoreHome(0); setScoreAway(0); setMatchComments([]); setCommentInput(''); setCommentStatus(''); }} style={{ width:"100%", padding:10, background:"rgba(15,33,71,0.05)", border:"1px solid rgba(15,33,71,0.08)", borderRadius:8, color:"rgba(15,33,71,0.55)", fontSize:12, cursor:"pointer" }}>← 목록으로</button>
               </div>
             ) : (
               <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
-                {pastMatches.length===0 && <div style={{ textAlign:"center", padding:24, color:"rgba(255,255,255,0.3)" }}>이전 경기 데이터가 없습니다.</div>}
+                {pastMatches.length===0 && <div style={{ textAlign:"center", padding:24, color:"rgba(15,33,71,0.35)" }}>이전 경기 데이터가 없습니다.</div>}
                 {pastMatches.map(m => (
-                  <div key={m.id} onClick={()=>handleViewLineup(m)} style={{ background:"rgba(255,255,255,0.03)", border:"1.5px solid rgba(255,255,255,0.08)", borderRadius:12, padding:"12px 14px", cursor:"pointer", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                  <div key={m.id} onClick={()=>handleViewLineup(m)} style={{ background:"rgba(15,33,71,0.03)", border:"1.5px solid rgba(15,33,71,0.06)", borderRadius:12, padding:"12px 14px", cursor:"pointer", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
                     <div>
-                      <div style={{ fontSize:10, color:"rgba(255,255,255,0.4)", marginBottom:2 }}>{m.round}R · {new Date(m.date).toLocaleDateString('ko-KR',{month:'short',day:'numeric'})} · {m.home?"홈":"원정"}</div>
+                      <div style={{ fontSize:10, color:"rgba(15,33,71,0.45)", marginBottom:2 }}>{m.round}R · {new Date(m.date).toLocaleDateString('ko-KR',{month:'short',day:'numeric'})} · {m.home?"홈":"원정"}</div>
                       <div style={{ fontSize:14, fontWeight:700 }}>vs {m.opponent}</div>
                     </div>
                     <div style={{ textAlign:"right", display:"flex", flexDirection:"column", alignItems:"flex-end", gap:2 }}>
-                      {m.score && <div style={{ fontSize:16, fontWeight:900, color:m.result==='W'?'#22c55e':m.result==='D'?'#eab308':'#ef4444', fontFamily:"monospace" }}>{m.score}</div>}
-                      {m.result && <div style={{ fontSize:10, fontWeight:700, color:m.result==='W'?'#22c55e':m.result==='D'?'#eab308':'#ef4444' }}>{m.result==='W'?'승':m.result==='D'?'무':'패'}</div>}
-                      <div style={{ fontSize:9, color:"#60a5fa" }}>라인업 보기 →</div>
+                      {m.score && <div style={{ fontSize:16, fontWeight:900, color:m.result==='W'?'#22c55e':m.result==='D'?'#eab308':'#D42230', fontFamily:"monospace" }}>{m.score}</div>}
+                      {m.result && <div style={{ fontSize:10, fontWeight:700, color:m.result==='W'?'#22c55e':m.result==='D'?'#eab308':'#D42230' }}>{m.result==='W'?'승':m.result==='D'?'무':'패'}</div>}
+                      <div style={{ fontSize:9, color:"#5B8DEF" }}>라인업 보기 →</div>
                     </div>
                   </div>
                 ))}
@@ -1549,17 +1550,17 @@ export default function App() {
         {tab === "league" && (
           <div>
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
-              <div style={{ fontSize:13, fontWeight:700, color:"white" }}>📊 K리그2 순위</div>
-              <button onClick={loadLeague} style={{ background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:8, padding:"4px 10px", color:"#aaa", fontSize:11, cursor:"pointer" }}>🔄 새로고침</button>
+              <div style={{ fontSize:13, fontWeight:700, color:"#0F2147" }}>📊 K리그2 순위</div>
+              <button onClick={loadLeague} style={{ background:"rgba(15,33,71,0.05)", border:"1px solid rgba(15,33,71,0.08)", borderRadius:8, padding:"4px 10px", color:"#5B6B8C", fontSize:11, cursor:"pointer" }}>🔄 새로고침</button>
             </div>
-            {leagueLoading && <div style={{ textAlign:"center", padding:40, color:"rgba(255,255,255,0.3)" }}>로딩 중...</div>}
+            {leagueLoading && <div style={{ textAlign:"center", padding:40, color:"rgba(15,33,71,0.35)" }}>로딩 중...</div>}
             {!leagueLoading && leagueStandings.length === 0 && (
-              <div style={{ textAlign:"center", padding:40, color:"rgba(255,255,255,0.3)", fontSize:13 }}>순위 데이터를 불러오지 못했습니다.</div>
+              <div style={{ textAlign:"center", padding:40, color:"rgba(15,33,71,0.35)", fontSize:13 }}>순위 데이터를 불러오지 못했습니다.</div>
             )}
             {!leagueLoading && leagueStandings.length > 0 && (
-              <div style={{ borderRadius:10, overflow:"hidden", border:"1px solid rgba(255,255,255,0.07)" }}>
+              <div style={{ borderRadius:10, overflow:"hidden", border:"1px solid rgba(15,33,71,0.06)" }}>
                 {/* 헤더 */}
-                <div style={{ display:"grid", gridTemplateColumns:"30px 1fr 36px 36px 50px 50px", gap:4, padding:"8px 12px", background:"rgba(255,255,255,0.05)", fontSize:10, color:"rgba(255,255,255,0.4)", fontWeight:700 }}>
+                <div style={{ display:"grid", gridTemplateColumns:"30px 1fr 36px 36px 50px 50px", gap:4, padding:"8px 12px", background:"rgba(15,33,71,0.05)", fontSize:10, color:"rgba(15,33,71,0.45)", fontWeight:700 }}>
                   <div>순위</div>
                   <div>팀</div>
                   <div style={{ textAlign:"center" }}>경기</div>
@@ -1570,13 +1571,13 @@ export default function App() {
                 {leagueStandings.map((row, i) => {
                   const isSuwon = row.isSuwon === true;
                   return (
-                    <div key={i} style={{ display:"grid", gridTemplateColumns:"30px 1fr 36px 36px 50px 50px", gap:4, padding:"9px 12px", background: isSuwon ? "rgba(37,99,235,0.2)" : i%2===0 ? "rgba(255,255,255,0.02)" : "transparent", borderTop:"1px solid rgba(255,255,255,0.04)", fontSize:12 }}>
-                      <div style={{ color: row.position <= 2 ? "#4ade80" : row.position >= 9 ? "#f87171" : "rgba(255,255,255,0.6)", fontWeight:700 }}>{row.position}</div>
-                      <div style={{ color: isSuwon ? "#60a5fa" : "white", fontWeight: isSuwon ? 700 : 400, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{row.team?.name}</div>
-                      <div style={{ textAlign:"center", color:"rgba(255,255,255,0.6)" }}>{row.matches}</div>
-                      <div style={{ textAlign:"center", color:"white", fontWeight:700 }}>{row.points}</div>
-                      <div style={{ textAlign:"center", color:"rgba(255,255,255,0.6)" }}>{row.scoresFor}</div>
-                      <div style={{ textAlign:"center", color: (row.scoresFor - row.scoresAgainst) > 0 ? "#4ade80" : (row.scoresFor - row.scoresAgainst) < 0 ? "#f87171" : "rgba(255,255,255,0.6)" }}>
+                    <div key={i} style={{ display:"grid", gridTemplateColumns:"30px 1fr 36px 36px 50px 50px", gap:4, padding:"9px 12px", background: isSuwon ? "rgba(37,99,235,0.2)" : i%2===0 ? "rgba(255,255,255,0.02)" : "transparent", borderTop:"1px solid rgba(15,33,71,0.04)", fontSize:12 }}>
+                      <div style={{ color: row.position <= 2 ? "#4ade80" : row.position >= 9 ? "#E14C58" : "rgba(15,33,71,0.65)", fontWeight:700 }}>{row.position}</div>
+                      <div style={{ color: isSuwon ? "#5B8DEF" : "white", fontWeight: isSuwon ? 700 : 400, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{row.team?.name}</div>
+                      <div style={{ textAlign:"center", color:"rgba(15,33,71,0.65)" }}>{row.matches}</div>
+                      <div style={{ textAlign:"center", color:"#0F2147", fontWeight:700 }}>{row.points}</div>
+                      <div style={{ textAlign:"center", color:"rgba(15,33,71,0.65)" }}>{row.scoresFor}</div>
+                      <div style={{ textAlign:"center", color: (row.scoresFor - row.scoresAgainst) > 0 ? "#4ade80" : (row.scoresFor - row.scoresAgainst) < 0 ? "#E14C58" : "rgba(15,33,71,0.65)" }}>
                         {(row.scoresFor - row.scoresAgainst) > 0 ? "+" : ""}{row.scoresFor - row.scoresAgainst}
                       </div>
                     </div>
@@ -1592,12 +1593,12 @@ export default function App() {
           <div>
             {!adminAuthed ? (
               <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:200, gap:12 }}>
-                <div style={{ fontSize:15, fontWeight:700, color:"rgba(255,255,255,0.7)" }}>🔧 관리자 로그인</div>
+                <div style={{ fontSize:15, fontWeight:700, color:"rgba(15,33,71,0.75)" }}>🔧 관리자 로그인</div>
                 <input type="password" value={adminPassword} onChange={e=>setAdminPassword(e.target.value)}
                   placeholder="비밀번호" onKeyDown={e=>e.key==="Enter"&&(adminPassword==="3579"?setAdminAuthed(true):alert("비밀번호 오류"))}
-                  style={{ background:"rgba(255,255,255,0.08)", border:"1px solid rgba(255,255,255,0.15)", borderRadius:8, padding:"10px 16px", color:"white", fontSize:14, textAlign:"center" }} />
+                  style={{ background:"rgba(15,33,71,0.06)", border:"1px solid rgba(15,33,71,0.12)", borderRadius:8, padding:"10px 16px", color:"#0F2147", fontSize:14, textAlign:"center" }} />
                 <button onClick={()=>adminPassword==="3579"?setAdminAuthed(true):alert("비밀번호 오류")}
-                  style={{ padding:"10px 24px", background:"#1d4ed8", border:"none", borderRadius:8, color:"white", fontSize:14, fontWeight:700, cursor:"pointer" }}>로그인</button>
+                  style={{ padding:"10px 24px", background:"#1D4ED8", border:"none", borderRadius:8, color:"white", fontSize:14, fontWeight:700, cursor:"pointer" }}>로그인</button>
               </div>
             ) : (
               <div>
@@ -1605,7 +1606,7 @@ export default function App() {
 
                 {/* 경기 선택 */}
                 <div style={{ marginBottom:12 }}>
-                  <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginBottom:6 }}>경기 선택</div>
+                  <div style={{ fontSize:11, color:"rgba(15,33,71,0.45)", marginBottom:6 }}>경기 선택</div>
                   <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
                     {[...upcomingMatches, ...pastMatches].slice(0, 10).map(m => (
                       <div key={m.id} onClick={()=>{
@@ -1614,7 +1615,7 @@ export default function App() {
                         setAdminPlayers([]);
                         setAdminHomeScore(0);
                         setAdminAwayScore(0);
-                      }} style={{ padding:"8px 12px", borderRadius:8, border:adminMatch?.id===m.id?"1.5px solid #3b82f6":"1.5px solid rgba(255,255,255,0.08)", background:adminMatch?.id===m.id?"rgba(59,130,246,0.1)":"rgba(255,255,255,0.03)", cursor:"pointer", fontSize:12 }}>
+                      }} style={{ padding:"8px 12px", borderRadius:8, border:adminMatch?.id===m.id?"1.5px solid #3B82F6":"1.5px solid rgba(15,33,71,0.06)", background:adminMatch?.id===m.id?"rgba(59,130,246,0.1)":"rgba(15,33,71,0.03)", cursor:"pointer", fontSize:12 }}>
                         {m.round ? `R${m.round}` : m.roundName || ""} vs {m.opponent} ({m.home?"홈":"원정"}) {m.status==="finished"?`[${m.score}]`:""}
                       </div>
                     ))}
@@ -1624,24 +1625,24 @@ export default function App() {
                 {adminMatch && (
                   <div>
                     {/* 실제 스코어 입력 */}
-                    <div style={{ marginBottom:12, padding:"10px 12px", background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:8 }}>
-                      <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginBottom:8 }}>실제 스코어</div>
+                    <div style={{ marginBottom:12, padding:"10px 12px", background:"rgba(15,33,71,0.04)", border:"1px solid rgba(15,33,71,0.06)", borderRadius:8 }}>
+                      <div style={{ fontSize:11, color:"rgba(15,33,71,0.45)", marginBottom:8 }}>실제 스코어</div>
                       <div style={{ display:"flex", alignItems:"center", gap:10 }}>
                         <div style={{ textAlign:"center" }}>
-                          <div style={{ fontSize:10, color:"rgba(255,255,255,0.4)", marginBottom:4 }}>수원</div>
+                          <div style={{ fontSize:10, color:"rgba(15,33,71,0.45)", marginBottom:4 }}>수원</div>
                           <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-                            <button onClick={()=>setAdminHomeScore(Math.max(0,adminHomeScore-1))} style={{ width:24, height:24, borderRadius:4, border:"1px solid rgba(255,255,255,0.2)", background:"rgba(255,255,255,0.05)", color:"white", cursor:"pointer", fontSize:14 }}>-</button>
+                            <button onClick={()=>setAdminHomeScore(Math.max(0,adminHomeScore-1))} style={{ width:24, height:24, borderRadius:4, border:"1px solid rgba(15,33,71,0.18)", background:"rgba(15,33,71,0.05)", color:"#0F2147", cursor:"pointer", fontSize:14 }}>-</button>
                             <span style={{ fontSize:22,fontWeight:900,minWidth:24,textAlign:"center" }}>{adminHomeScore}</span>
-                            <button onClick={()=>setAdminHomeScore(adminHomeScore+1)} style={{ width:24, height:24, borderRadius:4, border:"1px solid rgba(255,255,255,0.2)", background:"rgba(255,255,255,0.05)", color:"white", cursor:"pointer", fontSize:14 }}>+</button>
+                            <button onClick={()=>setAdminHomeScore(adminHomeScore+1)} style={{ width:24, height:24, borderRadius:4, border:"1px solid rgba(15,33,71,0.18)", background:"rgba(15,33,71,0.05)", color:"#0F2147", cursor:"pointer", fontSize:14 }}>+</button>
                           </div>
                         </div>
-                        <span style={{ fontSize:18, color:"rgba(255,255,255,0.3)", fontWeight:700 }}>:</span>
+                        <span style={{ fontSize:18, color:"rgba(15,33,71,0.35)", fontWeight:700 }}>:</span>
                         <div style={{ textAlign:"center" }}>
-                          <div style={{ fontSize:10, color:"rgba(255,255,255,0.4)", marginBottom:4 }}>상대</div>
+                          <div style={{ fontSize:10, color:"rgba(15,33,71,0.45)", marginBottom:4 }}>상대</div>
                           <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-                            <button onClick={()=>setAdminAwayScore(Math.max(0,adminAwayScore-1))} style={{ width:24, height:24, borderRadius:4, border:"1px solid rgba(255,255,255,0.2)", background:"rgba(255,255,255,0.05)", color:"white", cursor:"pointer", fontSize:14 }}>-</button>
+                            <button onClick={()=>setAdminAwayScore(Math.max(0,adminAwayScore-1))} style={{ width:24, height:24, borderRadius:4, border:"1px solid rgba(15,33,71,0.18)", background:"rgba(15,33,71,0.05)", color:"#0F2147", cursor:"pointer", fontSize:14 }}>-</button>
                             <span style={{ fontSize:22,fontWeight:900,minWidth:24,textAlign:"center" }}>{adminAwayScore}</span>
-                            <button onClick={()=>setAdminAwayScore(adminAwayScore+1)} style={{ width:24, height:24, borderRadius:4, border:"1px solid rgba(255,255,255,0.2)", background:"rgba(255,255,255,0.05)", color:"white", cursor:"pointer", fontSize:14 }}>+</button>
+                            <button onClick={()=>setAdminAwayScore(adminAwayScore+1)} style={{ width:24, height:24, borderRadius:4, border:"1px solid rgba(15,33,71,0.18)", background:"rgba(15,33,71,0.05)", color:"#0F2147", cursor:"pointer", fontSize:14 }}>+</button>
                           </div>
                         </div>
                       </div>
@@ -1649,10 +1650,10 @@ export default function App() {
 
                     {/* 포메이션 선택 */}
                     <div style={{ marginBottom:10 }}>
-                      <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginBottom:6 }}>포메이션</div>
+                      <div style={{ fontSize:11, color:"rgba(15,33,71,0.45)", marginBottom:6 }}>포메이션</div>
                       <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
                         {Object.keys(FORMATION_LAYOUTS).map(f => (
-                          <button key={f} onClick={()=>{setAdminFormation(f);setAdminPlayers([]);}} style={{ padding:"4px 10px", background:adminFormation===f?"#1d4ed8":"rgba(255,255,255,0.06)", border:adminFormation===f?"1px solid #3b82f6":"1px solid rgba(255,255,255,0.1)", borderRadius:6, color:"white", fontSize:11, cursor:"pointer" }}>{f}</button>
+                          <button key={f} onClick={()=>{setAdminFormation(f);setAdminPlayers([]);}} style={{ padding:"4px 10px", background:adminFormation===f?"#1D4ED8":"rgba(15,33,71,0.05)", border:adminFormation===f?"1px solid #3B82F6":"1px solid rgba(15,33,71,0.08)", borderRadius:6, color:adminFormation===f?"white":"#0F2147", fontSize:11, cursor:"pointer" }}>{f}</button>
                         ))}
                       </div>
                     </div>
@@ -1664,7 +1665,7 @@ export default function App() {
                         if (!posPlayers.length) return null;
                         return (
                           <div key={pos} style={{ marginBottom:8 }}>
-                            <div style={{ fontSize:10, color:"rgba(255,255,255,0.35)", marginBottom:4 }}>{posLabel}</div>
+                            <div style={{ fontSize:10, color:"rgba(15,33,71,0.4)", marginBottom:4 }}>{posLabel}</div>
                             <div style={{ display:"flex", flexWrap:"wrap", gap:5 }}>
                               {posPlayers.map(p => {
                                 const selected = adminPlayers.some(ap => ap.number === p.number);
@@ -1675,7 +1676,7 @@ export default function App() {
                                     } else if (adminPlayers.length < 11) {
                                       setAdminPlayers(prev => [...prev, { number: p.number, nameKo: p.nameKo, playerId: p.playerId }]);
                                     }
-                                  }} style={{ padding:"5px 8px", background:selected?"rgba(29,78,216,0.4)":"rgba(255,255,255,0.05)", border:selected?"1px solid #3b82f6":"1px solid rgba(255,255,255,0.1)", borderRadius:6, color:selected?"#93c5fd":"rgba(255,255,255,0.7)", fontSize:11, cursor:"pointer" }}>
+                                  }} style={{ padding:"5px 8px", background:selected?"rgba(29,78,216,0.12)":"rgba(15,33,71,0.05)", border:selected?"1px solid #3B82F6":"1px solid rgba(15,33,71,0.08)", borderRadius:6, color:selected?"#1D4ED8":"rgba(15,33,71,0.75)", fontSize:11, cursor:"pointer" }}>
                                     {p.number} {p.nameKo}
                                   </button>
                                 );
@@ -1736,17 +1737,17 @@ export default function App() {
                       } catch(e) {
                         setAdminStatus("❌ 오류: " + e.message);
                       }
-                    }} style={{ width:"100%", padding:12, background:adminPlayers.length===11?"#16a34a":"rgba(255,255,255,0.1)", border:"none", borderRadius:8, color:"white", fontSize:14, fontWeight:700, cursor:adminPlayers.length===11?"pointer":"default", marginBottom:8 }}>
+                    }} style={{ width:"100%", padding:12, background:adminPlayers.length===11?"#16a34a":"rgba(15,33,71,0.08)", border:"none", borderRadius:8, color:adminPlayers.length===11?"white":"#0F2147", fontSize:14, fontWeight:700, cursor:adminPlayers.length===11?"pointer":"default", marginBottom:8 }}>
                       💾 선발 저장 & 채점
                     </button>
 
-                    {adminStatus && <div style={{ textAlign:"center", fontSize:12, padding:8, color:adminStatus.includes("✅")?"#4ade80":"#f87171" }}>{adminStatus}</div>}
+                    {adminStatus && <div style={{ textAlign:"center", fontSize:12, padding:8, color:adminStatus.includes("✅")?"#4ade80":"#E14C58" }}>{adminStatus}</div>}
                   </div>
                 )}
 
                 {/* 닉네임 관리 */}
                 <div style={{ marginTop:16 }}>
-                  <div style={{ fontSize:12, color:"rgba(255,255,255,0.4)", marginBottom:8, textTransform:"uppercase", letterSpacing:"0.1em" }}>닉네임 관리</div>
+                  <div style={{ fontSize:12, color:"rgba(15,33,71,0.45)", marginBottom:8, textTransform:"uppercase", letterSpacing:"0.1em" }}>닉네임 관리</div>
                   <NicknameManager adminPassword="3579" proxy={PROXY} />
                 </div>
               </div>
@@ -1760,25 +1761,25 @@ export default function App() {
             {rankingView ? (
               <div>
                 <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:14 }}>
-                  <button onClick={() => { setRankingView(null); setRankingPredDetail(null); }} style={{ background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:8, padding:"5px 10px", color:"#aaa", fontSize:12, cursor:"pointer" }}>← 순위표</button>
+                  <button onClick={() => { setRankingView(null); setRankingPredDetail(null); }} style={{ background:"rgba(15,33,71,0.05)", border:"1px solid rgba(15,33,71,0.08)", borderRadius:8, padding:"5px 10px", color:"#5B6B8C", fontSize:12, cursor:"pointer" }}>← 순위표</button>
                   <div style={{ fontSize:15, fontWeight:700 }}>{rankingView.nickname}의 예측</div>
                 </div>
 
                 {rankingPredDetail ? (
                   <div>
-                    <button onClick={() => { setRankingPredDetail(null); setRankingLineup(null); setRankingScorePred(null); }} style={{ background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:8, padding:"5px 10px", color:"#aaa", fontSize:12, cursor:"pointer", marginBottom:12 }}>← 경기 목록</button>
+                    <button onClick={() => { setRankingPredDetail(null); setRankingLineup(null); setRankingScorePred(null); }} style={{ background:"rgba(15,33,71,0.05)", border:"1px solid rgba(15,33,71,0.08)", borderRadius:8, padding:"5px 10px", color:"#5B6B8C", fontSize:12, cursor:"pointer", marginBottom:12 }}>← 경기 목록</button>
 
                     {/* 경기 정보 카드 */}
                     {(() => {
                       const m = pastMatches.find(m => String(m.id) === String(rankingPredDetail?.matchId));
                       if (!m) return null;
-                      const rc = m.result==='W'?'#22c55e':m.result==='D'?'#eab308':'#ef4444';
+                      const rc = m.result==='W'?'#22c55e':m.result==='D'?'#eab308':'#D42230';
                       const d = new Date(m.kickoffISO||m.date);
                       const dateStr = `${d.getMonth()+1}/${d.getDate()}`;
                       return (
                         <div style={{ background:"rgba(59,130,246,0.08)", border:"1px solid rgba(59,130,246,0.2)", borderRadius:10, padding:"10px 14px", marginBottom:12, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
                           <div>
-                            <div style={{ fontSize:10, color:"rgba(255,255,255,0.4)", marginBottom:2 }}>{m.round}R · {dateStr} · {m.home?"홈":"원정"}</div>
+                            <div style={{ fontSize:10, color:"rgba(15,33,71,0.45)", marginBottom:2 }}>{m.round}R · {dateStr} · {m.home?"홈":"원정"}</div>
                             <div style={{ fontSize:13, fontWeight:700 }}>vs {m.opponent}</div>
                           </div>
                           <div style={{ textAlign:"right" }}>
@@ -1801,18 +1802,18 @@ export default function App() {
                       const spScore = rankingScorePred ? (ih?rankingScorePred.homeScore:rankingScorePred.awayScore)+':'+(ih?rankingScorePred.awayScore:rankingScorePred.homeScore) : null;
                       return (
                         <div style={{ display:"flex", gap:8, marginBottom:10 }}>
-                          <div style={{ flex:1, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:10, padding:"10px 12px", textAlign:"center" }}>
-                            <div style={{ fontSize:10, color:"rgba(255,255,255,0.4)", marginBottom:4 }}>선발 적중</div>
+                          <div style={{ flex:1, background:"rgba(15,33,71,0.04)", border:"1px solid rgba(15,33,71,0.06)", borderRadius:10, padding:"10px 12px", textAlign:"center" }}>
+                            <div style={{ fontSize:10, color:"rgba(15,33,71,0.45)", marginBottom:4 }}>선발 적중</div>
                             <div style={{ fontSize:18, fontWeight:900, color:"#fbbf24" }}>{hitCount}/11</div>
                           </div>
                           {spScore && (
-                            <div style={{ flex:1, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:10, padding:"10px 12px", textAlign:"center" }}>
-                              <div style={{ fontSize:10, color:"rgba(255,255,255,0.4)", marginBottom:4 }}>승부예측</div>
-                              <div style={{ fontSize:18, fontWeight:900, color:"#60a5fa" }}>{spScore}</div>
+                            <div style={{ flex:1, background:"rgba(15,33,71,0.04)", border:"1px solid rgba(15,33,71,0.06)", borderRadius:10, padding:"10px 12px", textAlign:"center" }}>
+                              <div style={{ fontSize:10, color:"rgba(15,33,71,0.45)", marginBottom:4 }}>승부예측</div>
+                              <div style={{ fontSize:18, fontWeight:900, color:"#5B8DEF" }}>{spScore}</div>
                             </div>
                           )}
-                          <div style={{ flex:1, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:10, padding:"10px 12px", textAlign:"center" }}>
-                            <div style={{ fontSize:10, color:"rgba(255,255,255,0.4)", marginBottom:4 }}>총점</div>
+                          <div style={{ flex:1, background:"rgba(15,33,71,0.04)", border:"1px solid rgba(15,33,71,0.06)", borderRadius:10, padding:"10px 12px", textAlign:"center" }}>
+                            <div style={{ fontSize:10, color:"rgba(15,33,71,0.45)", marginBottom:4 }}>총점</div>
                             <div style={{ fontSize:18, fontWeight:900, color:"#fbbf24" }}>{matchScore}pt</div>
                           </div>
                         </div>
@@ -1841,7 +1842,7 @@ export default function App() {
                         return (spSu>spOp)===(as>ao) && (spSu===spOp)===(as===ao);
                       })() : false;
                       return (
-                        <div style={{ marginBottom:12, padding:"10px 12px", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:10 }}>
+                        <div style={{ marginBottom:12, padding:"10px 12px", background:"rgba(15,33,71,0.03)", border:"1px solid rgba(15,33,71,0.06)", borderRadius:10 }}>
                           <div style={{ display:"flex", flexWrap:"wrap", gap:6, alignItems:"center" }}>
                             <span style={{ fontSize:11, background:"rgba(251,191,36,0.15)", border:"1px solid rgba(251,191,36,0.3)", borderRadius:6, padding:"3px 8px", color:"#fbbf24", fontWeight:700 }}>
                               ⚽ {hitCount}명 적중 +{hitCount*5}pt
@@ -1854,8 +1855,8 @@ export default function App() {
                             {rankingScorePred && (exact
                               ? <span style={{ fontSize:11, background:"rgba(34,197,94,0.15)", border:"1px solid rgba(34,197,94,0.3)", borderRadius:6, padding:"3px 8px", color:"#4ade80", fontWeight:700 }}>🎯 정확한 스코어 +15pt</span>
                               : resultMatch
-                                ? <span style={{ fontSize:11, background:"rgba(96,165,250,0.15)", border:"1px solid rgba(96,165,250,0.3)", borderRadius:6, padding:"3px 8px", color:"#60a5fa", fontWeight:700 }}>✅ 승무패 적중 +5pt</span>
-                                : <span style={{ fontSize:11, background:"rgba(239,68,68,0.1)", border:"1px solid rgba(239,68,68,0.2)", borderRadius:6, padding:"3px 8px", color:"#f87171", fontWeight:700 }}>❌ 승부예측 미적중</span>
+                                ? <span style={{ fontSize:11, background:"rgba(96,165,250,0.15)", border:"1px solid rgba(96,165,250,0.3)", borderRadius:6, padding:"3px 8px", color:"#5B8DEF", fontWeight:700 }}>✅ 승무패 적중 +5pt</span>
+                                : <span style={{ fontSize:11, background:"rgba(212,34,48,0.10)", border:"1px solid rgba(212,34,48,0.18)", borderRadius:6, padding:"3px 8px", color:"#E14C58", fontWeight:700 }}>❌ 승부예측 미적중</span>
                             )}
                             <span style={{ fontSize:13, fontWeight:900, color:"#fbbf24", marginLeft:"auto", fontFamily:"monospace" }}>= {matchScore}pt</span>
                           </div>
@@ -1865,18 +1866,18 @@ export default function App() {
 
                                       {/* 토글 버튼 */}
                    {/* 토글 버튼 */}
-                   <div style={{ display:"flex", gap:6, marginBottom:10, background:"rgba(255,255,255,0.05)", borderRadius:10, padding:4 }}>
-                     <button onClick={()=>setRankingLineupToggle("pred")} style={{ flex:1, padding:"8px 0", borderRadius:8, border:"none", fontSize:12, fontWeight:700, cursor:"pointer", background:rankingLineupToggle==="pred"?"#1d4ed8":"transparent", color:"white" }}>{rankingView?.nickname}의 예측</button>
-                     <button onClick={()=>setRankingLineupToggle("actual")} disabled={!rankingLineup} style={{ flex:1, padding:"8px 0", borderRadius:8, border:"none", fontSize:12, fontWeight:700, cursor:"pointer", background:rankingLineupToggle==="actual"?"#1d4ed8":"transparent", color:rankingLineup?"white":"rgba(255,255,255,0.3)" }}>실제 선발</button>
+                   <div style={{ display:"flex", gap:6, marginBottom:10, background:"rgba(15,33,71,0.05)", borderRadius:10, padding:4 }}>
+                     <button onClick={()=>setRankingLineupToggle("pred")} style={{ flex:1, padding:"8px 0", borderRadius:8, border:"none", fontSize:12, fontWeight:700, cursor:"pointer", background:rankingLineupToggle==="pred"?"#1D4ED8":"transparent", color:rankingLineupToggle==="pred"?"white":"#0F2147" }}>{rankingView?.nickname}의 예측</button>
+                     <button onClick={()=>setRankingLineupToggle("actual")} disabled={!rankingLineup} style={{ flex:1, padding:"8px 0", borderRadius:8, border:"none", fontSize:12, fontWeight:700, cursor:"pointer", background:rankingLineupToggle==="actual"?"#1D4ED8":"transparent", color:rankingLineupToggle==="actual"?(rankingLineup?"white":"rgba(15,33,71,0.35)"):(rankingLineup?"#0F2147":"rgba(15,33,71,0.35)") }}>실제 선발</button>
                    </div>
-                   <div style={{ fontSize:10, color:"rgba(255,255,255,0.35)", marginBottom:8 }}>
+                   <div style={{ fontSize:10, color:"rgba(15,33,71,0.4)", marginBottom:8 }}>
                      {rankingLineupToggle==="pred" ? rankingPredDetail.formation : (rankingLineup?.formation||rankingPredDetail.formation)} 포메이션
                    </div>
                    {rankingLineupToggle === "pred"
                      ? <PitchView formation={rankingPredDetail.formation} slots={rankingPredDetail.slots} squadMap={squadMap} interactive={false} actualPlayers={rankingLineup?.players} squadMap={squadMap} />
                      : rankingLineup
                        ? <PitchView formation={rankingLineup.formation} squadMap={squadMap} slots={rankingLineup.players.map((p,i)=>({ pos:["GK","CB","CB","LB","RB","CM","CM","LM","RM","ST","ST"][i]||"CM", player:{...p, nameKo:p.nameKo||p.name} }))} interactive={false} />
-                       : <div style={{textAlign:"center",padding:20,fontSize:12,color:"rgba(255,255,255,0.3)"}}>선발 데이터 없음</div>
+                       : <div style={{textAlign:"center",padding:20,fontSize:12,color:"rgba(15,33,71,0.35)"}}>선발 데이터 없음</div>
                    }
                     <div style={{ marginTop:10, display:"flex", flexWrap:"wrap", gap:5 }}>
                       {rankingLineupToggle === "pred"
@@ -1887,10 +1888,10 @@ export default function App() {
                                   (s.player.nameKo && s.player.nameKo === ap.nameKo)
                                 )
                               : null;
-                            const bg = matched === true ? "rgba(34,197,94,0.1)" : matched === false ? "rgba(239,68,68,0.1)" : "rgba(255,255,255,0.05)";
-                            const border = matched === true ? "1px solid rgba(34,197,94,0.3)" : matched === false ? "1px solid rgba(239,68,68,0.3)" : "1px solid rgba(255,255,255,0.1)";
-                            const color = matched === true ? "#4ade80" : matched === false ? "#f87171" : "white";
-                            const numColor = matched === true ? "#4ade80" : matched === false ? "#f87171" : "#888";
+                            const bg = matched === true ? "rgba(34,197,94,0.1)" : matched === false ? "rgba(212,34,48,0.10)" : "rgba(15,33,71,0.05)";
+                            const border = matched === true ? "1px solid rgba(34,197,94,0.3)" : matched === false ? "1px solid rgba(212,34,48,0.28)" : "1px solid rgba(15,33,71,0.08)";
+                            const color = matched === true ? "#4ade80" : matched === false ? "#E14C58" : "white";
+                            const numColor = matched === true ? "#4ade80" : matched === false ? "#E14C58" : "#888";
                             return (
                               <div key={j} style={{ display:"flex", alignItems:"center", gap:4, background:bg, border, borderRadius:8, padding:"4px 8px" }}>
                                 <span style={{ fontSize:9, color:numColor }}>#{s.player.number}</span>
@@ -1908,15 +1909,15 @@ export default function App() {
                     </div>
                     {rankingLineupToggle === "actual" && rankingLineup?.substitutes && rankingLineup.substitutes.length > 0 && (
                       <div style={{ marginTop:10 }}>
-                        <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginBottom:6, textTransform:"uppercase", letterSpacing:"0.08em" }}>교체 명단</div>
+                        <div style={{ fontSize:11, color:"rgba(15,33,71,0.45)", marginBottom:6, textTransform:"uppercase", letterSpacing:"0.08em" }}>교체 명단</div>
                         <div style={{ display:"flex", flexDirection:"column", gap:3 }}>
                           {rankingLineup.substitutes.map((p, j) => (
                             <div key={j} style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:6, background:p.subIn?"rgba(34,197,94,0.06)":"rgba(255,255,255,0.02)" }}>
-                              <span style={{ fontSize:10, color:"rgba(255,255,255,0.3)", minWidth:20, textAlign:"right" }}>#{p.number}</span>
-                              <span style={{ fontSize:11, flex:1, color:p.subIn?"#4ade80":"rgba(255,255,255,0.4)", fontWeight:p.subIn?600:400 }}>{(p.nameKo||p.name||"").trim()}</span>
+                              <span style={{ fontSize:10, color:"rgba(15,33,71,0.35)", minWidth:20, textAlign:"right" }}>#{p.number}</span>
+                              <span style={{ fontSize:11, flex:1, color:p.subIn?"#4ade80":"rgba(15,33,71,0.45)", fontWeight:p.subIn?600:400 }}>{(p.nameKo||p.name||"").trim()}</span>
                               {p.subIn
                                 ? <span style={{ fontSize:10, color:"#4ade80" }}>↑{p.subTime}' ({p.subOut}→)</span>
-                                : <span style={{ fontSize:10, color:"rgba(255,255,255,0.2)" }}>미출전</span>
+                                : <span style={{ fontSize:10, color:"rgba(15,33,71,0.18)" }}>미출전</span>
                               }
                             </div>
                           ))}
@@ -1926,7 +1927,7 @@ export default function App() {
                   </div>
                 ) : (
                   <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
-                    {rankingView.preds.length === 0 && <div style={{ textAlign:"center", padding:24, color:"rgba(255,255,255,0.3)" }}>예측 데이터가 없습니다.</div>}
+                    {rankingView.preds.length === 0 && <div style={{ textAlign:"center", padding:24, color:"rgba(15,33,71,0.35)" }}>예측 데이터가 없습니다.</div>}
                     {rankingView.preds.map((p, i) => {
                       const d = new Date(p.kickoffISO || p.savedAt);
                       return (
@@ -1947,16 +1948,16 @@ export default function App() {
                             })
                             .catch(() => {});
                         }}
-                          style={{ background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:10, padding:"10px 14px", cursor:"pointer", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                          style={{ background:"rgba(15,33,71,0.04)", border:"1px solid rgba(15,33,71,0.06)", borderRadius:10, padding:"10px 14px", cursor:"pointer", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
                           <div>
                             <div style={{ fontSize:12, fontWeight:700 }}>{p.round ? `${p.round}R` : ''} vs {p.opponent}</div>
-                            <div style={{ fontSize:10, color:"rgba(255,255,255,0.4)", marginTop:2 }}>{p.formation} · {d.toLocaleDateString('ko-KR',{month:'short',day:'numeric'})}</div>
+                            <div style={{ fontSize:10, color:"rgba(15,33,71,0.45)", marginTop:2 }}>{p.formation} · {d.toLocaleDateString('ko-KR',{month:'short',day:'numeric'})}</div>
                           </div>
                           <div style={{ textAlign:"right" }}>
                             {scoreData.detail?.[p.matchId]?.[rankingView.nickname] !== undefined && (
                               <div style={{ fontSize:14, fontWeight:900, color:"#fbbf24", fontFamily:"monospace" }}>{scoreData.detail[p.matchId][rankingView.nickname]}pt</div>
                             )}
-                            <div style={{ fontSize:12, color:"#60a5fa" }}>보기 →</div>
+                            <div style={{ fontSize:12, color:"#5B8DEF" }}>보기 →</div>
                           </div>
                         </div>
                       );
@@ -1968,13 +1969,13 @@ export default function App() {
               /* 순위표 메인 */
               <div>
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
-                  <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", textTransform:"uppercase", letterSpacing:"0.1em" }}>예측 순위표</div>
-                  <button onClick={loadRanking} style={{ background:"rgba(255,255,255,0.07)", border:"1px solid rgba(255,255,255,0.12)", borderRadius:6, padding:"5px 10px", color:"rgba(255,255,255,0.6)", fontSize:11, cursor:"pointer" }}>🔄 새로고침</button>
+                  <div style={{ fontSize:11, color:"rgba(15,33,71,0.45)", textTransform:"uppercase", letterSpacing:"0.1em" }}>예측 순위표</div>
+                  <button onClick={loadRanking} style={{ background:"rgba(15,33,71,0.06)", border:"1px solid rgba(15,33,71,0.10)", borderRadius:6, padding:"5px 10px", color:"rgba(15,33,71,0.65)", fontSize:11, cursor:"pointer" }}>🔄 새로고침</button>
                 </div>
                 {loadingRanking ? (
-                  <div style={{ textAlign:"center", padding:40, color:"rgba(255,255,255,0.3)" }}>로딩 중...</div>
+                  <div style={{ textAlign:"center", padding:40, color:"rgba(15,33,71,0.35)" }}>로딩 중...</div>
                 ) : rankingData.length===0 ? (
-                  <div style={{ textAlign:"center", padding:40, color:"rgba(255,255,255,0.25)", fontSize:13, lineHeight:1.8 }}>아직 예측 데이터가 없어요.<br/>친구들과 링크를 공유하고<br/>선발을 예측해보세요! ⚽</div>
+                  <div style={{ textAlign:"center", padding:40, color:"rgba(15,33,71,0.22)", fontSize:13, lineHeight:1.8 }}>아직 예측 데이터가 없어요.<br/>친구들과 링크를 공유하고<br/>선발을 예측해보세요! ⚽</div>
                 ) : (
                   <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
                     {rankingData.map((entry,idx) => {
@@ -1987,23 +1988,23 @@ export default function App() {
                       ).sort((a, b) => new Date(a.kickoffISO||0) - new Date(b.kickoffISO||0));
                       return (
                         <div key={idx} onClick={() => { setRankingView({ nickname: entry.nickname, preds: myPreds }); setRankingPredDetail(null); }}
-                          style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 14px", background:entry.nickname===nickname?"rgba(59,130,246,0.1)":"rgba(255,255,255,0.03)", border:entry.nickname===nickname?"1.5px solid rgba(59,130,246,0.4)":"1.5px solid rgba(255,255,255,0.06)", borderRadius:10, cursor:"pointer" }}>
-                          <div style={{ width:28, height:28, borderRadius:"50%", background:idx===0?"#fbbf24":idx===1?"#94a3b8":idx===2?"#cd7c3f":"rgba(255,255,255,0.1)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:900, color:idx<3?"#0a0e1a":"rgba(255,255,255,0.4)", flexShrink:0 }}>{entry.scoredCount >= 5 ? idx+1 : "-"}</div>
+                          style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 14px", background:entry.nickname===nickname?"rgba(59,130,246,0.1)":"rgba(15,33,71,0.03)", border:entry.nickname===nickname?"1.5px solid rgba(59,130,246,0.4)":"1.5px solid rgba(15,33,71,0.05)", borderRadius:10, cursor:"pointer" }}>
+                          <div style={{ width:28, height:28, borderRadius:"50%", background:idx===0?"#fbbf24":idx===1?"#94a3b8":idx===2?"#cd7c3f":"rgba(15,33,71,0.08)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:900, color:idx<3?"#FFFFFF":"rgba(15,33,71,0.45)", flexShrink:0 }}>{entry.scoredCount >= 5 ? idx+1 : "-"}</div>
                           <div style={{ flex:1 }}>
-                            <div style={{ fontSize:13, fontWeight:700 }}>{entry.nickname}{entry.nickname===nickname&&<span style={{ fontSize:10, color:"#60a5fa", marginLeft:6 }}>나</span>}</div>
-                            <div style={{ fontSize:10, color: entry.scoredCount >= 5 ? "rgba(255,255,255,0.3)" : "#f87171" }}>예측 {entry.scoredCount}경기{entry.scoredCount < 5 ? ` (${5-entry.scoredCount}경기 더 필요)` : ""}</div>
+                            <div style={{ fontSize:13, fontWeight:700 }}>{entry.nickname}{entry.nickname===nickname&&<span style={{ fontSize:10, color:"#5B8DEF", marginLeft:6 }}>나</span>}</div>
+                            <div style={{ fontSize:10, color: entry.scoredCount >= 5 ? "rgba(15,33,71,0.35)" : "#E14C58" }}>예측 {entry.scoredCount}경기{entry.scoredCount < 5 ? ` (${5-entry.scoredCount}경기 더 필요)` : ""}</div>
                           </div>
                           <div style={{ textAlign:"right" }}>
                             <div style={{ fontSize:18, fontWeight:900, color:"#fbbf24", fontFamily:"monospace" }}>{entry.avg}pt</div>
-                            <div style={{ fontSize:10, color:"rgba(255,255,255,0.3)" }}>총 {entry.score}pt · ›</div>
+                            <div style={{ fontSize:10, color:"rgba(15,33,71,0.35)" }}>총 {entry.score}pt · ›</div>
                           </div>
                         </div>
                       );
                     })}
                   </div>
                 )}
-                <div style={{ marginTop:16, padding:"12px 14px", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:10, fontSize:11, color:"rgba(255,255,255,0.35)", lineHeight:1.8 }}>
-                  <div style={{ fontWeight:700, color:"rgba(255,255,255,0.5)", marginBottom:4 }}>📌 채점 기준</div>
+                <div style={{ marginTop:16, padding:"12px 14px", background:"rgba(15,33,71,0.03)", border:"1px solid rgba(15,33,71,0.06)", borderRadius:10, fontSize:11, color:"rgba(15,33,71,0.4)", lineHeight:1.8 }}>
+                  <div style={{ fontWeight:700, color:"rgba(15,33,71,0.55)", marginBottom:4 }}>📌 채점 기준</div>
                   선발 선수 1명 적중 = +5pt<br/>11명 전원 적중 = 보너스 +30pt<br/>승부예측 정확한 스코어 = +15pt<br/>승부예측 승무패만 맞춤 = +5pt<br/>경기당 최대 100pt
                 </div>
               </div>
