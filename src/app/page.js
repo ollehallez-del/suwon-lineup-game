@@ -792,6 +792,37 @@ export default function App() {
   }
 
   function handleFormationChange(f) { setFormation(f); resetSlots(f); }
+
+  async function loadLatestPrediction() {
+    if (!nickname) return;
+    try {
+      const res = await fetch(`${PROXY}?path=${encodeURIComponent(`/api/latest-prediction?nickname=${encodeURIComponent(nickname)}`)}`);
+      const data = await res.json();
+      const prev = data.prediction;
+      if (!prev || !prev.slots) { alert('불러올 이전 예측이 없어요.'); return; }
+
+      const f = prev.formation && FORMATION_LAYOUTS[prev.formation] ? prev.formation : formation;
+      const layout = FORMATION_LAYOUTS[f];
+
+      // 현재 선수단(squadMap)에 없는 선수는 이적/입대 등으로 제외된 것으로 보고 빈 슬롯 처리
+      const isStillActive = (player) => {
+        if (!player) return false;
+        return !!(squadMap[String(player.number)] || squadMap[player.nameKo]);
+      };
+
+      const newSlots = layout.map((l, i) => {
+        const oldPlayer = prev.slots[i]?.player;
+        return { pos: l.pos, player: isStillActive(oldPlayer) ? oldPlayer : null };
+      });
+
+      setFormation(f);
+      setSlots(newSlots);
+      setSelectedSlot(null);
+    } catch (e) {
+      alert('불러오기 실패: ' + e.message);
+    }
+  }
+
   function handleSlotClick(i) {
     if (selectedSlot === null) {
       // 아무것도 선택 안 된 상태 → 클릭한 슬롯 선택
@@ -1109,15 +1140,15 @@ export default function App() {
           }} style={{ cursor:"pointer", width:40, height:40, borderRadius:"50%", background:"white", display:"flex", alignItems:"center", justifyContent:"center", overflow:"hidden", flexShrink:0 }}>
             <img src="/suwon.png" style={{ width:"85%", height:"85%", objectFit:"contain" }} onError={e => { e.target.style.display="none"; e.target.parentNode.innerHTML="⚽"; }} />
           </div>
-          <div>
-            <div style={{ fontSize:15, fontWeight:900, letterSpacing:"-0.02em", whiteSpace:"nowrap", color:"white" }}>수원삼성 선발 예측</div>
-            <div style={{ fontSize:11, color:"rgba(255,255,255,0.75)" }}>2026 K리그2 · 이정효 감독</div>
+          <div style={{ minWidth:0, overflow:"hidden" }}>
+            <div style={{ fontSize:15, fontWeight:900, letterSpacing:"-0.02em", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis", color:"white" }}>수원삼성 선발 예측</div>
+            <div style={{ fontSize:10, color:"rgba(255,255,255,0.75)", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>2026 K리그2 · 이정효 감독</div>
           </div>
-          <div style={{ marginLeft:"auto" }}>
+          <div style={{ marginLeft:"auto", flexShrink:0 }}>
             {isLoggedIn && (
               <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-                <div onClick={()=>setShowChangeNick(!showChangeNick)} style={{ fontSize:12, background:"rgba(15,33,71,0.12)", padding:"4px 10px", borderRadius:20, fontWeight:700, cursor:"pointer" }}>👤 {nickname} ✏️</div>
-                <button onClick={handleLogout} style={{ background:"rgba(15,33,71,0.08)", border:"none", borderRadius:8, padding:"4px 8px", color:"rgba(15,33,71,0.55)", fontSize:10, cursor:"pointer" }}>로그아웃</button>
+                <div onClick={()=>setShowChangeNick(!showChangeNick)} style={{ fontSize:12, background:"rgba(15,33,71,0.12)", padding:"4px 10px", borderRadius:20, fontWeight:700, cursor:"pointer", whiteSpace:"nowrap", maxWidth:120, overflow:"hidden", textOverflow:"ellipsis" }}>👤 {nickname} ✏️</div>
+                <button onClick={handleLogout} style={{ background:"rgba(15,33,71,0.08)", border:"none", borderRadius:8, padding:"4px 8px", color:"rgba(15,33,71,0.55)", fontSize:10, cursor:"pointer", whiteSpace:"nowrap", flexShrink:0 }}>로그아웃</button>
               </div>
             )}
           </div>
@@ -1217,6 +1248,9 @@ export default function App() {
             )}
             {selectedMatch && <>
               {!mySubmission && <div style={{ marginBottom:12 }}>
+                <button onClick={loadLatestPrediction} style={{ width:"100%", padding:"9px 0", background:"rgba(29,78,216,0.08)", border:"1px solid rgba(29,78,216,0.25)", borderRadius:8, color:"#1D4ED8", fontSize:12, fontWeight:700, cursor:"pointer", marginBottom:12 }}>
+                  🔄 최근 예측 불러오기
+                </button>
                 <div style={{ fontSize:11, color:"rgba(15,33,71,0.45)", marginBottom:8, textTransform:"uppercase", letterSpacing:"0.1em" }}>포메이션</div>
                 <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
                   {Object.keys(FORMATION_LAYOUTS).map(f => (
