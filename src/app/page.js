@@ -794,10 +794,11 @@ export default function App() {
   }
 
   function lineupUnchanged() {
-    if (!predictionBaseline) return false; // 기준값 없으면(신규 예측) 항상 변경된 것으로 간주
-    if (formation !== predictionBaseline.formation) return false;
+    const baseline = predictionBaseline || mySubmission;
+    if (!baseline) return false; // 저장한 적 없으면 항상 변경된 것으로 간주
+    if (formation !== baseline.formation) return false;
     const a = slots.map(s => s.player?.playerId || s.player?.nameKo || null);
-    const b = (predictionBaseline.slots || []).map(s => s.player?.playerId || s.player?.nameKo || null);
+    const b = (baseline.slots || []).map(s => s.player?.playerId || s.player?.nameKo || null);
     if (a.length !== b.length) return false;
     return a.every((v, i) => v === b[i]);
   }
@@ -809,9 +810,11 @@ export default function App() {
   }
 
   function hasChanges() {
-    if (!predictionBaseline && !scoreBaseline) return true; // 기준값이 전혀 없으면(완전 신규 예측) 항상 저장 가능
-    const lineupChanged = predictionBaseline ? !lineupUnchanged() : false;
-    const scoreChanged = scoreBaseline ? (scoreHome !== scoreBaseline.homeScore || scoreAway !== scoreBaseline.awayScore) : false;
+    const lineupBase = predictionBaseline || mySubmission;
+    const scoreBase = scoreBaseline || myScorePred;
+    if (!lineupBase && !scoreBase) return true; // 저장한 적이 전혀 없으면(완전 신규 예측) 항상 저장 가능
+    const lineupChanged = lineupBase ? !lineupUnchanged() : true;
+    const scoreChanged = scoreBase ? (scoreHome !== scoreBase.homeScore || scoreAway !== scoreBase.awayScore) : true;
     return lineupChanged || scoreChanged;
   }
 
