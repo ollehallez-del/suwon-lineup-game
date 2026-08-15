@@ -539,6 +539,8 @@ export default function App() {
   const [slots, setSlots] = useState([]);
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [mySubmission, setMySubmission] = useState(null);
+  const [predictionBaseline, setPredictionBaseline] = useState(null);
+  const [scoreBaseline, setScoreBaseline] = useState(null);
   const [saveStatus, setSaveStatus] = useState("");
   const [lineupAvailable, setLineupAvailable] = useState(false);
   const [scoringStatus, setScoringStatus] = useState("");
@@ -791,6 +793,28 @@ export default function App() {
     setSelectedSlot(null);
   }
 
+  function lineupUnchanged() {
+    if (!predictionBaseline) return false; // 기준값 없으면(신규 예측) 항상 변경된 것으로 간주
+    if (formation !== predictionBaseline.formation) return false;
+    const a = slots.map(s => s.player?.playerId || s.player?.nameKo || null);
+    const b = (predictionBaseline.slots || []).map(s => s.player?.playerId || s.player?.nameKo || null);
+    if (a.length !== b.length) return false;
+    return a.every((v, i) => v === b[i]);
+  }
+
+  function beginEditing() {
+    // 라인업/스코어 수정 버튼 클릭 시, 지금 저장돼 있는 값을 기준값으로 잡아둠
+    if (mySubmission) setPredictionBaseline({ formation: mySubmission.formation, slots: mySubmission.slots });
+    if (myScorePred) setScoreBaseline({ homeScore: myScorePred.homeScore, awayScore: myScorePred.awayScore });
+  }
+
+  function hasChanges() {
+    if (!predictionBaseline && !scoreBaseline) return true; // 기준값이 전혀 없으면(완전 신규 예측) 항상 저장 가능
+    const lineupChanged = predictionBaseline ? !lineupUnchanged() : false;
+    const scoreChanged = scoreBaseline ? (scoreHome !== scoreBaseline.homeScore || scoreAway !== scoreBaseline.awayScore) : false;
+    return lineupChanged || scoreChanged;
+  }
+
   function handleFormationChange(f) { setFormation(f); resetSlots(f); }
 
   async function loadLatestPrediction() {
@@ -887,6 +911,8 @@ export default function App() {
       }
       store.set(`sw:pred_${selectedMatch.id}_${nickname}`, data);
       setMySubmission(data);
+      setPredictionBaseline(null);
+      setScoreBaseline(null);
 
       // 승부예측도 함께 저장
       try {
@@ -919,6 +945,8 @@ export default function App() {
     } catch(e) {
       store.set(`sw:pred_${selectedMatch.id}_${nickname}`, data);
       setMySubmission(data);
+      setPredictionBaseline(null);
+      setScoreBaseline(null);
       setSaveStatus("✅ 저장됨 (오프라인)");
       setTimeout(() => setSaveStatus(""), 3000);
       // 오프라인이어도 내 예측을 otherPredictions에 반영
@@ -1233,6 +1261,8 @@ export default function App() {
                 <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
                   {upcomingMatches.slice(0,5).map(m => <MatchCard key={m.id} match={m} active={selectedMatch?.id===m.id} lineupAvailable={lineupAvailable} selectedMatch={selectedMatch} onClick={async ()=>{
                     setSelectedMatch(m);
+                    setPredictionBaseline(null);
+      setScoreBaseline(null);
                     setScorePreds([]); setMyScorePred(null); setScoreHome(0); setScoreAway(0);
                     try {
                       const r = await fetch(`${PROXY}?path=${encodeURIComponent(`/api/score-pred?matchId=${m.id}`)}`);
@@ -1304,6 +1334,7 @@ export default function App() {
                               setFormation(mySubmission.formation);
                               resetSlots(mySubmission.formation);
                               if (mySubmission.slots) setSlots(mySubmission.slots);
+                              beginEditing();
                               setMySubmission(null);
                             }} style={{ background:"rgba(59,130,246,0.2)", border:"1px solid rgba(59,130,246,0.4)", borderRadius:6, padding:"2px 8px", color:"#5B8DEF", fontSize:10, cursor:"pointer" }}>수정</button>
                             <button onClick={handleDeletePred} style={{ background:"rgba(212,34,48,0.10)", border:"1px solid rgba(212,34,48,0.35)", borderRadius:6, padding:"2px 8px", color:"#D42230", fontSize:10, cursor:"pointer" }}>삭제</button>
@@ -1333,7 +1364,7 @@ export default function App() {
                           <div style={{ fontSize:28, fontWeight:900, color:(selectedMatch.home?scoreHome>scoreAway:scoreAway>scoreHome)?"#1D4ED8":scoreHome===scoreAway?"#fbbf24":"#E14C58" }}>{scoreAway}</div>
                         </div>
                       </div>
-                      {!scoreData.detail?.[selectedMatch?.id] && ((new Date(selectedMatch?.kickoffISO || selectedMatch?.date) - new Date() > 2*60*60*1000) ? <button onClick={() => setMyScorePred(null)} style={{ background:"rgba(15,33,71,0.06)", border:"1px solid rgba(15,33,71,0.12)", borderRadius:6, padding:"4px 10px", color:"#5B6B8C", fontSize:11, cursor:"pointer" }}>수정</button> : <span style={{ fontSize:10, color:"rgba(15,33,71,0.35)" }}>🔒 잠김</span>)}
+                      {!scoreData.detail?.[selectedMatch?.id] && ((new Date(selectedMatch?.kickoffISO || selectedMatch?.date) - new Date() > 2*60*60*1000) ? <button onClick={() => { beginEditing(); setMyScorePred(null); }} style={{ background:"rgba(15,33,71,0.06)", border:"1px solid rgba(15,33,71,0.12)", borderRadius:6, padding:"4px 10px", color:"#5B6B8C", fontSize:11, cursor:"pointer" }}>수정</button> : <span style={{ fontSize:10, color:"rgba(15,33,71,0.35)" }}>🔒 잠김</span>)}
                     </div>
                   ) : (
                     // 입력 모드
@@ -1393,8 +1424,8 @@ export default function App() {
 
               {/* 통합 저장 버튼 */}
               {!scoreData.detail?.[selectedMatch?.id] && <div style={{ display:"flex", flexDirection:"column", gap:8, marginTop:8 }}>
-                <button onClick={handleSave} disabled={saveStatus==="저장 중..." || countFilled() < 11} style={{ width:"100%", padding:14, background:countFilled()===11?"linear-gradient(135deg,#0F2147,#1D4ED8)":"rgba(15,33,71,0.05)", border:"none", borderRadius:10, color:countFilled()===11?"white":"#0F2147", fontSize:14, fontWeight:700, cursor:(saveStatus==="저장 중..."||countFilled()<11)?"not-allowed":"pointer", boxShadow:countFilled()===11?"0 4px 16px rgba(37,99,235,0.4)":"none", opacity:(saveStatus==="저장 중..."||countFilled()<11)?0.6:1 }}>
-                  {saveStatus==="저장 중..." ? "저장 중..." : `✅ 선발 예측 + 승부예측 저장 (${countFilled()}/11)`}
+                <button onClick={handleSave} disabled={saveStatus==="저장 중..." || countFilled() < 11 || !hasChanges()} style={{ width:"100%", padding:14, background:(countFilled()===11 && hasChanges())?"linear-gradient(135deg,#0F2147,#1D4ED8)":"rgba(15,33,71,0.05)", border:"none", borderRadius:10, color:(countFilled()===11 && hasChanges())?"white":"#0F2147", fontSize:14, fontWeight:700, cursor:(saveStatus==="저장 중..."||countFilled()<11||!hasChanges())?"not-allowed":"pointer", boxShadow:(countFilled()===11 && hasChanges())?"0 4px 16px rgba(37,99,235,0.4)":"none", opacity:(saveStatus==="저장 중..."||countFilled()<11||!hasChanges())?0.6:1 }}>
+                  {saveStatus==="저장 중..." ? "저장 중..." : !hasChanges() ? "변경 사항 없음" : `✅ 선발 예측 + 승부예측 저장 (${countFilled()}/11)`}
                 </button>
                 {mySubmission && (new Date(selectedMatch?.kickoffISO || selectedMatch?.date) - new Date() <= 2*60*60*1000) && new Date(selectedMatch?.kickoffISO || selectedMatch?.date) > new Date() && (
                   <div style={{ textAlign:"center", fontSize:11, color:"rgba(15,33,71,0.35)", marginTop:4 }}>🔒 킥오프 2시간 전부터 예측 수정이 불가합니다</div>
