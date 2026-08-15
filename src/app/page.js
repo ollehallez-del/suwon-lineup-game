@@ -1171,16 +1171,20 @@ export default function App() {
           }} style={{ cursor:"pointer", width:40, height:40, borderRadius:"50%", background:"white", display:"flex", alignItems:"center", justifyContent:"center", overflow:"hidden", flexShrink:0 }}>
             <img src="/suwon.png" style={{ width:"85%", height:"85%", objectFit:"contain" }} onError={e => { e.target.style.display="none"; e.target.parentNode.innerHTML="⚽"; }} />
           </div>
-          <div style={{ minWidth:0, overflow:"hidden" }}>
-            <div style={{ fontSize:15, fontWeight:900, letterSpacing:"-0.02em", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis", color:"white" }}>수원삼성 선발 예측</div>
-            <div style={{ fontSize:10, color:"rgba(255,255,255,0.75)", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>2026 K리그2 · 이정효 감독</div>
-          </div>
-          <div style={{ marginLeft:"auto", flexShrink:0 }}>
+          <div style={{ flex:1, display:"flex", alignItems:"center", minWidth:0 }}>
+            <div style={{ width: isLoggedIn ? "50%" : "100%", minWidth:0, overflow:"hidden" }}>
+              <div style={{ fontSize:15, fontWeight:900, letterSpacing:"-0.02em", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis", color:"white" }}>수원삼성 선발 예측</div>
+              <div style={{ fontSize:10, color:"rgba(255,255,255,0.75)", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>2026 K리그2 · 이정효 감독</div>
+            </div>
             {isLoggedIn && (
-              <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-                <div onClick={()=>setShowChangeNick(!showChangeNick)} style={{ fontSize:12, background:"rgba(15,33,71,0.12)", padding:"4px 10px", borderRadius:20, fontWeight:700, cursor:"pointer", whiteSpace:"nowrap", maxWidth:120, overflow:"hidden", textOverflow:"ellipsis" }}>👤 {nickname} ✏️</div>
-                <button onClick={handleLogout} style={{ background:"rgba(15,33,71,0.08)", border:"none", borderRadius:8, padding:"4px 8px", color:"rgba(15,33,71,0.55)", fontSize:10, cursor:"pointer", whiteSpace:"nowrap", flexShrink:0 }}>로그아웃</button>
-              </div>
+              <>
+                <div style={{ width:"30%", minWidth:0, paddingRight:6 }}>
+                  <div onClick={()=>setShowChangeNick(!showChangeNick)} style={{ fontSize:12, background:"rgba(15,33,71,0.12)", padding:"4px 10px", borderRadius:20, fontWeight:700, cursor:"pointer", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis", display:"inline-block", maxWidth:"100%" }}>👤 {nickname} ✏️</div>
+                </div>
+                <div style={{ width:"20%", minWidth:0, display:"flex", justifyContent:"flex-end" }}>
+                  <button onClick={handleLogout} style={{ background:"rgba(15,33,71,0.08)", border:"none", borderRadius:8, padding:"4px 8px", color:"rgba(15,33,71,0.55)", fontSize:10, cursor:"pointer", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis", maxWidth:"100%" }}>로그아웃</button>
+                </div>
+              </>
             )}
           </div>
         </div>
@@ -1428,7 +1432,7 @@ export default function App() {
               {/* 통합 저장 버튼 */}
               {!scoreData.detail?.[selectedMatch?.id] && <div style={{ display:"flex", flexDirection:"column", gap:8, marginTop:8 }}>
                 <button onClick={handleSave} disabled={saveStatus==="저장 중..." || countFilled() < 11 || !hasChanges()} style={{ width:"100%", padding:14, background:(countFilled()===11 && hasChanges())?"linear-gradient(135deg,#0F2147,#1D4ED8)":"rgba(15,33,71,0.05)", border:"none", borderRadius:10, color:(countFilled()===11 && hasChanges())?"white":"#0F2147", fontSize:14, fontWeight:700, cursor:(saveStatus==="저장 중..."||countFilled()<11||!hasChanges())?"not-allowed":"pointer", boxShadow:(countFilled()===11 && hasChanges())?"0 4px 16px rgba(37,99,235,0.4)":"none", opacity:(saveStatus==="저장 중..."||countFilled()<11||!hasChanges())?0.6:1 }}>
-                  {saveStatus==="저장 중..." ? "저장 중..." : !hasChanges() ? "변경 사항 없음" : `✅ 선발 예측 + 승부예측 저장 (${countFilled()}/11)`}
+                  {saveStatus==="저장 중..." ? "저장 중..." : `✅ 선발 예측 + 승부예측 저장 (${countFilled()}/11)`}
                 </button>
                 {mySubmission && (new Date(selectedMatch?.kickoffISO || selectedMatch?.date) - new Date() <= 2*60*60*1000) && new Date(selectedMatch?.kickoffISO || selectedMatch?.date) > new Date() && (
                   <div style={{ textAlign:"center", fontSize:11, color:"rgba(15,33,71,0.35)", marginTop:4 }}>🔒 킥오프 2시간 전부터 예측 수정이 불가합니다</div>
