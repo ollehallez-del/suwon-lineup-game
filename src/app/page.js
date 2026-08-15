@@ -1282,7 +1282,7 @@ export default function App() {
                           {players.map(p => {
                             const inUse = usedNumbers.has(p.number) && slots[selectedSlot]?.player?.number !== p.number;
                             return (
-                              <button key={p.number} onClick={()=>!inUse&&handlePlayerSelect(p)} style={{ padding:"5px 8px", background:inUse?"rgba(15,33,71,0.03)":"rgba(29,78,216,0.3)", border:inUse?"1px solid rgba(15,33,71,0.05)":"1px solid rgba(59,130,246,0.4)", borderRadius:6, color:inUse?"rgba(15,33,71,0.22)":"white", fontSize:11, cursor:inUse?"default":"pointer", fontWeight:600, textDecoration:inUse?"line-through":"none", fontFamily:"'Noto Sans KR',sans-serif" }}>
+                              <button key={p.number} onClick={()=>!inUse&&handlePlayerSelect(p)} style={{ padding:"5px 8px", background:inUse?"rgba(15,33,71,0.03)":"rgba(29,78,216,0.12)", border:inUse?"1px solid rgba(15,33,71,0.05)":"1px solid rgba(59,130,246,0.4)", borderRadius:6, color:inUse?"rgba(15,33,71,0.22)":"#1D4ED8", fontSize:11, cursor:inUse?"default":"pointer", fontWeight:600, textDecoration:inUse?"line-through":"none", fontFamily:"'Noto Sans KR',sans-serif" }}>
                                 {p.number} {(p.nameKo||p.name).trim()}
                               </button>
                             );
