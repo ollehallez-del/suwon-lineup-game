@@ -1177,19 +1177,15 @@ export default function App() {
               <div style={{ fontSize:10, color:"rgba(255,255,255,0.75)", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>2026 K리그2 · 이정효 감독</div>
             </div>
             {isLoggedIn && (
-              <>
-                <div style={{ width:"30%", minWidth:0, paddingRight:6 }}>
-                  <div onClick={()=>setShowChangeNick(!showChangeNick)} style={{ fontSize:12, background:"rgba(15,33,71,0.12)", padding:"4px 10px", borderRadius:20, fontWeight:700, cursor:"pointer", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis", display:"inline-block", maxWidth:"100%" }}>👤 {nickname} ✏️</div>
-                </div>
-                <div style={{ width:"20%", minWidth:0, display:"flex", justifyContent:"flex-end" }}>
-                  <button onClick={handleLogout} style={{ background:"rgba(15,33,71,0.08)", border:"none", borderRadius:8, padding:"4px 8px", color:"rgba(15,33,71,0.55)", fontSize:10, cursor:"pointer", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis", maxWidth:"100%" }}>로그아웃</button>
-                </div>
-              </>
+              <div style={{ width:"50%", minWidth:0, display:"flex", flexDirection:"column", alignItems:"flex-end", gap:4 }}>
+                <div onClick={()=>setShowChangeNick(!showChangeNick)} style={{ fontSize:12, background:"rgba(15,33,71,0.12)", padding:"4px 10px", borderRadius:20, fontWeight:700, cursor:"pointer", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis", maxWidth:"100%" }}>👤 {nickname} ✏️</div>
+                <button onClick={handleLogout} style={{ background:"rgba(15,33,71,0.08)", border:"none", borderRadius:8, padding:"4px 8px", color:"rgba(15,33,71,0.55)", fontSize:10, cursor:"pointer", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis", maxWidth:"100%" }}>로그아웃</button>
+              </div>
             )}
           </div>
         </div>
         <div style={{ display:"flex" }}>
-          {[{id:"predict",label:"📋 선발 예측"},{id:"history",label:"📅 이전 라인업"},{id:"ranking",label:"🏆 순위표"},{id:"league",label:"📊 리그순위"}].map(t => (
+          {[{id:"predict",label:"📋 선발 예측"},{id:"history",label:"📅 이전 경기"},{id:"ranking",label:"🏆 순위표"},{id:"league",label:"📊 리그순위"}].map(t => (
             <button key={t.id} onClick={()=>{ setTab(t.id); if(t.id==="ranking"){ setRankingView(null); setRankingPredDetail(null); } if(t.id==="history"){ setViewingMatch(null); setMatchIncidents([]); setMatchComments([]); setCommentInput(''); setCommentStatus(''); setScorePreds([]); setMyScorePred(null); setScoreHome(0); setScoreAway(0); } }} style={{ flex:1, padding:"10px 0", background:"none", border:"none", borderBottom:tab===t.id?"3px solid #fbbf24":"3px solid transparent", color:tab===t.id?"#fbbf24":"rgba(255,255,255,0.55)", fontSize:12, fontWeight:tab===t.id?700:500, cursor:"pointer", fontFamily:"'Noto Sans KR',sans-serif" }}>{t.label}</button>
           ))}
         </div>
