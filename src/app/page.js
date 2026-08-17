@@ -222,43 +222,45 @@ function PitchView({ slots, formation, onSlotClick, selectedSlot, interactive, a
 
         return (
           <div key={i} onClick={() => interactive && onSlotClick && onSlotClick(i)}
-            style={{ position:"absolute", left:`${slot.left}%`, top:`${slot.top}%`, transform:"translate(-50%,-50%)", display:"flex", flexDirection:"column", alignItems:"center", cursor:interactive?"pointer":"default", zIndex:10, gap:2 }}>
+            style={{ position:"absolute", left:`${slot.left}%`, top:`${slot.top}%`, cursor:interactive?"pointer":"default", zIndex:10 }}>
 
-            {/* 포지션 */}
-            <div style={{ fontSize:7, fontWeight:700, color:"rgba(255,255,255,0.85)", background:"rgba(0,0,0,0.5)", padding:"1px 4px", borderRadius:3, letterSpacing:"0.05em" }}>
-              {slot.pos}
-            </div>
-
-            {/* 사진 원 */}
-            <div style={{ width:44, height:44, borderRadius:"50%", border, overflow:"hidden", background:"rgba(29,78,216,0.5)", boxShadow:shadow, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", position:"relative" }}>
-              {pid ? (
-                <>
-                  <img
-                    src={`${PROXY}?path=/api/player-image?id=${pid}`}
-                    style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"top", display:"block" }}
-                    onError={e => { e.target.style.display="none"; e.target.nextSibling && (e.target.nextSibling.style.display="flex"); }}
-                  />
-                  <span style={{ display:"none", position:"absolute", inset:0, alignItems:"center", justifyContent:"center", fontSize:8, color:"white", fontWeight:700, textAlign:"center", flexDirection:"column" }}>
+            {/* 포지션 + 사진 원 (이름 길이와 무관하게 항상 고정 위치) */}
+            <div style={{ position:"absolute", left:0, top:0, transform:"translate(-50%,-50%)", display:"flex", flexDirection:"column", alignItems:"center", gap:2 }}>
+              <div style={{ fontSize:7, fontWeight:700, color:"rgba(255,255,255,0.85)", background:"rgba(0,0,0,0.5)", padding:"1px 4px", borderRadius:3, letterSpacing:"0.05em" }}>
+                {slot.pos}
+              </div>
+              <div style={{ width:44, height:44, borderRadius:"50%", border, overflow:"hidden", background:"rgba(29,78,216,0.5)", boxShadow:shadow, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", position:"relative" }}>
+                {pid ? (
+                  <>
+                    <img
+                      src={`${PROXY}?path=/api/player-image?id=${pid}`}
+                      style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"top", display:"block" }}
+                      onError={e => { e.target.style.display="none"; e.target.nextSibling && (e.target.nextSibling.style.display="flex"); }}
+                    />
+                    <span style={{ display:"none", position:"absolute", inset:0, alignItems:"center", justifyContent:"center", fontSize:8, color:"white", fontWeight:700, textAlign:"center", flexDirection:"column" }}>
+                      {player.number && <>{player.number}<br/></>}{(player.nameKo||player.name||"").trim().split(" ").map((w,i) => <span key={i}>{w}<br/></span>)}
+                    </span>
+                  </>
+                ) : player ? (
+                  <span style={{ fontSize:8, textAlign:"center", lineHeight:1.2, color:"white", fontWeight:700, padding:"0 2px" }}>
                     {player.number && <>{player.number}<br/></>}{(player.nameKo||player.name||"").trim().split(" ").map((w,i) => <span key={i}>{w}<br/></span>)}
                   </span>
-                </>
-              ) : player ? (
-                <span style={{ fontSize:8, textAlign:"center", lineHeight:1.2, color:"white", fontWeight:700, padding:"0 2px" }}>
-                  {player.number && <>{player.number}<br/></>}{(player.nameKo||player.name||"").trim().split(" ").map((w,i) => <span key={i}>{w}<br/></span>)}
-                </span>
-              ) : (
-                <span style={{ opacity:0.4, fontSize:14, color:"white" }}>+</span>
-              )}
+                ) : (
+                  <span style={{ opacity:0.4, fontSize:14, color:"white" }}>+</span>
+                )}
+              </div>
             </div>
 
-            {/* 이름 */}
-            {player ? (
-              <div style={{ fontSize:8, fontWeight:700, color:nameColor, textShadow:"0 1px 3px rgba(0,0,0,0.9)", background:"rgba(0,0,0,0.55)", padding:"1px 5px", borderRadius:4, textAlign:"center", maxWidth:52 }}>
-                {(player.nameKo||player.name||"").trim().split(" ").map((w,i) => <span key={i}>{w}<br/></span>)}
-              </div>
-            ) : (
-              <div style={{ fontSize:7, color:"rgba(255,255,255,0.5)", padding:"1px 3px" }}>{slot.pos}</div>
-            )}
+            {/* 이름 - 사진 블록과 독립적으로, 항상 같은 지점(사진 바로 아래)에서 시작 */}
+            <div style={{ position:"absolute", left:0, top:31, transform:"translateX(-50%)", whiteSpace:"nowrap" }}>
+              {player ? (
+                <div style={{ fontSize:8, fontWeight:700, color:nameColor, textShadow:"0 1px 3px rgba(0,0,0,0.9)", background:"rgba(0,0,0,0.55)", padding:"1px 5px", borderRadius:4, textAlign:"center", maxWidth:52 }}>
+                  {(player.nameKo||player.name||"").trim().split(" ").map((w,i) => <span key={i}>{w}<br/></span>)}
+                </div>
+              ) : (
+                <div style={{ fontSize:7, color:"rgba(255,255,255,0.5)", padding:"1px 3px" }}>{slot.pos}</div>
+              )}
+            </div>
           </div>
         );
       })}
