@@ -1356,17 +1356,17 @@ export default function App() {
                 <div style={{ marginBottom:12, padding:"12px 14px", background:"rgba(15,33,71,0.03)", border:"1px solid rgba(15,33,71,0.06)", borderRadius:10 }}>
                   <div style={{ fontSize:11, color:"rgba(15,33,71,0.45)", marginBottom:10, fontWeight:700 }}>🎯 승부 예측</div>
                   {myScorePred ? (
-                    // 저장된 스코어 표시 (홈:원정 순서)
+                    // 저장된 스코어 표시 (항상 수원 먼저)
                     <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8 }}>
                       <div style={{ display:"flex", alignItems:"center", gap:12, flex:1, justifyContent:"center" }}>
                         <div style={{ textAlign:"center" }}>
-                          <div style={{ fontSize:11, color:selectedMatch.home?"#5B8DEF":"#E14C58", marginBottom:4 }}>{selectedMatch.home?"수원":selectedMatch.opponent}</div>
-                          <div style={{ fontSize:28, fontWeight:900, color:(selectedMatch.home?scoreHome>scoreAway:scoreAway>scoreHome)?"#1D4ED8":scoreHome===scoreAway?"#fbbf24":"#E14C58" }}>{scoreHome}</div>
+                          <div style={{ fontSize:11, color:"#5B8DEF", marginBottom:4 }}>수원</div>
+                          <div style={{ fontSize:28, fontWeight:900, color:(selectedMatch.home?scoreHome>scoreAway:scoreAway>scoreHome)?"#1D4ED8":scoreHome===scoreAway?"#fbbf24":"#E14C58" }}>{selectedMatch.home?scoreHome:scoreAway}</div>
                         </div>
                         <div style={{ fontSize:20, color:"rgba(15,33,71,0.35)", fontWeight:700 }}>:</div>
                         <div style={{ textAlign:"center" }}>
-                          <div style={{ fontSize:11, color:selectedMatch.home?"#E14C58":"#5B8DEF", marginBottom:4 }}>{selectedMatch.home?selectedMatch.opponent:"수원"}</div>
-                          <div style={{ fontSize:28, fontWeight:900, color:(selectedMatch.home?scoreHome>scoreAway:scoreAway>scoreHome)?"#1D4ED8":scoreHome===scoreAway?"#fbbf24":"#E14C58" }}>{scoreAway}</div>
+                          <div style={{ fontSize:11, color:"#E14C58", marginBottom:4 }}>{selectedMatch.opponent}</div>
+                          <div style={{ fontSize:28, fontWeight:900, color:(selectedMatch.home?scoreHome>scoreAway:scoreAway>scoreHome)?"#1D4ED8":scoreHome===scoreAway?"#fbbf24":"#E14C58" }}>{selectedMatch.home?scoreAway:scoreHome}</div>
                         </div>
                       </div>
                       {!scoreData.detail?.[selectedMatch?.id] && ((new Date(selectedMatch?.kickoffISO || selectedMatch?.date) - new Date() > 2*60*60*1000) ? <button onClick={() => { beginEditing(); setMyScorePred(null); }} style={{ background:"rgba(15,33,71,0.06)", border:"1px solid rgba(15,33,71,0.12)", borderRadius:6, padding:"4px 10px", color:"#5B6B8C", fontSize:11, cursor:"pointer" }}>수정</button> : <span style={{ fontSize:10, color:"rgba(15,33,71,0.35)" }}>🔒 잠김</span>)}
