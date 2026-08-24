@@ -222,7 +222,7 @@ function PitchView({ slots, formation, onSlotClick, selectedSlot, interactive, a
 
         return (
           <div key={i} onClick={() => interactive && onSlotClick && onSlotClick(i)}
-            style={{ position:"absolute", left:`${slot.left}%`, top:`${slot.top}%`, cursor:interactive?"pointer":"default", zIndex:10 }}>
+            style={{ position:"absolute", left:`${player?.left ?? slot.left}%`, top:`${player?.top ?? slot.top}%`, cursor:interactive?"pointer":"default", zIndex:10 }}>
 
             {/* 포지션 + 사진 원 (이름 길이와 무관하게 항상 고정 위치) */}
             <div style={{ position:"absolute", left:0, top:0, transform:"translate(-50%,-50%)", display:"flex", flexDirection:"column", alignItems:"center", gap:2 }}>
