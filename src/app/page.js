@@ -319,6 +319,20 @@ function NicknameManager({ adminPassword, proxy }) {
     } catch(e) { setStatus("❌ 오류"); }
   }
 
+  async function resetPassword(nick) {
+    if (!confirm(`"${nick}"의 비밀번호를 초기화하시겠습니까?`)) return;
+    try {
+      const r = await fetch(`${proxy}?path=/api/admin/reset-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: adminPassword, nickname: nick }),
+      });
+      const d = await r.json();
+      if (d.ok) setStatus(d.had ? "✅ 비밀번호 초기화 완료" : "ℹ️ 원래 비밀번호가 없었어요");
+      else setStatus("❌ " + (d.error || "초기화 실패"));
+    } catch(e) { setStatus("❌ 오류"); }
+  }
+
   return (
     <div>
       <button onClick={loadNicknames} style={{ background:"rgba(15,33,71,0.06)", border:"1px solid rgba(15,33,71,0.10)", borderRadius:6, padding:"6px 12px", color:"#0F2147", fontSize:12, cursor:"pointer", marginBottom:8 }}>
@@ -339,6 +353,7 @@ function NicknameManager({ adminPassword, proxy }) {
               <>
                 <span style={{ flex:1, fontSize:13, fontWeight:600 }}>{nick}</span>
                 <button onClick={()=>{ setEditTarget(nick); setEditValue(nick); }} style={{ background:"rgba(59,130,246,0.2)", border:"1px solid rgba(59,130,246,0.3)", borderRadius:6, padding:"4px 10px", color:"#5B8DEF", fontSize:12, cursor:"pointer" }}>수정</button>
+                <button onClick={()=>resetPassword(nick)} style={{ background:"rgba(29,78,216,0.08)", border:"1px solid rgba(29,78,216,0.2)", borderRadius:6, padding:"4px 10px", color:"#1D4ED8", fontSize:12, cursor:"pointer" }}>🔒 비번초기화</button>
                 <button onClick={()=>deleteNickname(nick)} style={{ background:"rgba(212,34,48,0.10)", border:"1px solid rgba(212,34,48,0.18)", borderRadius:6, padding:"4px 10px", color:"#E14C58", fontSize:12, cursor:"pointer" }}>삭제</button>
               </>
             )}
@@ -530,6 +545,17 @@ export default function App() {
   const [changeError, setChangeError] = useState("");
   const [showDeleteNick, setShowDeleteNick] = useState(false);
   const [deletePassword, setDeletePassword] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [loginNeedsPassword, setLoginNeedsPassword] = useState(false);
+  const [pendingNewProfile, setPendingNewProfile] = useState(null); // 신규 프로필 로그인 성공 후 비밀번호 설정 단계
+  const [newProfilePassword, setNewProfilePassword] = useState("");
+  const [changePassword, setChangePassword] = useState("");
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const [oldPasswordInput, setOldPasswordInput] = useState("");
+  const [newPasswordInput, setNewPasswordInput] = useState("");
+  const [newPasswordInput2, setNewPasswordInput2] = useState("");
+  const [changePasswordError, setChangePasswordError] = useState("");
+  const [changePasswordStatus, setChangePasswordStatus] = useState("");
   const [deleteError, setDeleteError] = useState("");
   const [pastMatches, setPastMatches] = useState([]);
   const [upcomingMatches, setUpcomingMatches] = useState([]);
@@ -972,9 +998,15 @@ export default function App() {
       const r = await fetch(`${PROXY}?path=/api/auth`, {
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ action:'login', nickname:nn }),
+        body: JSON.stringify({ action:'login', nickname:nn, password: loginNeedsPassword ? loginPassword : undefined }),
       });
       const d = await r.json();
+      if (d.needsPassword) {
+        setLoginNeedsPassword(true);
+        if (d.error) setLoginError(d.error);
+        setLoginLoading(false);
+        return;
+      }
       if (d.ok) {
         if (d.existing) {
           // 기존 닉네임 - 확인 메시지
@@ -983,10 +1015,15 @@ export default function App() {
             setLoginLoading(false);
             return;
           }
+          setNickname(d.nickname);
+          setIsLoggedIn(true);
+          store.set('sw:nickname', d.nickname);
+        } else {
+          // 신규 닉네임 - 비밀번호 설정 여부 물어보기
+          setPendingNewProfile(d.nickname);
         }
-        setNickname(d.nickname);
-        setIsLoggedIn(true);
-        store.set('sw:nickname', d.nickname);
+        setLoginNeedsPassword(false);
+        setLoginPassword("");
       } else {
         setLoginError(d.error || "로그인 실패");
       }
@@ -996,15 +1033,38 @@ export default function App() {
     setLoginLoading(false);
   }
 
+  async function finishNewProfileLogin(withPassword) {
+    if (withPassword) {
+      if (!/^\d{3}$/.test(newProfilePassword)) { setLoginError("비밀번호는 숫자 3자리로 입력해주세요."); return; }
+      try {
+        await fetch(`${PROXY}?path=/api/auth`, {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ action:'setPassword', nickname: pendingNewProfile, newPassword: newProfilePassword }),
+        });
+      } catch {}
+    }
+    setNickname(pendingNewProfile);
+    setIsLoggedIn(true);
+    store.set('sw:nickname', pendingNewProfile);
+    setPendingNewProfile(null);
+    setNewProfilePassword("");
+    setLoginError("");
+  }
+
   async function handleDeleteNickname() {
-    if (deletePassword !== "3579") { setDeleteError("비밀번호가 틀렸습니다."); return; }
     try {
-      await fetch(`${PROXY}?path=/api/auth`, {
+      const r = await fetch(`${PROXY}?path=/api/auth`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'delete', nickname }),
+        body: JSON.stringify({ action: 'delete', nickname, password: deletePassword }),
       });
-    } catch {}
+      const d = await r.json();
+      if (!d.ok) { setDeleteError(d.error || "삭제 실패"); return; }
+    } catch {
+      setDeleteError("서버 연결 실패.");
+      return;
+    }
     // 로컬 데이터 정리
     Object.keys(localStorage).filter(k => k.includes(`_${nickname}`) || k === 'sw:nickname').forEach(k => localStorage.removeItem(k));
     setNickname("");
@@ -1022,7 +1082,7 @@ export default function App() {
       const r = await fetch(`${PROXY}?path=/api/auth`, {
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ action:'change', nickname, newNickname:newNick }),
+        body: JSON.stringify({ action:'change', nickname, newNickname:newNick, password: changePassword }),
       });
       const d = await r.json();
       if (d.existingNick) {
@@ -1038,11 +1098,35 @@ export default function App() {
         setShowChangeNick(false);
         setChangeInput("");
         setChangeError("");
+        setChangePassword("");
       } else {
         setChangeError(d.error || "변경 실패");
       }
     } catch {
       setChangeError("서버 연결 실패.");
+    }
+  }
+
+  async function handleChangePassword() {
+    setChangePasswordError("");
+    if (!/^\d{3}$/.test(newPasswordInput)) { setChangePasswordError("새 비밀번호는 숫자 3자리로 입력해주세요."); return; }
+    if (newPasswordInput !== newPasswordInput2) { setChangePasswordError("새 비밀번호가 서로 일치하지 않습니다."); return; }
+    try {
+      const r = await fetch(`${PROXY}?path=/api/auth`, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ action:'setPassword', nickname, oldPassword: oldPasswordInput, newPassword: newPasswordInput }),
+      });
+      const d = await r.json();
+      if (d.ok) {
+        setChangePasswordStatus("✅ 비밀번호가 설정되었습니다.");
+        setOldPasswordInput(""); setNewPasswordInput(""); setNewPasswordInput2("");
+        setTimeout(() => { setShowChangePassword(false); setChangePasswordStatus(""); }, 1200);
+      } else {
+        setChangePasswordError(d.error || "설정 실패");
+      }
+    } catch {
+      setChangePasswordError("서버 연결 실패.");
     }
   }
 
@@ -1199,8 +1283,8 @@ export default function App() {
           <div style={{ background:"#FFFFFF", border:"1px solid rgba(212,34,48,0.28)", borderRadius:16, padding:24, width:"100%", maxWidth:360 }}>
             <div style={{ fontSize:16, fontWeight:700, marginBottom:4, color:"#0F2147" }}>🗑️ 닉네임 삭제</div>
             <div style={{ fontSize:12, color:"#E14C58", marginBottom:16 }}>삭제 후 복구가 불가능합니다.</div>
-            <input type="password" value={deletePassword} onChange={e=>setDeletePassword(e.target.value)}
-              placeholder="관리자 비밀번호 입력"
+            <input type="password" inputMode="numeric" maxLength={3} value={deletePassword} onChange={e=>setDeletePassword(e.target.value.replace(/\D/g,''))}
+              placeholder="비밀번호 (설정한 경우만 입력)"
               onKeyDown={e=>e.key==="Enter"&&handleDeleteNickname()}
               style={{ width:"100%", background:"rgba(15,33,71,0.06)", border:"1px solid rgba(212,34,48,0.28)", borderRadius:8, padding:"10px 12px", color:"#0F2147", fontSize:13, outline:"none", marginBottom:8, boxSizing:"border-box" }} />
             {deleteError && <div style={{ fontSize:11, color:"#E14C58", marginBottom:8 }}>{deleteError}</div>}
@@ -1221,12 +1305,44 @@ export default function App() {
               placeholder="새 닉네임 (최대 10자)" maxLength={10}
               onKeyDown={e=>e.key==="Enter"&&handleChangeNickname()}
               style={{ width:"100%", background:"rgba(15,33,71,0.06)", border:"1px solid rgba(15,33,71,0.12)", borderRadius:8, padding:"10px 12px", color:"#0F2147", fontSize:13, outline:"none", marginBottom:8, boxSizing:"border-box" }} />
+            <input type="password" inputMode="numeric" maxLength={3} value={changePassword} onChange={e=>setChangePassword(e.target.value.replace(/\D/g,''))}
+              placeholder="비밀번호 (설정한 경우만 입력)"
+              onKeyDown={e=>e.key==="Enter"&&handleChangeNickname()}
+              style={{ width:"100%", background:"rgba(15,33,71,0.06)", border:"1px solid rgba(15,33,71,0.12)", borderRadius:8, padding:"10px 12px", color:"#0F2147", fontSize:13, outline:"none", marginBottom:8, boxSizing:"border-box" }} />
             {changeError && <div style={{ fontSize:11, color:"#E14C58", marginBottom:8 }}>{changeError}</div>}
             <div style={{ display:"flex", gap:8 }}>
-              <button onClick={()=>{setShowChangeNick(false);setChangeError("");}} style={{ flex:1, padding:10, background:"rgba(15,33,71,0.05)", border:"1px solid rgba(15,33,71,0.08)", borderRadius:8, color:"#5B6B8C", fontSize:13, cursor:"pointer" }}>취소</button>
+              <button onClick={()=>{setShowChangeNick(false);setChangeError("");setChangePassword("");}} style={{ flex:1, padding:10, background:"rgba(15,33,71,0.05)", border:"1px solid rgba(15,33,71,0.08)", borderRadius:8, color:"#5B6B8C", fontSize:13, cursor:"pointer" }}>취소</button>
               <button onClick={handleChangeNickname} style={{ flex:1, padding:10, background:"#1D4ED8", border:"none", borderRadius:8, color:"white", fontSize:13, fontWeight:700, cursor:"pointer" }}>변경</button>
             </div>
+            <button onClick={()=>{setShowChangeNick(false);setShowChangePassword(true);}} style={{ width:"100%", marginTop:8, padding:8, background:"rgba(29,78,216,0.08)", border:"1px solid rgba(29,78,216,0.25)", borderRadius:8, color:"#1D4ED8", fontSize:12, cursor:"pointer" }}>🔒 비밀번호 설정/변경</button>
             <button onClick={()=>{setShowChangeNick(false);setShowDeleteNick(true);}} style={{ width:"100%", marginTop:8, padding:8, background:"rgba(212,34,48,0.10)", border:"1px solid rgba(212,34,48,0.28)", borderRadius:8, color:"#E14C58", fontSize:12, cursor:"pointer" }}>🗑️ 닉네임 삭제</button>
+          </div>
+        </div>
+      )}
+
+      {/* 비밀번호 설정/변경 모달 */}
+      {showChangePassword && (
+        <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.7)", zIndex:100, display:"flex", alignItems:"center", justifyContent:"center", padding:20 }}>
+          <div style={{ background:"#FFFFFF", border:"1px solid rgba(29,78,216,0.25)", borderRadius:16, padding:24, width:"100%", maxWidth:360 }}>
+            <div style={{ fontSize:16, fontWeight:700, marginBottom:4 }}>🔒 비밀번호 설정/변경</div>
+            <div style={{ fontSize:11, color:"rgba(15,33,71,0.5)", marginBottom:16 }}>이미 설정한 비밀번호가 있으면 기존 비밀번호를 입력해주세요. 처음 설정하는 경우엔 비워두세요.</div>
+            <input type="password" inputMode="numeric" maxLength={3} value={oldPasswordInput} onChange={e=>setOldPasswordInput(e.target.value.replace(/\D/g,''))}
+              placeholder="기존 비밀번호 (있는 경우만)"
+              style={{ width:"100%", background:"rgba(15,33,71,0.06)", border:"1px solid rgba(15,33,71,0.12)", borderRadius:8, padding:"10px 12px", color:"#0F2147", fontSize:13, outline:"none", marginBottom:8, boxSizing:"border-box" }} />
+            <input type="password" inputMode="numeric" maxLength={3} value={newPasswordInput} onChange={e=>setNewPasswordInput(e.target.value.replace(/\D/g,''))}
+              placeholder="새 비밀번호 (숫자 3자리)"
+              style={{ width:"100%", background:"rgba(15,33,71,0.06)", border:"1px solid rgba(29,78,216,0.25)", borderRadius:8, padding:"10px 12px", color:"#0F2147", fontSize:13, outline:"none", marginBottom:8, boxSizing:"border-box" }} />
+            <input type="password" inputMode="numeric" maxLength={3} value={newPasswordInput2} onChange={e=>setNewPasswordInput2(e.target.value.replace(/\D/g,''))}
+              placeholder="새 비밀번호 확인"
+              onKeyDown={e=>e.key==="Enter"&&handleChangePassword()}
+              style={{ width:"100%", background:"rgba(15,33,71,0.06)", border:"1px solid rgba(29,78,216,0.25)", borderRadius:8, padding:"10px 12px", color:"#0F2147", fontSize:13, outline:"none", marginBottom:8, boxSizing:"border-box" }} />
+            {changePasswordError && <div style={{ fontSize:11, color:"#E14C58", marginBottom:8 }}>{changePasswordError}</div>}
+            {changePasswordStatus && <div style={{ fontSize:11, color:"#1D4ED8", marginBottom:8 }}>{changePasswordStatus}</div>}
+            <div style={{ display:"flex", gap:8 }}>
+              <button onClick={()=>{setShowChangePassword(false);setChangePasswordError("");setOldPasswordInput("");setNewPasswordInput("");setNewPasswordInput2("");}} style={{ flex:1, padding:10, background:"rgba(15,33,71,0.05)", border:"1px solid rgba(15,33,71,0.08)", borderRadius:8, color:"#5B6B8C", fontSize:13, cursor:"pointer" }}>취소</button>
+              <button onClick={handleChangePassword} style={{ flex:1, padding:10, background:"#1D4ED8", border:"none", borderRadius:8, color:"white", fontSize:13, fontWeight:700, cursor:"pointer" }}>저장</button>
+            </div>
+            <div style={{ fontSize:10, color:"rgba(15,33,71,0.35)", marginTop:10, textAlign:"center" }}>비밀번호를 잊으셨다면 운영자에게 초기화를 요청해주세요.</div>
           </div>
         </div>
       )}
@@ -1236,20 +1352,50 @@ export default function App() {
       {/* 로그인 화면 */}
       {!isLoggedIn ? (
         <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:"60vh", gap:16 }}>
-          <div style={{ fontSize:16, fontWeight:700, color:"rgba(15,33,71,0.75)", marginBottom:8 }}>닉네임을 입력해주세요</div>
-          <div style={{ width:"100%", maxWidth:320, display:"flex", flexDirection:"column", gap:10 }}>
-            <input value={loginInput} onChange={e=>setLoginInput(e.target.value)}
-              placeholder="닉네임 입력 (최대 10자)" maxLength={10}
-              onKeyDown={e=>e.key==="Enter"&&handleLogin()}
-              style={{ width:"100%", background:"rgba(15,33,71,0.06)", border:"1px solid rgba(15,33,71,0.12)", borderRadius:10, padding:"12px 14px", color:"#0F2147", fontSize:14, outline:"none", boxSizing:"border-box" }} />
-            {loginError && <div style={{ fontSize:12, color:"#E14C58", textAlign:"center" }}>{loginError}</div>}
-            <button onClick={handleLogin} disabled={loginLoading} style={{ width:"100%", padding:14, background:"linear-gradient(135deg,#0F2147,#1D4ED8)", border:"none", borderRadius:10, color:"white", fontSize:15, fontWeight:700, cursor:"pointer", boxShadow:"0 4px 16px rgba(37,99,235,0.4)" }}>
-              {loginLoading ? "확인 중..." : "시작하기"}
-            </button>
-            <div style={{ fontSize:11, color:"rgba(15,33,71,0.35)", textAlign:"center", lineHeight:1.6 }}>
-              닉네임만 입력하면 바로 시작할 수 있어요!
-            </div>
-          </div>
+          {pendingNewProfile ? (
+            <>
+              <div style={{ fontSize:16, fontWeight:700, color:"rgba(15,33,71,0.75)", marginBottom:8 }}>환영해요, {pendingNewProfile}님! 👋</div>
+              <div style={{ width:"100%", maxWidth:320, display:"flex", flexDirection:"column", gap:10 }}>
+                <div style={{ fontSize:12, color:"rgba(15,33,71,0.5)", textAlign:"center", lineHeight:1.6 }}>
+                  비밀번호를 설정하면, 다른 사람이 이 닉네임으로 접속할 수 없어요. (선택)
+                </div>
+                <input type="password" inputMode="numeric" maxLength={3} value={newProfilePassword} onChange={e=>setNewProfilePassword(e.target.value.replace(/\D/g,''))}
+                  placeholder="비밀번호 설정 (숫자 3자리, 선택)"
+                  onKeyDown={e=>e.key==="Enter"&&finishNewProfileLogin(true)}
+                  style={{ width:"100%", background:"rgba(15,33,71,0.06)", border:"1px solid rgba(15,33,71,0.12)", borderRadius:10, padding:"12px 14px", color:"#0F2147", fontSize:14, outline:"none", boxSizing:"border-box", textAlign:"center" }} />
+                {loginError && <div style={{ fontSize:12, color:"#E14C58", textAlign:"center" }}>{loginError}</div>}
+                <button onClick={()=>finishNewProfileLogin(true)} style={{ width:"100%", padding:14, background:"linear-gradient(135deg,#0F2147,#1D4ED8)", border:"none", borderRadius:10, color:"white", fontSize:15, fontWeight:700, cursor:"pointer", boxShadow:"0 4px 16px rgba(37,99,235,0.4)" }}>
+                  설정하고 시작하기
+                </button>
+                <button onClick={()=>finishNewProfileLogin(false)} style={{ width:"100%", padding:10, background:"rgba(15,33,71,0.05)", border:"1px solid rgba(15,33,71,0.08)", borderRadius:10, color:"#5B6B8C", fontSize:13, cursor:"pointer" }}>
+                  건너뛰기 (비밀번호 없이 시작)
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <div style={{ fontSize:16, fontWeight:700, color:"rgba(15,33,71,0.75)", marginBottom:8 }}>닉네임을 입력해주세요</div>
+              <div style={{ width:"100%", maxWidth:320, display:"flex", flexDirection:"column", gap:10 }}>
+                <input value={loginInput} onChange={e=>{setLoginInput(e.target.value); setLoginNeedsPassword(false); setLoginPassword("");}}
+                  placeholder="닉네임 입력 (최대 10자)" maxLength={10}
+                  onKeyDown={e=>e.key==="Enter"&&!loginNeedsPassword&&handleLogin()}
+                  style={{ width:"100%", background:"rgba(15,33,71,0.06)", border:"1px solid rgba(15,33,71,0.12)", borderRadius:10, padding:"12px 14px", color:"#0F2147", fontSize:14, outline:"none", boxSizing:"border-box" }} />
+                {loginNeedsPassword && (
+                  <input type="password" inputMode="numeric" maxLength={3} value={loginPassword} onChange={e=>setLoginPassword(e.target.value.replace(/\D/g,''))}
+                    placeholder="비밀번호 입력" autoFocus
+                    onKeyDown={e=>e.key==="Enter"&&handleLogin()}
+                    style={{ width:"100%", background:"rgba(15,33,71,0.06)", border:"1px solid rgba(29,78,216,0.25)", borderRadius:10, padding:"12px 14px", color:"#0F2147", fontSize:14, outline:"none", boxSizing:"border-box", textAlign:"center" }} />
+                )}
+                {loginError && <div style={{ fontSize:12, color:"#E14C58", textAlign:"center" }}>{loginError}</div>}
+                <button onClick={handleLogin} disabled={loginLoading} style={{ width:"100%", padding:14, background:"linear-gradient(135deg,#0F2147,#1D4ED8)", border:"none", borderRadius:10, color:"white", fontSize:15, fontWeight:700, cursor:"pointer", boxShadow:"0 4px 16px rgba(37,99,235,0.4)" }}>
+                  {loginLoading ? "확인 중..." : "시작하기"}
+                </button>
+                <div style={{ fontSize:11, color:"rgba(15,33,71,0.35)", textAlign:"center", lineHeight:1.6 }}>
+                  닉네임만 입력하면 바로 시작할 수 있어요!
+                </div>
+              </div>
+            </>
+          )}
         </div>
       ) : (
 
