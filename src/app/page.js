@@ -1008,13 +1008,18 @@ export default function App() {
         return;
       }
       if (d.ok) {
-        if (d.existing) {
-          // 기존 닉네임 - 확인 메시지
+        if (d.existing && !d.hasPassword) {
+          // 비밀번호 없는 기존 닉네임 - 확인 메시지 (비밀번호 있는 경우는 이미 인증됐으므로 생략)
           if (!window.confirm(`"${d.nickname}" 닉네임이 이미 사용 중입니다.
 이 닉네임으로 계속 접속하시겠습니까?`)) {
             setLoginLoading(false);
             return;
           }
+          setNickname(d.nickname);
+          setIsLoggedIn(true);
+          store.set('sw:nickname', d.nickname);
+        } else if (d.existing) {
+          // 비밀번호로 이미 인증된 기존 닉네임
           setNickname(d.nickname);
           setIsLoggedIn(true);
           store.set('sw:nickname', d.nickname);
